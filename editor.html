@@ -1,0 +1,1092 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Kaiflow — Éditeur v2</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #0b0e14; --surface: #111620; --surface2: #161c28; --border: #1e2736; --border2: #253044;
+  --accent: #00e5ff; --accent-dim: rgba(0,229,255,0.1);
+  --warn: #ff6b35; --warn-dim: rgba(255,107,53,0.12);
+  --ok: #22d3a0; --ok-dim: rgba(34,211,160,0.1);
+  --manual: #3b82f6; --machine: #f59e0b; --move: #22d3a0; --wait: #f43f5e;
+  --text: #e2e8f5; --muted: #5a6a85; --muted2: #8899b4;
+}
+html, body { height: 100%; overflow: hidden; }
+body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; font-weight: 300; display: flex; flex-direction: column; }
+
+/* TOPBAR */
+.topbar { height: 54px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 1.2rem; gap: 1rem; flex-shrink: 0; z-index: 50; }
+.logo-mark { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.1rem; letter-spacing: -0.02em; }
+.logo-mark em { font-style: normal; color: var(--accent); }
+.topbar-sep { width: 1px; height: 20px; background: var(--border); }
+.breadcrumb { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: var(--muted2); }
+.breadcrumb a { color: var(--muted); cursor: pointer; }
+.topbar-spacer { flex: 1; }
+.flux-title-input { background: transparent; border: none; border-bottom: 1px solid transparent; outline: none; font-family: 'Syne', sans-serif; font-size: 0.95rem; font-weight: 700; color: var(--text); text-align: center; padding: 0.2rem 0.5rem; transition: border-color 0.2s; min-width: 200px; }
+.flux-title-input:focus { border-bottom-color: var(--accent); }
+.topbar-actions { display: flex; gap: 0.6rem; align-items: center; }
+.tb-btn { display: flex; align-items: center; gap: 0.4rem; padding: 0.45rem 1rem; border-radius: 7px; font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 400; cursor: pointer; transition: all 0.15s; border: 1px solid var(--border); background: transparent; color: var(--muted2); }
+.tb-btn:hover { border-color: var(--border2); color: var(--text); background: var(--surface2); }
+.tb-btn.primary { background: var(--accent); border-color: var(--accent); color: #000; font-weight: 500; }
+.tb-btn.primary:hover { box-shadow: 0 4px 16px rgba(0,229,255,0.25); }
+.save-status { font-size: 0.75rem; color: var(--ok); display: flex; align-items: center; gap: 0.35rem; }
+.save-status::before { content: ''; width: 6px; height: 6px; background: var(--ok); border-radius: 50%; }
+
+/* LAYOUT */
+.editor-layout { flex: 1; display: flex; overflow: hidden; }
+
+/* BLOCKS PANEL */
+.blocks-panel { width: 190px; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto; }
+.blocks-panel::-webkit-scrollbar { width: 3px; }
+.blocks-panel::-webkit-scrollbar-thumb { background: var(--border2); }
+.panel-section { padding: 1rem 0.8rem 0.5rem; }
+.panel-section-title { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); font-weight: 500; margin-bottom: 0.6rem; padding-left: 0.2rem; }
+.block-template { display: flex; align-items: center; gap: 0.65rem; padding: 0.6rem 0.7rem; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 0.5rem; cursor: grab; transition: all 0.15s; background: var(--bg); user-select: none; }
+.block-template:hover { border-color: var(--border2); background: var(--surface2); transform: translateX(2px); }
+.block-template:active { cursor: grabbing; opacity: 0.7; }
+.block-icon { width: 30px; height: 30px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; flex-shrink: 0; }
+.block-icon.work { background: rgba(0,229,255,0.1); border: 1px solid rgba(0,229,255,0.2); }
+.block-icon.stock { background: rgba(34,211,160,0.1); border: 1px solid rgba(34,211,160,0.2); }
+.block-icon.transport { background: rgba(255,200,80,0.1); border: 1px solid rgba(255,200,80,0.2); }
+.block-icon.control { background: rgba(160,120,255,0.1); border: 1px solid rgba(160,120,255,0.2); }
+.block-name { font-size: 0.8rem; font-weight: 500; color: var(--text); }
+.block-desc { font-size: 0.67rem; color: var(--muted); margin-top: 0.1rem; }
+
+/* CANVAS AREA */
+.canvas-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.canvas-toolbar { height: 42px; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 1rem; gap: 0.5rem; background: var(--bg); flex-shrink: 0; }
+.tool-btn { width: 30px; height: 30px; border: 1px solid transparent; border-radius: 6px; background: transparent; color: var(--muted2); cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+.tool-btn:hover { background: var(--surface); border-color: var(--border); color: var(--text); }
+.canvas-sep { width: 1px; height: 20px; background: var(--border); margin: 0 0.3rem; }
+.zoom-info { font-size: 0.75rem; color: var(--muted); margin-left: auto; }
+.canvas { flex: 1; position: relative; overflow: hidden; background-color: var(--bg); background-image: linear-gradient(rgba(30,39,54,0.5) 1px, transparent 1px), linear-gradient(90deg, rgba(30,39,54,0.5) 1px, transparent 1px); background-size: 32px 32px; }
+.connections-svg { position: absolute; inset: 0; pointer-events: none; z-index: 5; overflow: visible; }
+.drawing-line { position: absolute; inset: 0; pointer-events: none; z-index: 100; overflow: visible; }
+.connection-path { fill: none; stroke: var(--border2); stroke-width: 2; }
+.connection-path.active { stroke: var(--accent); opacity: 0.7; }
+.canvas-hint { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: var(--muted); pointer-events: none; transition: opacity 0.3s; }
+.canvas-hint-icon { font-size: 2.5rem; opacity: 0.2; margin-bottom: 0.75rem; }
+.canvas-hint-text { font-size: 0.88rem; line-height: 1.6; }
+.canvas-hint-text strong { color: var(--muted2); font-weight: 500; }
+
+/* FLOW NODES */
+.flow-node { position: absolute; min-width: 150px; background: var(--surface); border: 1.5px solid var(--border); border-radius: 10px; cursor: move; user-select: none; transition: box-shadow 0.15s, border-color 0.15s; z-index: 10; }
+.flow-node:hover { border-color: var(--border2); box-shadow: 0 8px 30px rgba(0,0,0,0.4); }
+.flow-node.selected { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,229,255,0.12), 0 8px 30px rgba(0,0,0,0.4); z-index: 20; }
+.flow-node.bottleneck { border-color: var(--warn); box-shadow: 0 0 0 3px rgba(255,107,53,0.12); }
+.node-header { padding: 0.5rem 0.7rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 0.5rem; border-radius: 9px 9px 0 0; }
+.node-type-icon { width: 22px; height: 22px; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; flex-shrink: 0; }
+.node-type-icon.work { background: rgba(0,229,255,0.1); }
+.node-type-icon.stock { background: rgba(34,211,160,0.1); }
+.node-type-icon.transport { background: rgba(255,200,80,0.1); }
+.node-type-icon.control { background: rgba(160,120,255,0.1); }
+.node-label { font-family: 'Syne', sans-serif; font-size: 0.78rem; font-weight: 700; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.node-alert { font-size: 0.7rem; }
+.node-body { padding: 0.5rem 0.7rem; }
+.node-field { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem; }
+.node-field:last-child { margin-bottom: 0; }
+.node-field-label { font-size: 0.63rem; color: var(--muted); }
+.node-field-val { font-family: 'Syne', sans-serif; font-size: 0.8rem; font-weight: 700; }
+.node-field-val.ok { color: var(--ok); }
+.node-field-val.warn { color: var(--warn); }
+.node-field-val.neutral { color: var(--text); }
+.node-field-val.accent { color: var(--accent); }
+
+/* VA/NVA bar on node */
+.node-vana-bar { height: 3px; display: flex; border-radius: 0 0 8px 8px; overflow: hidden; }
+.vna-va { background: var(--ok); transition: width 0.4s; }
+.vna-nva { background: var(--warn); transition: width 0.4s; }
+
+/* MOS button */
+.node-mos-btn { width: 100%; margin-top: 0.4rem; padding: 0.3rem; background: var(--accent-dim); border: 1px solid rgba(0,229,255,0.2); border-radius: 5px; color: var(--accent); font-family: 'DM Sans', sans-serif; font-size: 0.68rem; cursor: pointer; transition: all 0.15s; }
+.node-mos-btn:hover { background: rgba(0,229,255,0.15); }
+
+/* Ports */
+.port { position: absolute; width: 10px; height: 10px; background: var(--border2); border: 2px solid var(--surface); border-radius: 50%; cursor: crosshair; z-index: 30; transition: background 0.15s, transform 0.15s; }
+.port:hover { background: var(--accent); }
+.port.port-out { right: -5px; top: 50%; transform: translateY(-50%); }
+.port.port-out:hover { transform: translateY(-50%) scale(1.4); }
+.port.port-in { left: -5px; top: 50%; transform: translateY(-50%); }
+.port.port-in:hover { transform: translateY(-50%) scale(1.4); }
+
+/* KPI BAR */
+.kpi-bar { background: var(--surface); border-top: 1px solid var(--border); display: flex; align-items: stretch; flex-shrink: 0; overflow-x: auto; }
+.kpi-bar::-webkit-scrollbar { height: 3px; }
+.kpi-item { flex: 1; min-width: 110px; text-align: center; padding: 0.7rem 0.5rem; border-right: 1px solid var(--border); }
+.kpi-item:last-child { border-right: none; }
+.kpi-label { font-size: 0.58rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); font-weight: 500; margin-bottom: 0.2rem; }
+.kpi-value { font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 800; line-height: 1; }
+.kpi-value.ok { color: var(--ok); }
+.kpi-value.warn { color: var(--warn); }
+.kpi-value.neutral { color: var(--text); }
+.kpi-value.accent { color: var(--accent); }
+.kpi-sub { font-size: 0.6rem; color: var(--muted); margin-top: 0.15rem; }
+.kpi-alert-tag { display: inline-flex; align-items: center; gap: 0.3rem; background: var(--warn-dim); color: var(--warn); font-size: 0.58rem; font-weight: 600; padding: 0.15rem 0.5rem; border-radius: 100px; margin-top: 0.15rem; border: 1px solid rgba(255,107,53,0.25); }
+
+/* TIME TYPE LEGEND */
+.time-legend { display: flex; align-items: center; gap: 0.8rem; padding: 0 1rem; border-right: 1px solid var(--border); }
+.legend-dot { display: flex; align-items: center; gap: 0.3rem; font-size: 0.6rem; color: var(--muted2); }
+.legend-dot::before { content: ''; width: 8px; height: 8px; border-radius: 2px; }
+.legend-dot.manual::before { background: var(--manual); }
+.legend-dot.machine::before { background: var(--machine); }
+.legend-dot.move::before { background: var(--move); }
+.legend-dot.wait::before { background: var(--wait); }
+
+/* RIGHT PANEL */
+.props-panel { width: 230px; background: var(--surface); border-left: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto; }
+.props-panel::-webkit-scrollbar { width: 3px; }
+.props-panel::-webkit-scrollbar-thumb { background: var(--border2); }
+.props-header { padding: 0.9rem 1rem 0.7rem; border-bottom: 1px solid var(--border); }
+.props-title { font-family: 'Syne', sans-serif; font-size: 0.85rem; font-weight: 700; margin-bottom: 0.15rem; }
+.props-subtitle { font-size: 0.72rem; color: var(--muted); }
+.props-empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem; padding: 1.5rem; text-align: center; color: var(--muted); }
+.props-empty-icon { font-size: 1.8rem; opacity: 0.4; }
+.props-empty-text { font-size: 0.8rem; line-height: 1.5; }
+.props-form { padding: 0.9rem 1rem; flex: 1; display: none; }
+.props-form.visible { display: block; }
+.prop-field { margin-bottom: 0.85rem; }
+.prop-label { display: block; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.09em; color: var(--muted); font-weight: 500; margin-bottom: 0.3rem; }
+.prop-input { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 7px; padding: 0.5rem 0.75rem; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; color: var(--text); outline: none; transition: border-color 0.2s; }
+.prop-input:focus { border-color: var(--accent); }
+.prop-unit { font-size: 0.68rem; color: var(--muted); margin-top: 0.2rem; }
+.prop-select { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 7px; padding: 0.5rem 0.75rem; font-family: 'DM Sans', sans-serif; font-size: 0.82rem; color: var(--text); outline: none; }
+.prop-select option { background: var(--surface); }
+.delete-btn { width: 100%; margin-top: 0.5rem; padding: 0.5rem; background: transparent; border: 1px solid rgba(255,107,53,0.3); border-radius: 7px; color: var(--warn); font-family: 'DM Sans', sans-serif; font-size: 0.8rem; cursor: pointer; transition: all 0.15s; }
+.delete-btn:hover { background: var(--warn-dim); border-color: var(--warn); }
+.open-mos-btn { width: 100%; margin-top: 0.5rem; padding: 0.55rem; background: var(--accent-dim); border: 1px solid rgba(0,229,255,0.3); border-radius: 7px; color: var(--accent); font-family: 'DM Sans', sans-serif; font-size: 0.8rem; font-weight: 500; cursor: pointer; transition: all 0.15s; }
+.open-mos-btn:hover { background: rgba(0,229,255,0.15); }
+
+/* ─── MOS MODAL ─────────────────────────────────────────────────────────── */
+.mos-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 300; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.25s; backdrop-filter: blur(6px); }
+.mos-overlay.open { opacity: 1; pointer-events: all; }
+.mos-modal { background: var(--surface); border: 1px solid var(--border2); border-radius: 18px; width: min(96vw, 820px); max-height: 92vh; display: flex; flex-direction: column; transform: translateY(24px); transition: transform 0.25s; box-shadow: 0 40px 100px rgba(0,0,0,0.6); }
+.mos-overlay.open .mos-modal { transform: translateY(0); }
+
+.mos-header { padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 1rem; }
+.mos-title-group { flex: 1; }
+.mos-title { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 800; margin-bottom: 0.2rem; }
+.mos-subtitle { font-size: 0.75rem; color: var(--muted); }
+.mos-close { width: 32px; height: 32px; border-radius: 8px; background: transparent; border: 1px solid var(--border); color: var(--muted2); font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+.mos-close:hover { background: var(--surface2); color: var(--text); }
+
+/* MOS summary strip */
+.mos-summary { display: flex; padding: 0.8rem 1.5rem; gap: 0; border-bottom: 1px solid var(--border); background: var(--bg); }
+.mos-kpi { flex: 1; text-align: center; border-right: 1px solid var(--border); }
+.mos-kpi:last-child { border-right: none; }
+.mos-kpi-label { font-size: 0.58rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 0.2rem; }
+.mos-kpi-val { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 800; }
+.mos-kpi-val.manual { color: var(--manual); }
+.mos-kpi-val.machine { color: var(--machine); }
+.mos-kpi-val.move { color: var(--move); }
+.mos-kpi-val.wait { color: var(--wait); }
+.mos-kpi-val.total { color: var(--accent); }
+
+/* MOS gantt bar */
+.mos-gantt { padding: 0.6rem 1.5rem; border-bottom: 1px solid var(--border); background: var(--bg); }
+.mos-gantt-label { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 0.4rem; }
+.mos-gantt-bar { height: 12px; display: flex; border-radius: 4px; overflow: hidden; gap: 1px; background: var(--border); }
+.gantt-seg { height: 100%; transition: width 0.4s; position: relative; }
+.gantt-seg.manual { background: var(--manual); }
+.gantt-seg.machine { background: var(--machine); }
+.gantt-seg.move { background: var(--move); }
+.gantt-seg.wait { background: var(--wait); }
+
+/* MOS body */
+.mos-body { flex: 1; overflow-y: auto; padding: 1rem 1.5rem; }
+.mos-body::-webkit-scrollbar { width: 4px; }
+.mos-body::-webkit-scrollbar-thumb { background: var(--border2); }
+
+/* Meta fields */
+.mos-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; margin-bottom: 1.2rem; }
+.meta-field label { display: block; font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.09em; color: var(--muted); margin-bottom: 0.3rem; }
+.meta-field input { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 0.45rem 0.7rem; font-family: 'DM Sans', sans-serif; font-size: 0.82rem; color: var(--text); outline: none; transition: border-color 0.2s; }
+.meta-field input:focus { border-color: var(--accent); }
+
+/* Tasks table */
+.tasks-section-title { font-family: 'Syne', sans-serif; font-size: 0.8rem; font-weight: 700; color: var(--muted2); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.6rem; margin-top: 0.5rem; }
+
+.tasks-header { display: grid; grid-template-columns: 28px 1fr 72px 72px 72px 72px 72px 30px; gap: 0.4rem; align-items: center; padding: 0.3rem 0.5rem; margin-bottom: 0.3rem; }
+.th { font-size: 0.58rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); font-weight: 500; text-align: center; }
+.th.left { text-align: left; }
+.th.manual-h { color: var(--manual); }
+.th.machine-h { color: var(--machine); }
+.th.move-h { color: var(--move); }
+.th.wait-h { color: var(--wait); }
+
+.task-row { display: grid; grid-template-columns: 28px 1fr 72px 72px 72px 72px 72px 30px; gap: 0.4rem; align-items: center; padding: 0.35rem 0.5rem; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 0.4rem; background: var(--bg); transition: border-color 0.15s; position: relative; }
+.task-row:hover { border-color: var(--border2); }
+.task-row.has-data { border-left: 3px solid; }
+.task-row.va { border-left-color: var(--ok); }
+.task-row.nva { border-left-color: var(--warn); }
+
+.task-num { font-family: 'Syne', sans-serif; font-size: 0.75rem; font-weight: 700; color: var(--muted); text-align: center; }
+.task-input { background: transparent; border: none; outline: none; font-family: 'DM Sans', sans-serif; font-size: 0.82rem; color: var(--text); width: 100%; padding: 0.2rem 0; }
+.task-input::placeholder { color: var(--muted); font-size: 0.78rem; }
+.task-time-input { background: var(--surface); border: 1px solid var(--border); border-radius: 5px; outline: none; font-family: 'Syne', sans-serif; font-size: 0.8rem; font-weight: 600; color: var(--text); width: 100%; padding: 0.2rem 0.3rem; text-align: center; transition: border-color 0.15s; }
+.task-time-input:focus { border-color: var(--accent); }
+.task-time-input.manual-input:focus { border-color: var(--manual); }
+.task-time-input.machine-input:focus { border-color: var(--machine); }
+.task-time-input.move-input:focus { border-color: var(--move); }
+.task-time-input.wait-input:focus { border-color: var(--wait); }
+.task-cumul { font-family: 'Syne', sans-serif; font-size: 0.75rem; color: var(--accent); text-align: center; font-weight: 600; }
+.task-del { background: transparent; border: none; color: var(--muted); cursor: pointer; font-size: 0.85rem; transition: color 0.15s; padding: 0.2rem; }
+.task-del:hover { color: var(--warn); }
+
+.task-type-tag { display: flex; gap: 0.3rem; margin-top: 0.15rem; }
+.type-badge { font-size: 0.58rem; padding: 0.1rem 0.4rem; border-radius: 100px; font-weight: 500; cursor: pointer; transition: all 0.15s; border: 1px solid transparent; }
+.type-badge.va-tag { background: var(--ok-dim); color: var(--ok); border-color: rgba(34,211,160,0.2); }
+.type-badge.nva-tag { background: var(--warn-dim); color: var(--warn); border-color: rgba(255,107,53,0.2); }
+.type-badge.active { opacity: 1; }
+.type-badge:not(.active) { opacity: 0.35; }
+
+.add-task-btn { width: 100%; margin-top: 0.5rem; padding: 0.55rem; background: transparent; border: 1px dashed var(--border2); border-radius: 8px; color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 0.82rem; cursor: pointer; transition: all 0.15s; }
+.add-task-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+
+/* Non-cyclés */
+.noncycles-section { margin-top: 1.2rem; border-top: 1px solid var(--border); padding-top: 0.9rem; }
+.nc-row { display: grid; grid-template-columns: 1fr 60px 60px 60px 30px; gap: 0.4rem; align-items: center; padding: 0.3rem 0.5rem; border: 1px solid var(--border); border-radius: 6px; margin-bottom: 0.35rem; background: var(--bg); }
+
+/* MOS footer */
+.mos-footer { padding: 1rem 1.5rem; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 1rem; }
+.mos-footer-kpi { font-size: 0.78rem; color: var(--muted2); }
+.mos-footer-kpi strong { color: var(--text); font-weight: 500; }
+.mos-save-btn { margin-left: auto; background: var(--accent); color: #000; border: none; border-radius: 8px; padding: 0.6rem 1.4rem; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: all 0.15s; }
+.mos-save-btn:hover { box-shadow: 0 6px 20px rgba(0,229,255,0.25); }
+
+/* VA/NVA tooltip tag in KPI bar */
+.vana-kpi { display: flex; flex-direction: column; align-items: center; }
+.vana-mini-bar { width: 60px; height: 5px; border-radius: 3px; overflow: hidden; display: flex; margin-top: 0.3rem; }
+
+@keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+.flow-node { animation: fadeUp 0.3s ease both; }
+.content::-webkit-scrollbar { width: 5px; }
+</style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="logo-mark">Kai<em>flow</em></div>
+  <div class="topbar-sep"></div>
+  <div class="breadcrumb"><a>Dashboard</a> › <a>Mes flux</a> › <span>Éditeur</span></div>
+  <div class="topbar-spacer"></div>
+  <input class="flux-title-input" value="Ligne A — Assemblage" id="fluxTitle">
+  <div class="topbar-spacer"></div>
+  <div class="topbar-actions">
+    <div class="save-status" id="saveStatus">Sauvegardé</div>
+    <button class="tb-btn">↗ Export PDF</button>
+    <button class="tb-btn primary" onclick="saveFlux()">💾 Sauvegarder</button>
+  </div>
+</header>
+
+<div class="editor-layout">
+
+  <!-- LEFT PANEL -->
+  <div class="blocks-panel">
+    <div class="panel-section">
+      <div class="panel-section-title">Blocs</div>
+      <div class="block-template" data-type="work" data-label="Poste de travail">
+        <div class="block-icon work">🔧</div>
+        <div><div class="block-name">Poste de travail</div><div class="block-desc">Opération / MOS</div></div>
+      </div>
+      <div class="block-template" data-type="stock" data-label="Stock">
+        <div class="block-icon stock">📦</div>
+        <div><div class="block-name">Stock</div><div class="block-desc">Tampon / encours</div></div>
+      </div>
+      <div class="block-template" data-type="transport" data-label="Transport">
+        <div class="block-icon transport">🚚</div>
+        <div><div class="block-name">Transport</div><div class="block-desc">Déplacement</div></div>
+      </div>
+      <div class="block-template" data-type="control" data-label="Contrôle qualité">
+        <div class="block-icon control">✅</div>
+        <div><div class="block-name">Contrôle qualité</div><div class="block-desc">Inspection</div></div>
+      </div>
+    </div>
+    <div class="panel-section">
+      <div class="panel-section-title">Légende temps</div>
+      <div style="display:flex;flex-direction:column;gap:0.35rem;padding:0 0.2rem;">
+        <div class="legend-dot manual" style="display:flex;align-items:center;gap:0.5rem;font-size:0.72rem;color:var(--muted2);"><span style="width:10px;height:10px;background:var(--manual);border-radius:2px;flex-shrink:0"></span>Travail manuel</div>
+        <div class="legend-dot machine" style="display:flex;align-items:center;gap:0.5rem;font-size:0.72rem;color:var(--muted2);"><span style="width:10px;height:10px;background:var(--machine);border-radius:2px;flex-shrink:0"></span>Machine</div>
+        <div class="legend-dot move" style="display:flex;align-items:center;gap:0.5rem;font-size:0.72rem;color:var(--muted2);"><span style="width:10px;height:10px;background:var(--move);border-radius:2px;flex-shrink:0"></span>Déplacement</div>
+        <div class="legend-dot wait" style="display:flex;align-items:center;gap:0.5rem;font-size:0.72rem;color:var(--muted2);"><span style="width:10px;height:10px;background:var(--wait);border-radius:2px;flex-shrink:0"></span>Attente</div>
+      </div>
+      <div style="margin-top:1rem;font-size:0.72rem;color:var(--muted);line-height:1.6;padding:0 0.2rem;">
+        <span style="color:var(--ok)">●</span> VA = Valeur Ajoutée<br>
+        <span style="color:var(--warn)">●</span> NVA = Non Valeur Ajoutée
+      </div>
+    </div>
+  </div>
+
+  <!-- CANVAS -->
+  <div class="canvas-area">
+    <div class="canvas-toolbar">
+      <button class="tool-btn" title="Zoom +" onclick="zoom(1.15)">＋</button>
+      <button class="tool-btn" title="Zoom -" onclick="zoom(0.87)">－</button>
+      <button class="tool-btn" title="Centrer" onclick="resetZoom()">⊡</button>
+      <div class="canvas-sep"></div>
+      <button class="tool-btn" title="Supprimer" onclick="deleteSelected()">🗑</button>
+      <span class="zoom-info" id="zoomInfo">100%</span>
+    </div>
+
+    <div class="canvas" id="canvas" ondragover="onDragOver(event)" ondrop="onDrop(event)">
+      <svg class="connections-svg" id="connectionsSvg"></svg>
+      <svg class="drawing-line" id="drawingLine"></svg>
+      <div class="canvas-hint" id="canvasHint">
+        <div class="canvas-hint-icon">〰</div>
+        <div class="canvas-hint-text"><strong>Glissez des blocs</strong> depuis le panneau gauche<br>pour modéliser votre flux</div>
+      </div>
+    </div>
+
+    <!-- KPI BAR -->
+    <div class="kpi-bar" id="kpiBar">
+      <div class="kpi-item"><div class="kpi-label">Takt Time</div><div class="kpi-value neutral" id="kpiTakt">—</div><div class="kpi-sub">demande saisie</div></div>
+      <div class="kpi-item"><div class="kpi-label">Temps cycle max</div><div class="kpi-value neutral" id="kpiCycle">—</div><div class="kpi-sub" id="kpiCycleSub">poste le plus lent</div></div>
+      <div class="kpi-item"><div class="kpi-label">Lead Time</div><div class="kpi-value accent" id="kpiLead">—</div><div class="kpi-sub">traversée complète</div></div>
+      <div class="kpi-item"><div class="kpi-label">Goulot</div><div class="kpi-value neutral" id="kpiBottleneck" style="font-size:0.85rem;padding-top:0.2rem">—</div><div class="kpi-sub" id="kpiBottleneckSub"></div></div>
+      <div class="kpi-item"><div class="kpi-label">Rendement</div><div class="kpi-value neutral" id="kpiRendement">—</div><div class="kpi-sub">takt / cycle</div></div>
+      <div class="kpi-item vana-kpi">
+        <div class="kpi-label">VA / NVA</div>
+        <div class="kpi-value accent" id="kpiVA">—</div>
+        <div class="vana-mini-bar" id="vanaBar"><div style="background:var(--ok);width:50%;transition:width 0.4s"></div><div style="background:var(--warn);width:50%;transition:width 0.4s"></div></div>
+      </div>
+      <div class="kpi-item"><div class="kpi-label">Taux charge moy.</div><div class="kpi-value neutral" id="kpiCharge">—</div><div class="kpi-sub">charge / capacité</div></div>
+      <div class="kpi-item"><div class="kpi-label">Nb. blocs</div><div class="kpi-value neutral" id="kpiPostes">0</div><div class="kpi-sub">sur le canvas</div></div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="props-panel">
+    <div class="props-header"><div class="props-title">Propriétés</div><div class="props-subtitle" id="propsSubtitle">Sélectionnez un bloc</div></div>
+    <div class="props-empty" id="propsEmpty"><div class="props-empty-icon">↖</div><div class="props-empty-text">Cliquez sur un bloc pour modifier ses propriétés</div></div>
+    <div class="props-form" id="propsForm">
+      <div class="prop-field"><label class="prop-label">Nom</label><input class="prop-input" id="propName" type="text" placeholder="ex: Assemblage"></div>
+      <div class="prop-field" id="pfTakt">
+        <label class="prop-label">Takt time cible</label>
+        <input class="prop-input" id="propTakt" type="number" placeholder="ex: 60">
+        <div class="prop-unit">secondes / pièce</div>
+      </div>
+      <div class="prop-field" id="pfCycle"><label class="prop-label">Temps de cycle</label><input class="prop-input" id="propCycle" type="number" placeholder="ex: 45"><div class="prop-unit">sec (auto si MOS rempli)</div></div>
+      <div class="prop-field" id="pfOps"><label class="prop-label">Nb. opérateurs</label><input class="prop-input" id="propOps" type="number" placeholder="1" min="1"></div>
+      <div class="prop-field" id="pfCapacity"><label class="prop-label">Capacité dispo</label><input class="prop-input" id="propCapacity" type="number" placeholder="ex: 480"><div class="prop-unit">secondes / période</div></div>
+      <div class="prop-field" id="pfType">
+        <label class="prop-label">Classification VSM</label>
+        <select class="prop-select" id="propVSM">
+          <option value="va">✅ Valeur Ajoutée (VA)</option>
+          <option value="nva">⚠ Non Valeur Ajoutée (NVA)</option>
+        </select>
+      </div>
+      <div class="prop-field" id="pfQty" style="display:none"><label class="prop-label">Quantité en stock</label><input class="prop-input" id="propQty" type="number" placeholder="50"><div class="prop-unit">pièces</div></div>
+      <div class="prop-field" id="pfStockMax" style="display:none"><label class="prop-label">Stock max (alerte)</label><input class="prop-input" id="propStockMax" type="number" placeholder="100"><div class="prop-unit">pièces</div></div>
+      <div class="prop-field" id="pfDist" style="display:none"><label class="prop-label">Distance</label><input class="prop-input" id="propDist" type="number" placeholder="30"><div class="prop-unit">mètres</div></div>
+      <button class="open-mos-btn" id="openMosBtn" onclick="openMOS()" style="display:none">📋 Mode Opératoire Standard</button>
+      <button class="delete-btn" onclick="deleteSelected()">🗑 Supprimer</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── MOS MODAL ──────────────────────────────────────────────────────────── -->
+<div class="mos-overlay" id="mosOverlay">
+  <div class="mos-modal">
+    <div class="mos-header">
+      <div class="mos-title-group">
+        <div class="mos-title" id="mosModalTitle">Mode Opératoire Standard</div>
+        <div class="mos-subtitle">Décomposition des tâches · Calcul automatique VA/NVA</div>
+      </div>
+      <button class="mos-close" onclick="closeMOS()">✕</button>
+    </div>
+
+    <!-- Résumé temps -->
+    <div class="mos-summary">
+      <div class="mos-kpi"><div class="mos-kpi-label">Manuel</div><div class="mos-kpi-val manual" id="mosTotal-manual">0s</div></div>
+      <div class="mos-kpi"><div class="mos-kpi-label">Machine</div><div class="mos-kpi-val machine" id="mosTotal-machine">0s</div></div>
+      <div class="mos-kpi"><div class="mos-kpi-label">Déplacement</div><div class="mos-kpi-val move" id="mosTotal-move">0s</div></div>
+      <div class="mos-kpi"><div class="mos-kpi-label">Attente</div><div class="mos-kpi-val wait" id="mosTotal-wait">0s</div></div>
+      <div class="mos-kpi"><div class="mos-kpi-label">Cycle total</div><div class="mos-kpi-val total" id="mosTotal-cycle">0s</div></div>
+      <div class="mos-kpi"><div class="mos-kpi-label">%VA</div><div class="mos-kpi-val" id="mosTotal-va" style="color:var(--ok)">—</div></div>
+    </div>
+
+    <!-- Gantt bar -->
+    <div class="mos-gantt">
+      <div class="mos-gantt-label">Répartition du temps de cycle</div>
+      <div class="mos-gantt-bar" id="mosGanttBar">
+        <div class="gantt-seg manual" id="gantt-manual" style="width:0%"></div>
+        <div class="gantt-seg machine" id="gantt-machine" style="width:0%"></div>
+        <div class="gantt-seg move" id="gantt-move" style="width:0%"></div>
+        <div class="gantt-seg wait" id="gantt-wait" style="width:0%"></div>
+      </div>
+    </div>
+
+    <div class="mos-body">
+      <!-- Meta -->
+      <div class="mos-meta">
+        <div class="meta-field"><label>Nom du process</label><input id="mosProcessName" type="text" placeholder="ex: Finition"></div>
+        <div class="meta-field"><label>Auteur</label><input id="mosAuthor" type="text" placeholder="Nom"></div>
+        <div class="meta-field"><label>Takt Time (s)</label><input id="mosTaktTime" type="number" placeholder="60" oninput="updateMOSCalcs()"></div>
+        <div class="meta-field"><label>Nb. pièces / MOS</label><input id="mosNbPieces" type="number" placeholder="1" value="1" oninput="updateMOSCalcs()"></div>
+      </div>
+
+      <!-- Tasks -->
+      <div class="tasks-section-title">Décomposition des tâches</div>
+      <div class="tasks-header">
+        <div class="th">#</div>
+        <div class="th left">Description de la tâche</div>
+        <div class="th manual-h">Manuel</div>
+        <div class="th machine-h">Machine</div>
+        <div class="th move-h">Dépl.</div>
+        <div class="th wait-h">Attente</div>
+        <div class="th" style="color:var(--accent)">Cumul</div>
+        <div class="th"></div>
+      </div>
+      <div id="tasksList"></div>
+      <button class="add-task-btn" onclick="addTask()">✚ Ajouter une tâche</button>
+
+      <!-- Non cyclés -->
+      <div class="noncycles-section">
+        <div class="tasks-section-title">Activités non cyclées</div>
+        <div style="display:grid;grid-template-columns:1fr 60px 60px 60px 30px;gap:0.4rem;margin-bottom:0.4rem;padding:0 0.5rem;">
+          <div class="th left" style="font-size:0.58rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);">Activité</div>
+          <div class="th" style="font-size:0.58rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);">Temps</div>
+          <div class="th" style="font-size:0.58rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);">Pièces</div>
+          <div class="th" style="font-size:0.58rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);">Fréq.</div>
+          <div></div>
+        </div>
+        <div id="ncList"></div>
+        <button class="add-task-btn" onclick="addNC()">✚ Ajouter une activité</button>
+      </div>
+    </div>
+
+    <div class="mos-footer">
+      <div class="mos-footer-kpi">Cycle total : <strong id="mosFooterCycle">—</strong> · VA : <strong id="mosFooterVA" style="color:var(--ok)">—</strong> · NVA : <strong id="mosFooterNVA" style="color:var(--warn)">—</strong></div>
+      <button class="mos-save-btn" onclick="saveMOS()">✓ Valider et fermer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let nodes = [], connections = [], selectedNodeId = null, nodeCounter = 0, scale = 1;
+let isDraggingNode = false, dragOffsetX = 0, dragOffsetY = 0;
+let isDrawingConnection = false, connectionStart = null, drawingPath = null;
+let currentMOSNodeId = null;
+
+const canvas = document.getElementById('canvas');
+const svg = document.getElementById('connectionsSvg');
+const drawingSvg = document.getElementById('drawingLine');
+
+const BLOCK_CONFIG = {
+  work:      { icon: '🔧', label: 'Poste de travail', color: 'work',      hasTime: true,  hasOps: true,  hasMOS: true  },
+  stock:     { icon: '📦', label: 'Stock',            color: 'stock',     hasTime: false, hasOps: false, hasMOS: false, hasQty: true },
+  transport: { icon: '🚚', label: 'Transport',        color: 'transport', hasTime: true,  hasOps: false, hasMOS: false, hasDist: true },
+  control:   { icon: '✅', label: 'Contrôle qualité', color: 'control',   hasTime: true,  hasOps: true,  hasMOS: true  },
+};
+
+// ─── UNIFIED TOUCH/MOUSE HELPERS ─────────────────────────────────────────────
+function getClientXY(e) {
+  if (e.touches && e.touches.length > 0) return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+  if (e.changedTouches && e.changedTouches.length > 0) return { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY };
+  return { x: e.clientX, y: e.clientY };
+}
+
+// ─── DRAG FROM LIBRARY ────────────────────────────────────────────────────────
+let touchDragType = null, touchDragLabel = null, touchGhost = null;
+
+document.querySelectorAll('.block-template').forEach(el => {
+  el.setAttribute('draggable','true');
+  el.addEventListener('dragstart', e => {
+    e.dataTransfer.setData('blockType', el.dataset.type);
+    e.dataTransfer.setData('blockLabel', el.dataset.label);
+  });
+  el.addEventListener('touchstart', e => {
+    e.preventDefault();
+    touchDragType = el.dataset.type; touchDragLabel = el.dataset.label;
+    touchGhost = document.createElement('div');
+    touchGhost.style.cssText = 'position:fixed;z-index:9999;pointer-events:none;background:var(--surface);border:1.5px solid var(--accent);border-radius:10px;padding:0.5rem 0.9rem;font-size:0.82rem;color:var(--text);font-family:DM Sans,sans-serif;opacity:0.9;box-shadow:0 8px 30px rgba(0,0,0,0.4);';
+    touchGhost.textContent = touchDragLabel;
+    document.body.appendChild(touchGhost);
+    const {x,y} = getClientXY(e);
+    touchGhost.style.left=(x-60)+'px'; touchGhost.style.top=(y-20)+'px';
+  }, {passive:false});
+  el.addEventListener('touchmove', e => {
+    e.preventDefault(); if (!touchGhost) return;
+    const {x,y}=getClientXY(e); touchGhost.style.left=(x-60)+'px'; touchGhost.style.top=(y-20)+'px';
+  }, {passive:false});
+  el.addEventListener('touchend', e => {
+    e.preventDefault();
+    if (touchGhost) { touchGhost.remove(); touchGhost=null; }
+    if (!touchDragType) return;
+    const {x,y}=getClientXY(e);
+    const r=canvas.getBoundingClientRect();
+    if (x>=r.left && x<=r.right && y>=r.top && y<=r.bottom) {
+      addNode(touchDragType, touchDragLabel, (x-r.left)/scale-75, (y-r.top)/scale-45);
+      updateHint();
+    }
+    touchDragType=null; touchDragLabel=null;
+  }, {passive:false});
+});
+
+function onDragOver(e) { e.preventDefault(); }
+function onDrop(e) {
+  e.preventDefault();
+  const type=e.dataTransfer.getData('blockType'), label=e.dataTransfer.getData('blockLabel');
+  if (!type) return;
+  const r=canvas.getBoundingClientRect();
+  addNode(type, label, (e.clientX-r.left)/scale-75, (e.clientY-r.top)/scale-45);
+  updateHint();
+}
+
+// ─── ADD NODE ─────────────────────────────────────────────────────────────────
+function addNode(type, label, x, y) {
+  const id = ++nodeCounter;
+  const node = { id, type, label, x, y, cycle: null, ops: 1, capacity: 480,
+    qty: null, stockMax: null, dist: null, vsm: type==='stock'||type==='transport'?'nva':'va',
+    takt: null,
+    mos: { processName:'', author:'', taktTime:null, nbPieces:1, tasks:[], nc:[] }
+  };
+  nodes.push(node);
+  renderNode(node);
+  updateKPIs();
+  return node;
+}
+
+// ─── RENDER NODE ──────────────────────────────────────────────────────────────
+function renderNode(node) {
+  const config = BLOCK_CONFIG[node.type];
+  const el = document.createElement('div');
+  el.className = 'flow-node'; el.id = `node-${node.id}`;
+  el.style.left = node.x+'px'; el.style.top = node.y+'px'; el.style.width = '155px';
+  el.innerHTML = buildNodeHTML(node);
+
+  el.addEventListener('mousedown', e => {
+    if (e.target.classList.contains('port') || e.target.classList.contains('node-mos-btn')) return;
+    e.stopPropagation(); selectNode(node.id); startDragNode(e, el, node);
+  });
+  el.addEventListener('touchstart', e => {
+    if (e.target.classList.contains('port') || e.target.classList.contains('node-mos-btn')) return;
+    e.stopPropagation(); e.preventDefault(); selectNode(node.id); startDragNodeTouch(e, el, node);
+  }, {passive:false});
+
+  el.querySelector('.port-out').addEventListener('mousedown', e => { e.stopPropagation(); startConnection(node.id, e); });
+  el.querySelector('.port-out').addEventListener('touchstart', e => { e.stopPropagation(); e.preventDefault(); startConnectionTouch(node.id, e); }, {passive:false});
+  el.querySelector('.port-in').addEventListener('mouseup', e => { if (isDrawingConnection && connectionStart.nodeId!==node.id) endConnection(node.id); });
+  el.querySelector('.port-in').addEventListener('touchend', e => { e.preventDefault(); if (isDrawingConnection && connectionStart.nodeId!==node.id) endConnection(node.id); }, {passive:false});
+
+  canvas.appendChild(el);
+}
+
+function buildNodeHTML(node) {
+  const config = BLOCK_CONFIG[node.type];
+  const cycleVal = getEffectiveCycle(node);
+  const mosTaskCount = node.mos.tasks.filter(t=>t.desc).length;
+  const vaPercent = getNodeVAPercent(node);
+
+  return `
+    <div class="node-header">
+      <div class="node-type-icon ${config.color}">${config.icon}</div>
+      <div class="node-label">${node.label}</div>
+      <span class="node-alert" id="alert-${node.id}" style="display:none">⚠</span>
+    </div>
+    <div class="node-body">
+      ${cycleVal ? `<div class="node-field"><span class="node-field-label">Temps cycle</span><span class="node-field-val neutral" id="val-cycle-${node.id}">${cycleVal}s</span></div>` : `<div class="node-field"><span class="node-field-label">Temps cycle</span><span class="node-field-val neutral" id="val-cycle-${node.id}">—</span></div>`}
+      ${config.hasOps ? `<div class="node-field"><span class="node-field-label">Opérateurs</span><span class="node-field-val neutral">${node.ops}</span></div>` : ''}
+      ${node.type==='stock'&&node.qty!==null ? `<div class="node-field"><span class="node-field-label">Stock</span><span class="node-field-val ${node.stockMax&&node.qty>node.stockMax?'warn':'ok'}">${node.qty} pcs</span></div>` : ''}
+      ${config.hasMOS && mosTaskCount>0 ? `<div class="node-field"><span class="node-field-label">MOS</span><span class="node-field-val accent">${mosTaskCount} tâches</span></div>` : ''}
+      ${config.hasMOS ? `<button class="node-mos-btn" onclick="openMOSForNode(${node.id})">📋 Mode Opératoire</button>` : ''}
+    </div>
+    ${vaPercent!==null ? `<div class="node-vana-bar"><div class="vna-va" style="width:${vaPercent}%"></div><div class="vna-nva" style="width:${100-vaPercent}%"></div></div>` : ''}
+    <div class="port port-in" id="port-in-${node.id}"></div>
+    <div class="port port-out" id="port-out-${node.id}"></div>`;
+}
+
+function refreshNodeDisplay(nodeId) {
+  const node = nodes.find(n=>n.id===nodeId);
+  if (!node) return;
+  const el = document.getElementById(`node-${nodeId}`);
+  if (!el) return;
+  el.innerHTML = buildNodeHTML(node);
+  // Re-bind events on ports
+  el.querySelector('.port-out').addEventListener('mousedown', e => { e.stopPropagation(); startConnection(node.id, e); });
+  el.querySelector('.port-out').addEventListener('touchstart', e => { e.stopPropagation(); e.preventDefault(); startConnectionTouch(node.id, e); }, {passive:false});
+  el.querySelector('.port-in').addEventListener('mouseup', e => { if (isDrawingConnection && connectionStart.nodeId!==node.id) endConnection(node.id); });
+  el.querySelector('.port-in').addEventListener('touchend', e => { e.preventDefault(); if (isDrawingConnection && connectionStart.nodeId!==node.id) endConnection(node.id); }, {passive:false});
+  el.addEventListener('mousedown', e => {
+    if (e.target.classList.contains('port') || e.target.classList.contains('node-mos-btn')) return;
+    e.stopPropagation(); selectNode(node.id); startDragNode(e, el, node);
+  });
+  el.addEventListener('touchstart', e => {
+    if (e.target.classList.contains('port') || e.target.classList.contains('node-mos-btn')) return;
+    e.stopPropagation(); e.preventDefault(); selectNode(node.id); startDragNodeTouch(e, el, node);
+  }, {passive:false});
+  if (selectedNodeId === nodeId) el.classList.add('selected');
+  updateKPIs();
+}
+
+function getEffectiveCycle(node) {
+  if (node.mos && node.mos.tasks.length > 0) {
+    const sum = node.mos.tasks.reduce((s,t)=>{
+      return s + (parseFloat(t.manual)||0) + (parseFloat(t.move)||0) + (parseFloat(t.wait)||0);
+    },0);
+    if (sum > 0) return Math.round(sum);
+  }
+  return node.cycle;
+}
+
+function getNodeVAPercent(node) {
+  if (!node.mos || node.mos.tasks.length===0) return null;
+  let va=0, total=0;
+  node.mos.tasks.forEach(t => {
+    const m=parseFloat(t.manual)||0, mc=parseFloat(t.machine)||0, mv=parseFloat(t.move)||0, w=parseFloat(t.wait)||0;
+    const rowTotal = m+mv+w;
+    total += rowTotal;
+    if (t.vsm==='va') va += rowTotal;
+  });
+  return total>0 ? Math.round((va/total)*100) : null;
+}
+
+// ─── DRAG NODE ────────────────────────────────────────────────────────────────
+function startDragNode(e, el, node) {
+  isDraggingNode = true;
+  const rect=el.getBoundingClientRect();
+  dragOffsetX=(e.clientX-rect.left)/scale; dragOffsetY=(e.clientY-rect.top)/scale;
+  function onMove(e) {
+    if (!isDraggingNode) return;
+    const r=canvas.getBoundingClientRect();
+    node.x=(e.clientX-r.left)/scale-dragOffsetX; node.y=(e.clientY-r.top)/scale-dragOffsetY;
+    el.style.left=node.x+'px'; el.style.top=node.y+'px'; renderConnections();
+  }
+  function onUp() { isDraggingNode=false; document.removeEventListener('mousemove',onMove); document.removeEventListener('mouseup',onUp); }
+  document.addEventListener('mousemove',onMove); document.addEventListener('mouseup',onUp);
+}
+function startDragNodeTouch(e, el, node) {
+  isDraggingNode = true;
+  const {x,y}=getClientXY(e), rect=el.getBoundingClientRect();
+  dragOffsetX=(x-rect.left)/scale; dragOffsetY=(y-rect.top)/scale;
+  function onMove(e) { e.preventDefault(); if(!isDraggingNode)return; const {x,y}=getClientXY(e); const r=canvas.getBoundingClientRect(); node.x=(x-r.left)/scale-dragOffsetX; node.y=(y-r.top)/scale-dragOffsetY; el.style.left=node.x+'px'; el.style.top=node.y+'px'; renderConnections(); }
+  function onUp() { isDraggingNode=false; document.removeEventListener('touchmove',onMove); document.removeEventListener('touchend',onUp); }
+  document.addEventListener('touchmove',onMove,{passive:false}); document.addEventListener('touchend',onUp);
+}
+
+// ─── SELECTION ────────────────────────────────────────────────────────────────
+function selectNode(id) {
+  if (selectedNodeId) { const p=document.getElementById(`node-${selectedNodeId}`); if(p) p.classList.remove('selected'); }
+  selectedNodeId=id;
+  const el=document.getElementById(`node-${id}`); if(el) el.classList.add('selected');
+  showProps(id);
+}
+canvas.addEventListener('mousedown', e => { if(e.target===canvas||e.target.tagName==='svg'||e.target===svg) { deselectAll(); if(isDrawingConnection) cancelConnection(); }});
+canvas.addEventListener('touchstart', e => { if(e.target===canvas||e.target.tagName==='svg'||e.target===svg) { deselectAll(); if(isDrawingConnection) cancelConnection(); }},{passive:true});
+function deselectAll() {
+  if(selectedNodeId){ const el=document.getElementById(`node-${selectedNodeId}`); if(el) el.classList.remove('selected'); }
+  selectedNodeId=null;
+  document.getElementById('propsEmpty').style.display='flex';
+  document.getElementById('propsForm').classList.remove('visible');
+  document.getElementById('propsSubtitle').textContent='Sélectionnez un bloc';
+}
+
+// ─── PROPS PANEL ──────────────────────────────────────────────────────────────
+function showProps(id) {
+  const node=nodes.find(n=>n.id===id); if(!node) return;
+  const config=BLOCK_CONFIG[node.type];
+  document.getElementById('propsEmpty').style.display='none';
+  document.getElementById('propsForm').classList.add('visible');
+  document.getElementById('propsSubtitle').textContent=config.label;
+  document.getElementById('propName').value=node.label;
+  document.getElementById('propCycle').value=node.cycle||'';
+  document.getElementById('propOps').value=node.ops||1;
+  document.getElementById('propCapacity').value=node.capacity||480;
+  document.getElementById('propTakt').value=node.takt||'';
+  document.getElementById('propVSM').value=node.vsm||'va';
+  document.getElementById('propQty').value=node.qty||'';
+  document.getElementById('propStockMax').value=node.stockMax||'';
+  document.getElementById('propDist').value=node.dist||'';
+  document.getElementById('pfCycle').style.display=config.hasTime?'block':'none';
+  document.getElementById('pfOps').style.display=config.hasOps?'block':'none';
+  document.getElementById('pfCapacity').style.display=config.hasTime?'block':'none';
+  document.getElementById('pfType').style.display='block';
+  document.getElementById('pfQty').style.display=config.hasQty?'block':'none';
+  document.getElementById('pfStockMax').style.display=config.hasQty?'block':'none';
+  document.getElementById('pfDist').style.display=config.hasDist?'block':'none';
+  document.getElementById('pfTakt').style.display=config.hasTime?'block':'none';
+  document.getElementById('openMosBtn').style.display=config.hasMOS?'block':'none';
+}
+
+['propName','propCycle','propOps','propCapacity','propTakt','propVSM','propQty','propStockMax','propDist'].forEach(id => {
+  document.getElementById(id).addEventListener('input', () => {
+    if(!selectedNodeId) return;
+    const node=nodes.find(n=>n.id===selectedNodeId); if(!node) return;
+    node.label=document.getElementById('propName').value||node.label;
+    node.cycle=parseFloat(document.getElementById('propCycle').value)||null;
+    node.ops=parseInt(document.getElementById('propOps').value)||1;
+    node.capacity=parseFloat(document.getElementById('propCapacity').value)||480;
+    node.takt=parseFloat(document.getElementById('propTakt').value)||null;
+    node.vsm=document.getElementById('propVSM').value;
+    node.qty=parseFloat(document.getElementById('propQty').value)||null;
+    node.stockMax=parseFloat(document.getElementById('propStockMax').value)||null;
+    node.dist=parseFloat(document.getElementById('propDist').value)||null;
+    refreshNodeDisplay(selectedNodeId);
+    renderConnections();
+    updateKPIs(); markDirty();
+  });
+});
+
+// ─── DELETE ───────────────────────────────────────────────────────────────────
+function deleteSelected() {
+  if(!selectedNodeId) return;
+  document.getElementById(`node-${selectedNodeId}`)?.remove();
+  nodes=nodes.filter(n=>n.id!==selectedNodeId);
+  connections=connections.filter(c=>c.from!==selectedNodeId&&c.to!==selectedNodeId);
+  selectedNodeId=null;
+  document.getElementById('propsEmpty').style.display='flex';
+  document.getElementById('propsForm').classList.remove('visible');
+  document.getElementById('propsSubtitle').textContent='Sélectionnez un bloc';
+  renderConnections(); updateKPIs(); updateHint();
+}
+
+// ─── CONNECTIONS ──────────────────────────────────────────────────────────────
+function startConnection(nodeId, e) {
+  isDrawingConnection=true; connectionStart={nodeId};
+  const portEl=document.getElementById(`port-out-${nodeId}`);
+  const rect=portEl.getBoundingClientRect(), r=canvas.getBoundingClientRect();
+  connectionStart.x=(rect.left+rect.width/2-r.left)/scale; connectionStart.y=(rect.top+rect.height/2-r.top)/scale;
+  drawingPath=document.createElementNS('http://www.w3.org/2000/svg','path');
+  drawingPath.setAttribute('fill','none'); drawingPath.setAttribute('stroke','rgba(0,229,255,0.5)');
+  drawingPath.setAttribute('stroke-width','2'); drawingPath.setAttribute('stroke-dasharray','6,3');
+  drawingSvg.appendChild(drawingPath);
+  function onMove(e) { if(!isDrawingConnection||!drawingPath)return; const r=canvas.getBoundingClientRect(); drawingPath.setAttribute('d',makeCurve(connectionStart.x,connectionStart.y,(e.clientX-r.left)/scale,(e.clientY-r.top)/scale)); }
+  function onUp() { document.removeEventListener('mousemove',onMove); document.removeEventListener('mouseup',onUp); if(isDrawingConnection)cancelConnection(); }
+  document.addEventListener('mousemove',onMove); document.addEventListener('mouseup',onUp);
+}
+function startConnectionTouch(nodeId, e) {
+  isDrawingConnection=true; connectionStart={nodeId};
+  const portEl=document.getElementById(`port-out-${nodeId}`);
+  const rect=portEl.getBoundingClientRect(), cr=canvas.getBoundingClientRect();
+  connectionStart.x=(rect.left+rect.width/2-cr.left)/scale; connectionStart.y=(rect.top+rect.height/2-cr.top)/scale;
+  drawingPath=document.createElementNS('http://www.w3.org/2000/svg','path');
+  drawingPath.setAttribute('fill','none'); drawingPath.setAttribute('stroke','rgba(0,229,255,0.5)');
+  drawingPath.setAttribute('stroke-width','2'); drawingPath.setAttribute('stroke-dasharray','6,3');
+  drawingSvg.appendChild(drawingPath);
+  function onMove(e) { e.preventDefault(); if(!isDrawingConnection||!drawingPath)return; const {x,y}=getClientXY(e); const cr=canvas.getBoundingClientRect(); drawingPath.setAttribute('d',makeCurve(connectionStart.x,connectionStart.y,(x-cr.left)/scale,(y-cr.top)/scale)); const els=document.elementsFromPoint(x,y); const pi=els.find(el=>el.classList&&el.classList.contains('port-in')); if(pi){const tid=parseInt(pi.id.replace('port-in-','')); if(tid&&tid!==nodeId){endConnection(tid); document.removeEventListener('touchmove',onMove); document.removeEventListener('touchend',onUp); return;}} }
+  function onUp() { document.removeEventListener('touchmove',onMove); document.removeEventListener('touchend',onUp); if(isDrawingConnection)cancelConnection(); }
+  document.addEventListener('touchmove',onMove,{passive:false}); document.addEventListener('touchend',onUp);
+}
+function endConnection(toId) {
+  if(!isDrawingConnection)return;
+  const fromId=connectionStart.nodeId;
+  if(!connections.find(c=>c.from===fromId&&c.to===toId)&&fromId!==toId) connections.push({from:fromId,to:toId});
+  cancelConnection(); renderConnections(); updateKPIs();
+}
+function cancelConnection() { isDrawingConnection=false; connectionStart=null; if(drawingPath){drawingPath.remove();drawingPath=null;} }
+function makeCurve(x1,y1,x2,y2) { const cx=(x1+x2)/2; return `M ${x1} ${y1} C ${cx} ${y1}, ${cx} ${y2}, ${x2} ${y2}`; }
+function getPortPos(nodeId, portType) {
+  const portEl=document.getElementById(`port-${portType}-${nodeId}`); if(!portEl)return null;
+  const rect=portEl.getBoundingClientRect(), r=canvas.getBoundingClientRect();
+  return {x:(rect.left+rect.width/2-r.left)/scale, y:(rect.top+rect.height/2-r.top)/scale};
+}
+function renderConnections() {
+  svg.innerHTML='';
+  connections.forEach(conn => {
+    const from=getPortPos(conn.from,'out'), to=getPortPos(conn.to,'in'); if(!from||!to)return;
+    const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d',makeCurve(from.x,from.y,to.x,to.y)); path.setAttribute('class','connection-path active'); svg.appendChild(path);
+    const angle=Math.atan2(to.y-from.y,to.x-from.x), arr=document.createElementNS('http://www.w3.org/2000/svg','polygon');
+    const ax=to.x-6*Math.cos(angle), ay=to.y-6*Math.sin(angle);
+    arr.setAttribute('points',`${to.x},${to.y} ${ax-4*Math.sin(angle)},${ay+4*Math.cos(angle)} ${ax+4*Math.sin(angle)},${ay-4*Math.cos(angle)}`);
+    arr.setAttribute('fill','rgba(0,229,255,0.6)'); svg.appendChild(arr);
+  });
+}
+
+// ─── KPIs ─────────────────────────────────────────────────────────────────────
+function updateKPIs() {
+  document.getElementById('kpiPostes').textContent = nodes.length;
+
+  const workNodes = nodes.filter(n=>n.type==='work'||n.type==='control');
+  const cycles = workNodes.map(n=>({node:n, cycle:getEffectiveCycle(n)})).filter(c=>c.cycle);
+
+  // Lead Time = sum of all effective cycles + stocks waiting
+  const stockTime = nodes.filter(n=>n.type==='stock').reduce((s,n)=>s+(n.qty||0)*2,0); // rough estimate
+  const leadTime = cycles.reduce((s,c)=>s+c.cycle,0) + stockTime;
+  document.getElementById('kpiLead').textContent = leadTime>0 ? fmtTime(leadTime) : '—';
+
+  // VA / NVA global
+  let totalVA=0, totalNVA=0;
+  nodes.forEach(n => {
+    const c=getEffectiveCycle(n); if(!c)return;
+    if (n.mos&&n.mos.tasks.length>0) {
+      n.mos.tasks.forEach(t=>{
+        const tt=(parseFloat(t.manual)||0)+(parseFloat(t.move)||0)+(parseFloat(t.wait)||0);
+        if(t.vsm==='va') totalVA+=tt; else totalNVA+=tt;
+      });
+    } else {
+      if(n.vsm==='va') totalVA+=c; else totalNVA+=c;
+    }
+  });
+  const totalTime=totalVA+totalNVA;
+  if(totalTime>0) {
+    const vaP=Math.round((totalVA/totalTime)*100);
+    document.getElementById('kpiVA').textContent = vaP+'%';
+    document.getElementById('kpiVA').className = 'kpi-value '+(vaP>=60?'ok':'warn');
+    const bar=document.getElementById('vanaBar');
+    bar.children[0].style.width=vaP+'%'; bar.children[1].style.width=(100-vaP)+'%';
+  } else {
+    document.getElementById('kpiVA').textContent='—';
+    document.getElementById('kpiVA').className='kpi-value neutral';
+  }
+
+  if (cycles.length===0) {
+    ['kpiTakt','kpiCycle','kpiBottleneck','kpiRendement','kpiCharge'].forEach(id=>{ const el=document.getElementById(id); el.textContent='—'; el.className='kpi-value neutral'; });
+    document.getElementById('kpiBottleneckSub').innerHTML='';
+    nodes.forEach(n=>{ const el=document.getElementById(`node-${n.id}`); if(el){el.classList.remove('bottleneck');} const a=document.getElementById(`alert-${n.id}`); if(a)a.style.display='none'; });
+    return;
+  }
+
+  const maxCycleObj = cycles.reduce((a,b)=>b.cycle>a.cycle?b:a);
+  const maxCycle = maxCycleObj.cycle;
+  const bottleneck = maxCycleObj.node;
+
+  // Takt time: use node's takt, or global estimate
+  const taktSrc = nodes.find(n=>n.takt);
+  const takt = taktSrc ? taktSrc.takt : Math.round(cycles.reduce((s,c)=>s+c.cycle,0)/cycles.length*1.15);
+  const isOk = maxCycle<=takt;
+  const rendement = Math.round((takt/maxCycle)*100);
+
+  document.getElementById('kpiTakt').textContent = takt+'s';
+  document.getElementById('kpiTakt').className = 'kpi-value neutral';
+  const cycleEl=document.getElementById('kpiCycle');
+  cycleEl.textContent=maxCycle+'s'; cycleEl.className='kpi-value '+(isOk?'ok':'warn');
+  const bEl=document.getElementById('kpiBottleneck');
+  bEl.textContent=bottleneck.label; bEl.className='kpi-value '+(isOk?'ok':'warn');
+  bEl.style.fontSize='0.82rem';
+  document.getElementById('kpiBottleneckSub').innerHTML=isOk?'<span style="color:var(--ok);font-size:0.6rem">✓ Dans les limites</span>':'<span class="kpi-alert-tag">⚠ Dépasse le takt</span>';
+  const rEl=document.getElementById('kpiRendement');
+  rEl.textContent=rendement+'%'; rEl.className='kpi-value '+(rendement>=85?'ok':'warn');
+
+  // Taux de charge moyen
+  const avgCharge = cycles.reduce((s,c)=>{
+    const cap=c.node.capacity||480;
+    return s+(c.cycle/cap*100);
+  },0)/cycles.length;
+  const chargeEl=document.getElementById('kpiCharge');
+  chargeEl.textContent=Math.round(avgCharge)+'%'; chargeEl.className='kpi-value '+(avgCharge>100?'warn':avgCharge>80?'ok':'neutral');
+
+  nodes.forEach(n=>{
+    const el=document.getElementById(`node-${n.id}`);
+    const alertEl=document.getElementById(`alert-${n.id}`);
+    const isBottleneck=n.id===bottleneck.id&&!isOk;
+    if(el){el.classList.toggle('bottleneck',isBottleneck);}
+    if(alertEl) alertEl.style.display=isBottleneck?'inline':'none';
+  });
+}
+
+function fmtTime(s) {
+  if(s<60) return s+'s';
+  if(s<3600) return Math.floor(s/60)+'min'+(s%60?s%60+'s':'');
+  return Math.floor(s/3600)+'h'+(Math.floor((s%3600)/60)?Math.floor((s%3600)/60)+'min':'');
+}
+
+// ─── ZOOM ─────────────────────────────────────────────────────────────────────
+function zoom(factor) {
+  scale=Math.min(2,Math.max(0.4,scale*factor));
+  canvas.style.backgroundSize=`${32*scale}px ${32*scale}px`;
+  document.getElementById('zoomInfo').textContent=Math.round(scale*100)+'%';
+  nodes.forEach(n=>{const el=document.getElementById(`node-${n.id}`); if(el){el.style.left=n.x*scale+'px';el.style.top=n.y*scale+'px';el.style.transform=`scale(${scale})`;el.style.transformOrigin='top left';}});
+  renderConnections();
+}
+function resetZoom() {
+  scale=1; document.getElementById('zoomInfo').textContent='100%';
+  canvas.style.backgroundSize='32px 32px';
+  nodes.forEach(n=>{const el=document.getElementById(`node-${n.id}`); if(el){el.style.left=n.x+'px';el.style.top=n.y+'px';el.style.transform='';}});
+  renderConnections();
+}
+
+// ─── HINT / SAVE ─────────────────────────────────────────────────────────────
+function updateHint() { document.getElementById('canvasHint').style.opacity=nodes.length===0?'1':'0'; }
+let dirty=false;
+function markDirty() { dirty=true; document.getElementById('saveStatus').textContent='Non sauvegardé'; document.getElementById('saveStatus').style.color='var(--warn)'; }
+function saveFlux() { dirty=false; document.getElementById('saveStatus').textContent='Sauvegardé'; document.getElementById('saveStatus').style.color='var(--ok)'; }
+document.getElementById('fluxTitle').addEventListener('input',markDirty);
+
+// ─── MOS MODAL ────────────────────────────────────────────────────────────────
+function openMOSForNode(id) { currentMOSNodeId=id; openMOS(); }
+function openMOS() {
+  if(!selectedNodeId&&!currentMOSNodeId) return;
+  const id=currentMOSNodeId||selectedNodeId;
+  currentMOSNodeId=id;
+  const node=nodes.find(n=>n.id===id); if(!node) return;
+  document.getElementById('mosModalTitle').textContent='MOS — '+node.label;
+  document.getElementById('mosProcessName').value=node.mos.processName||'';
+  document.getElementById('mosAuthor').value=node.mos.author||'';
+  document.getElementById('mosTaktTime').value=node.mos.taktTime||'';
+  document.getElementById('mosNbPieces').value=node.mos.nbPieces||1;
+  renderTasksList(node.mos.tasks);
+  renderNCList(node.mos.nc);
+  updateMOSCalcs();
+  document.getElementById('mosOverlay').classList.add('open');
+}
+function closeMOS() { document.getElementById('mosOverlay').classList.remove('open'); currentMOSNodeId=null; }
+function saveMOS() {
+  const node=nodes.find(n=>n.id===currentMOSNodeId); if(!node)return;
+  node.mos.processName=document.getElementById('mosProcessName').value;
+  node.mos.author=document.getElementById('mosAuthor').value;
+  node.mos.taktTime=parseFloat(document.getElementById('mosTaktTime').value)||null;
+  node.mos.nbPieces=parseInt(document.getElementById('mosNbPieces').value)||1;
+  // Cycle auto-update
+  const totalManual=node.mos.tasks.reduce((s,t)=>s+(parseFloat(t.manual)||0),0);
+  const totalMove=node.mos.tasks.reduce((s,t)=>s+(parseFloat(t.move)||0),0);
+  const totalWait=node.mos.tasks.reduce((s,t)=>s+(parseFloat(t.wait)||0),0);
+  // cycle = manual + move + wait (machine runs in parallel, not added to operator cycle)
+  if(totalManual+totalMove+totalWait>0) node.cycle=null; // will use MOS computed value
+  refreshNodeDisplay(currentMOSNodeId);
+  updateKPIs(); markDirty();
+  closeMOS();
+}
+
+// ─── TASKS ────────────────────────────────────────────────────────────────────
+let taskIdCounter=0;
+function addTask(data={}) {
+  const node=nodes.find(n=>n.id===currentMOSNodeId); if(!node)return;
+  const task={id:++taskIdCounter, desc:data.desc||'', manual:data.manual||'', machine:data.machine||'', move:data.move||'', wait:data.wait||'', vsm:data.vsm||'va'};
+  node.mos.tasks.push(task);
+  renderTasksList(node.mos.tasks);
+  updateMOSCalcs();
+}
+function removeTask(taskId) {
+  const node=nodes.find(n=>n.id===currentMOSNodeId); if(!node)return;
+  node.mos.tasks=node.mos.tasks.filter(t=>t.id!==taskId);
+  renderTasksList(node.mos.tasks); updateMOSCalcs();
+}
+function renderTasksList(tasks) {
+  const container=document.getElementById('tasksList');
+  container.innerHTML='';
+  let cumul=0;
+  tasks.forEach((task,i)=>{
+    const m=parseFloat(task.manual)||0, mc=parseFloat(task.machine)||0, mv=parseFloat(task.move)||0, w=parseFloat(task.wait)||0;
+    cumul += m+mv+w; // machine runs parallel
+    const row=document.createElement('div');
+    row.className='task-row'+(task.desc?' has-data':'')+(task.vsm?' '+task.vsm:'');
+    row.innerHTML=`
+      <div class="task-num">${i+1}</div>
+      <div>
+        <input class="task-input" placeholder="Description de la tâche…" value="${task.desc}" oninput="updateTask(${task.id},'desc',this.value)">
+        <div class="task-type-tag">
+          <span class="type-badge va-tag ${task.vsm==='va'?'active':''}" onclick="setTaskVSM(${task.id},'va')">VA</span>
+          <span class="type-badge nva-tag ${task.vsm==='nva'?'active':''}" onclick="setTaskVSM(${task.id},'nva')">NVA</span>
+        </div>
+      </div>
+      <input type="number" class="task-time-input manual-input" placeholder="0" value="${task.manual}" oninput="updateTask(${task.id},'manual',this.value)" min="0">
+      <input type="number" class="task-time-input machine-input" placeholder="0" value="${task.machine}" oninput="updateTask(${task.id},'machine',this.value)" min="0">
+      <input type="number" class="task-time-input move-input" placeholder="0" value="${task.move}" oninput="updateTask(${task.id},'move',this.value)" min="0">
+      <input type="number" class="task-time-input wait-input" placeholder="0" value="${task.wait}" oninput="updateTask(${task.id},'wait',this.value)" min="0">
+      <div class="task-cumul">${cumul>0?cumul+'s':''}</div>
+      <button class="task-del" onclick="removeTask(${task.id})">✕</button>`;
+    container.appendChild(row);
+  });
+}
+function updateTask(taskId, field, val) {
+  const node=nodes.find(n=>n.id===currentMOSNodeId); if(!node)return;
+  const task=node.mos.tasks.find(t=>t.id===taskId); if(!task)return;
+  task[field]=val;
+  renderTasksList(node.mos.tasks); updateMOSCalcs();
+}
+function setTaskVSM(taskId, vsm) {
+  const node=nodes.find(n=>n.id===currentMOSNodeId); if(!node)return;
+  const task=node.mos.tasks.find(t=>t.id===taskId); if(!task)return;
+  task.vsm=vsm; renderTasksList(node.mos.tasks); updateMOSCalcs();
+}
+
+// Non-cyclés
+function addNC(data={}) {
+  const node=nodes.find(n=>n.id===currentMOSNodeId); if(!node)return;
+  node.mos.nc.push({id:++taskIdCounter, desc:data.desc||'', temps:data.temps||'', pieces:data.pieces||'', freq:data.freq||''});
+  renderNCList(node.mos.nc);
+}
+function renderNCList(nc) {
+  const container=document.getElementById('ncList'); container.innerHTML='';
+  nc.forEach((item,i)=>{
+    const row=document.createElement('div');
+    row.className='nc-row';
+    row.innerHTML=`
+      <input class="task-input" placeholder="Activité…" value="${item.desc}" oninput="updateNC(${item.id},'desc',this.value)">
+      <input type="number" class="task-time-input" placeholder="0" value="${item.temps}" oninput="updateNC(${item.id},'temps',this.value)">
+      <input type="number" class="task-time-input" placeholder="0" value="${item.pieces}" oninput="updateNC(${item.id},'pieces',this.value)">
+      <input type="number" class="task-time-input" placeholder="1" value="${item.freq}" oninput="updateNC(${item.id},'freq',this.value)">
+      <button class="task-del" onclick="removeNC(${item.id})">✕</button>`;
+    container.appendChild(row);
+  });
+}
+function updateNC(id,field,val) { const node=nodes.find(n=>n.id===currentMOSNodeId); if(!node)return; const item=node.mos.nc.find(n=>n.id===id); if(item) item[field]=val; }
+function removeNC(id) { const node=nodes.find(n=>n.id===currentMOSNodeId); if(!node)return; node.mos.nc=node.mos.nc.filter(n=>n.id!==id); renderNCList(node.mos.nc); }
+
+function updateMOSCalcs() {
+  const node=nodes.find(n=>n.id===currentMOSNodeId); if(!node)return;
+  const tasks=node.mos.tasks;
+  let manual=0,machine=0,move=0,wait=0,va=0,nva=0;
+  tasks.forEach(t=>{
+    const m=parseFloat(t.manual)||0, mc=parseFloat(t.machine)||0, mv=parseFloat(t.move)||0, w=parseFloat(t.wait)||0;
+    manual+=m; machine+=mc; move+=mv; wait+=w;
+    const tt=m+mv+w;
+    if(t.vsm==='va') va+=tt; else nva+=tt;
+  });
+  const cycle=manual+move+wait; // operator cycle
+  const total=va+nva;
+  const vaP=total>0?Math.round(va/total*100):0;
+
+  document.getElementById('mosTotal-manual').textContent=manual+'s';
+  document.getElementById('mosTotal-machine').textContent=machine+'s';
+  document.getElementById('mosTotal-move').textContent=move+'s';
+  document.getElementById('mosTotal-wait').textContent=wait+'s';
+  document.getElementById('mosTotal-cycle').textContent=cycle+'s';
+  document.getElementById('mosTotal-va').textContent=vaP+'%';
+  document.getElementById('mosFooterCycle').textContent=cycle+'s';
+  document.getElementById('mosFooterVA').textContent=va+'s ('+vaP+'%)';
+  document.getElementById('mosFooterNVA').textContent=nva+'s ('+(100-vaP)+'%)';
+
+  // Gantt
+  if(cycle+machine>0) {
+    const tot=manual+machine+move+wait||1;
+    document.getElementById('gantt-manual').style.width=(manual/tot*100)+'%';
+    document.getElementById('gantt-machine').style.width=(machine/tot*100)+'%';
+    document.getElementById('gantt-move').style.width=(move/tot*100)+'%';
+    document.getElementById('gantt-wait').style.width=(wait/tot*100)+'%';
+  }
+  renderTasksList(tasks);
+}
+
+// ─── DEMO ─────────────────────────────────────────────────────────────────────
+function loadDemo() {
+  const demo=[
+    {type:'work', label:'Approvisionnement', x:30, y:110, cycle:42, ops:1, vsm:'va', capacity:480, takt:60,
+      mos:{processName:'Appro',author:'',taktTime:60,nbPieces:1,tasks:[
+        {id:++taskIdCounter,desc:'Récupérer les pièces en stock',manual:20,machine:0,move:15,wait:0,vsm:'nva'},
+        {id:++taskIdCounter,desc:'Préparer le poste',manual:7,machine:0,move:0,wait:0,vsm:'va'},
+      ],nc:[]}},
+    {type:'stock', label:'Stock entrant', x:220, y:110, qty:30, stockMax:50, vsm:'nva'},
+    {type:'work', label:'Assemblage', x:390, y:110, cycle:78, ops:2, vsm:'va', capacity:480, takt:60,
+      mos:{processName:'Assemblage',author:'',taktTime:60,nbPieces:1,tasks:[
+        {id:++taskIdCounter,desc:'Démoulage 2 tubes proto',manual:240,machine:0,move:0,wait:0,vsm:'va'},
+        {id:++taskIdCounter,desc:'Chargement + gomme dans moule',manual:570,machine:2700,move:5,wait:0,vsm:'va'},
+        {id:++taskIdCounter,desc:'Dépose primaire sur tubes',manual:180,machine:0,move:5,wait:0,vsm:'va'},
+        {id:++taskIdCounter,desc:'Ébarbage 1er tube',manual:300,machine:0,move:0,wait:0,vsm:'va'},
+        {id:++taskIdCounter,desc:'Ébarbage 2nd tube',manual:300,machine:0,move:5,wait:0,vsm:'va'},
+        {id:++taskIdCounter,desc:'Dépose secondaire',manual:180,machine:0,move:30,wait:0,vsm:'va'},
+      ],nc:[]}},
+    {type:'control', label:'Contrôle qualité', x:570, y:110, cycle:35, ops:1, vsm:'va', capacity:480},
+    {type:'transport', label:'Transfert sortie', x:750, y:110, dist:20, vsm:'nva', cycle:12},
+    {type:'work', label:'Expédition', x:920, y:110, cycle:28, ops:1, vsm:'va', capacity:480},
+  ];
+  demo.forEach(d=>{
+    const node=addNode(d.type,d.label,d.x,d.y);
+    Object.assign(node,d);
+    if(d.mos) node.mos=d.mos;
+    refreshNodeDisplay(node.id);
+  });
+  for(let i=0;i<nodes.length-1;i++) connections.push({from:nodes[i].id,to:nodes[i+1].id});
+  setTimeout(()=>{renderConnections();updateKPIs();updateHint();},80);
+}
+
+loadDemo();
+</script>
+</body>
+</html>
