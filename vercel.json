@@ -1,0 +1,15 @@
+{
+  "rewrites": [
+    { "source": "/dashboard", "destination": "/pages/dashboard.html" },
+    { "source": "/editor", "destination": "/pages/editor.html" }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        { "key": "X-Content-Type-Options", "value": "nosniff" },
+        { "key": "X-Frame-Options", "value": "DENY" }
+      ]
+    }
+  ]
+}
