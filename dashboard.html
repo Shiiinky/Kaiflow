@@ -861,7 +861,7 @@ body {
         </div>
       </div>
 
-      <div class="flux-grid">
+      <div class="flux-grid" id="fluxGrid" style="display:none">
 
         <!-- FLUX 1 — Alert -->
         <div class="flux-card has-alert">
@@ -1256,11 +1256,28 @@ body {
     const { data, error } = await supabaseClient
       .from('flux').select('*').eq('user_id', userId)
       .order('updated_at', { ascending: false });
-    if (error || !data || data.length === 0) return;
+    if (error || !data || data.length === 0) {
+      const grid = document.querySelector('.flux-grid');
+      if (grid) {
+        grid.style.display = 'grid';
+        grid.innerHTML = '';
+        const emptyCard = document.createElement('div');
+        emptyCard.className = 'flux-card';
+        emptyCard.onclick = openModal;
+        emptyCard.style.cssText = 'border-style:dashed;display:flex;align-items:center;justify-content:center;min-height:190px;grid-column:1/-1;cursor:pointer;opacity:0.7;';
+        emptyCard.innerHTML = '<div style="text-align:center;color:var(--muted2);"><div style="font-size:2.5rem;margin-bottom:0.75rem">〰</div><div style="font-size:1rem;font-weight:600;margin-bottom:0.3rem">Aucun flux pour le moment</div><div style="font-size:0.82rem;color:var(--muted)">Cliquez ici pour créer votre premier flux</div></div>';
+        grid.appendChild(emptyCard);
+        // Update counter
+        const countEl = document.querySelector('.summary-card.c-accent .card-value');
+        if (countEl) countEl.textContent = '0';
+      }
+      return;
+    }
 
     const grid = document.querySelector('.flux-grid');
     if (!grid) return;
     grid.innerHTML = '';
+    grid.style.display = 'grid';
 
     data.forEach(flux => {
       const nodes = JSON.parse(flux.nodes || '[]');
