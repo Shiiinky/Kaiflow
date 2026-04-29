@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -708,27 +707,37 @@ function renderConnections() {
   });
 }
 
-// ─── ALGORITHME PERT ET CALCULS GLOBAUX ─────────────────────────────────────
-function calculateCriticalPathLeadTime() {
+// ─── ALGORITHME PERT ET LOI DE LITTLE ───────────────────────────────────────
+function calculateCriticalPathLeadTime(cadence) {
   if (nodes.length === 0) return 0;
   const memo = {};
+  
   function getNodeWeight(node) {
     if (!node) return 0;
-    if (node.type === 'stock') return (node.qty || 0) * 2; 
+    // Loi de Little : Temps d'attente = Encours * Cadence d'écoulement
+    if (node.type === 'stock') return (node.qty || 0) * cadence; 
     return getEffectiveCycle(node) || 0;
   }
+  
   function getLongestPath(nodeId, visited) {
     if (visited.has(nodeId)) return 0;
     if (memo[nodeId] !== undefined) return memo[nodeId];
     visited.add(nodeId);
+    
     const childrenIds = connections.filter(c => c.from === nodeId).map(c => c.to);
     let maxChildTime = 0;
-    for (const childId of childrenIds) maxChildTime = Math.max(maxChildTime, getLongestPath(childId, visited));
+    for (const childId of childrenIds) {
+      maxChildTime = Math.max(maxChildTime, getLongestPath(childId, visited));
+    }
+    
     visited.delete(nodeId);
     const time = getNodeWeight(nodes.find(n => n.id === nodeId)) + maxChildTime;
-    memo[nodeId] = time; return time;
+    memo[nodeId] = time; 
+    return time;
   }
-  let maxLeadTime = 0; nodes.forEach(n => { maxLeadTime = Math.max(maxLeadTime, getLongestPath(n.id, new Set())); });
+  
+  let maxLeadTime = 0; 
+  nodes.forEach(n => { maxLeadTime = Math.max(maxLeadTime, getLongestPath(n.id, new Set())); });
   return maxLeadTime;
 }
 
@@ -737,53 +746,95 @@ function updateKPIs() {
   const workNodes = nodes.filter(n=>n.type==='work'||n.type==='control');
   const cycles = workNodes.map(n=>({node:n, cycle:getEffectiveCycle(n)})).filter(c=>c.cycle > 0);
   
-  const leadTime = calculateCriticalPathLeadTime();
-  document.getElementById('kpiLead').textContent = leadTime > 0 ? (leadTime<60?leadTime+'s':Math.floor(leadTime/60)+'min'+(leadTime%60?leadTime%60+'s':'')) : '—';
+  // 1. Déterminer les paramètres de flux
+  const takt = getGlobalTaktTime();
+  let maxCycle = 0, bottleneck = null;
   
+  if (cycles.length > 0) {
+    const maxCycleObj = cycles.reduce((a,b)=>b.cycle>a.cycle?b:a);
+    maxCycle = maxCycleObj.cycle;
+    bottleneck = maxCycleObj.node;
+  }
+
+  // 2. Cadence réelle (L'usine est bridée par le goulot OU la demande client)
+  const cadenceReelle = Math.max(takt, maxCycle);
+
+  // 3. Calcul du Lead Time via PERT + Loi de Little
+  const leadTime = calculateCriticalPathLeadTime(cadenceReelle);
+  
+  // Formatage du Lead Time (Jours / Heures / Minutes)
+  if (leadTime > 0) {
+    let ltText = '';
+    if (leadTime > 86400) ltText = Math.floor(leadTime/86400) + 'j ' + Math.floor((leadTime%86400)/3600) + 'h';
+    else if (leadTime > 3600) ltText = Math.floor(leadTime/3600) + 'h ' + Math.floor((leadTime%3600)/60) + 'min';
+    else if (leadTime > 60) ltText = Math.floor(leadTime/60) + 'min ' + (leadTime%60) + 's';
+    else ltText = leadTime + 's';
+    document.getElementById('kpiLead').textContent = ltText;
+  } else {
+    document.getElementById('kpiLead').textContent = '—';
+  }
+  
+  // 4. Calcul ratio VA / NVA
   let totalVA=0, totalNVA=0;
   nodes.forEach(n => {
-    const c = getEffectiveCycle(n); if(c === 0 && n.type !== 'stock') return; 
+    const c = getEffectiveCycle(n); 
+    if(c === 0 && n.type !== 'stock') return; 
+    
     if (n.mos && n.mos.tasks.length > 0) {
-      n.mos.tasks.forEach(t=>{ const tt=(parseFloat(t.manual)||0)+(parseFloat(t.move)||0)+(parseFloat(t.wait)||0); if(t.vsm==='va') totalVA+=tt; else totalNVA+=tt; });
+      n.mos.tasks.forEach(t=>{ 
+        const tt=(parseFloat(t.manual)||0)+(parseFloat(t.move)||0)+(parseFloat(t.wait)||0); 
+        if(t.vsm==='va') totalVA+=tt; else totalNVA+=tt; 
+      });
     } else {
-      let weight = c; if (n.type === 'stock') weight = (n.qty || 0) * 2;
-      if (weight > 0) { if(n.vsm==='va') totalVA+=weight; else totalNVA+=weight; }
+      let weight = c; 
+      if (n.type === 'stock') weight = (n.qty || 0) * cadenceReelle;
+      if (weight > 0) { 
+        if(n.vsm==='va') totalVA+=weight; else totalNVA+=weight; 
+      }
     }
   });
   
   const totalTime=totalVA+totalNVA;
   if(totalTime>0) {
     const vaP=Math.round((totalVA/totalTime)*100);
-    document.getElementById('kpiVA').textContent = vaP+'%'; document.getElementById('kpiVA').className = 'kpi-value '+(vaP>=60?'ok':'warn');
-    const bar=document.getElementById('vanaBar'); bar.children[0].style.width=vaP+'%'; bar.children[1].style.width=(100-vaP)+'%';
-  } else { document.getElementById('kpiVA').textContent='—'; document.getElementById('kpiVA').className='kpi-value neutral'; }
+    document.getElementById('kpiVA').textContent = vaP+'%'; 
+    document.getElementById('kpiVA').className = 'kpi-value '+(vaP>=60?'ok':'warn');
+    const bar=document.getElementById('vanaBar'); 
+    bar.children[0].style.width=vaP+'%'; 
+    bar.children[1].style.width=(100-vaP)+'%';
+  } else { 
+    document.getElementById('kpiVA').textContent='—'; 
+    document.getElementById('kpiVA').className='kpi-value neutral'; 
+  }
 
+  // 5. Affichage des autres KPIs
   if (cycles.length===0) {
     ['kpiTakt','kpiCycle','kpiBottleneck','kpiRendement','kpiCharge'].forEach(id=>{ document.getElementById(id).textContent='—'; document.getElementById(id).className='kpi-value neutral'; });
-    document.getElementById('kpiBottleneckSub').innerHTML=''; nodes.forEach(n=>{ document.getElementById(`node-${n.id}`)?.classList.remove('bottleneck'); document.getElementById(`alert-${n.id}`).style.display='none'; });
+    document.getElementById('kpiBottleneckSub').innerHTML=''; 
+    nodes.forEach(n=>{ document.getElementById(`node-${n.id}`)?.classList.remove('bottleneck'); document.getElementById(`alert-${n.id}`).style.display='none'; });
     return;
   }
   
-  const maxCycleObj = cycles.reduce((a,b)=>b.cycle>a.cycle?b:a);
-  const maxCycle = maxCycleObj.cycle, bottleneck = maxCycleObj.node;
-  
-  // Utilisation de la nouvelle fonction Takt Net
-  const takt = getGlobalTaktTime();
   const isOk = maxCycle<=takt, rendement = Math.round((takt/maxCycle)*100);
   
   document.getElementById('kpiTakt').textContent = takt+'s'; 
-  document.getElementById('kpiCycle').textContent=maxCycle+'s'; document.getElementById('kpiCycle').className='kpi-value '+(isOk?'ok':'warn');
-  document.getElementById('kpiBottleneck').textContent=bottleneck.label; document.getElementById('kpiBottleneck').className='kpi-value '+(isOk?'ok':'warn');
+  document.getElementById('kpiCycle').textContent=maxCycle+'s'; 
+  document.getElementById('kpiCycle').className='kpi-value '+(isOk?'ok':'warn');
+  document.getElementById('kpiBottleneck').textContent=bottleneck.label; 
+  document.getElementById('kpiBottleneck').className='kpi-value '+(isOk?'ok':'warn');
   document.getElementById('kpiBottleneckSub').innerHTML=isOk?'<span style="color:var(--ok);font-size:0.6rem">✓ Dans les limites</span>':'<span class="kpi-alert-tag">⚠ Dépasse le takt net</span>';
-  document.getElementById('kpiRendement').textContent=rendement+'%'; document.getElementById('kpiRendement').className='kpi-value '+(rendement>=85?'ok':'warn');
+  document.getElementById('kpiRendement').textContent=rendement+'%'; 
+  document.getElementById('kpiRendement').className='kpi-value '+(rendement>=85?'ok':'warn');
   
   const avgCharge = cycles.reduce((s,c)=> s+(c.cycle/(c.node.capacity||480)*100),0)/cycles.length;
-  document.getElementById('kpiCharge').textContent=Math.round(avgCharge)+'%'; document.getElementById('kpiCharge').className='kpi-value '+(avgCharge>100?'warn':avgCharge>80?'ok':'neutral');
+  document.getElementById('kpiCharge').textContent=Math.round(avgCharge)+'%'; 
+  document.getElementById('kpiCharge').className='kpi-value '+(avgCharge>100?'warn':avgCharge>80?'ok':'neutral');
   
   nodes.forEach(n=>{
     const isBottleneck=n.id===bottleneck.id&&!isOk;
     document.getElementById(`node-${n.id}`)?.classList.toggle('bottleneck',isBottleneck);
-    const alertEl=document.getElementById(`alert-${n.id}`); if(alertEl) alertEl.style.display=isBottleneck?'inline':'none';
+    const alertEl=document.getElementById(`alert-${n.id}`); 
+    if(alertEl) alertEl.style.display=isBottleneck?'inline':'none';
   });
 }
 
@@ -881,6 +932,10 @@ async function initEditor() {
     const { data, error } = await supabaseClient.from('flux').select('*').eq('id', fluxId).eq('user_id', currentUser.id).single();
     if (data && !error) {
       currentFluxId = data.id; document.getElementById('fluxTitle').value = data.nom;
+      
+      // Récupération des paramètres globaux s'ils existent (tu devras peut-être ajouter ces colonnes en DB plus tard)
+      if (data.takt_time_cible) { globalSettings.demand = Math.round((globalSettings.openingTime * 60) / data.takt_time_cible); }
+
       (Array.isArray(data.nodes) ? data.nodes : JSON.parse(data.nodes||'[]')).forEach(n => { const node = addNode(n.type, n.label, n.x, n.y); Object.assign(node, n); if (n.mos) node.mos = n.mos; refreshNodeDisplay(node.id); });
       connections.push(...(Array.isArray(data.connections) ? data.connections : JSON.parse(data.connections||'[]')));
       setTimeout(() => { renderConnections(); updateKPIs(); updateHint(); }, 80);
