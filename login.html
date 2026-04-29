@@ -143,7 +143,7 @@ body::before {
   <div class="field">
     <label>Mot de passe</label>
     <input type="password" id="password" placeholder="••••••••" autocomplete="current-password">
-    <div class="forgot"><a href="#">Mot de passe oublié ?</a></div>
+    <div class="forgot"><a href="#" onclick="forgotPassword(event)">Mot de passe oublié ?</a></div>
   </div>
 
   <button class="btn-primary" id="loginBtn" onclick="login()">Se connecter</button>
@@ -190,6 +190,24 @@ async function login() {
   } else {
     showAlert('Connexion réussie ! Redirection…', 'success');
     setTimeout(() => window.location.href = '/dashboard', 1000);
+  }
+}
+
+async function forgotPassword(e) {
+  e.preventDefault();
+  const email = document.getElementById('email').value.trim();
+  if (!email) {
+    showAlert('Entrez votre email ci-dessus puis cliquez sur "Mot de passe oublié".', 'error');
+    document.getElementById('email').focus();
+    return;
+  }
+  const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
+    redirectTo: window.location.origin + '/account'
+  });
+  if (error) {
+    showAlert('Erreur : ' + error.message, 'error');
+  } else {
+    showAlert('Email de réinitialisation envoyé à ' + email + '. Vérifiez votre boîte mail.', 'success');
   }
 }
 

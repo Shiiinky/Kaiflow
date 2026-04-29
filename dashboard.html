@@ -1279,6 +1279,7 @@ body {
       const card = document.createElement('div');
       card.className = 'flux-card' + (isOk?'':' has-alert');
       card.onclick = () => window.location.href = '/editor?id=' + flux.id;
+      card.style.cursor = 'pointer';
       card.innerHTML = `
         <div class="flux-preview">
           <div class="mini-flow">${miniFlow || '<div class="mini-block ok">Flux vide</div>'}</div>
@@ -1293,6 +1294,9 @@ body {
             <div class="kpi-mini"><div class="kpi-mini-label">Takt time</div><div class="kpi-mini-value neutral">${takt?takt+'s':'—'}</div></div>
             <div class="kpi-mini"><div class="kpi-mini-label">Temps cycle</div><div class="kpi-mini-value ${isOk?'ok':'warn'}">${maxCycle?maxCycle+'s':'—'}</div></div>
             <div class="kpi-mini"><div class="kpi-mini-label">Rendement</div><div class="kpi-mini-value ${rendement>=85?'ok':'warn'}">${rendement?rendement+'%':'—'}</div></div>
+          </div>
+          <div style="margin-top:0.6rem;padding-top:0.6rem;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:0.5rem;">
+            <span style="font-size:0.72rem;color:var(--accent);font-weight:500;">✏ Modifier →</span>
           </div>
         </div>`;
       grid.appendChild(card);

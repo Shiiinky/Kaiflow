@@ -232,7 +232,13 @@ async function signup() {
   });
 
   if (error) {
-    showAlert(error.message === 'User already registered' ? 'Cet email est déjà utilisé.' : error.message, 'error');
+    let msg = error.message;
+    if (msg.includes('already registered') || msg.includes('already been registered') || msg.includes('email address is already')) {
+      msg = 'Un compte existe déjà avec cet email. <a href="/login" style="color:var(--accent)">Connectez-vous</a>';
+    }
+    const el = document.getElementById('alert');
+    el.innerHTML = '⚠ ' + msg;
+    el.className = 'alert error';
     btn.disabled = false; btn.textContent = 'Créer mon compte';
   } else {
     showAlert('Compte créé ! Vérifiez votre email pour confirmer votre inscription.', 'success');
