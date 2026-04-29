@@ -290,6 +290,9 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-s
   <div class="blocks-panel">
     <div class="panel-section">
       <div class="panel-section-title">Blocs</div>
+      <div style="font-size:0.68rem;color:var(--muted);margin-bottom:0.6rem;padding:0 0.2rem;line-height:1.5;">
+        <span style="color:var(--accent)">Cliquez</span> pour ajouter · <span style="color:var(--accent)">Glissez</span> pour positionner
+      </div>
       <div class="block-template" data-type="work" data-label="Poste de travail">
         <div class="block-icon work">🔧</div>
         <div><div class="block-name">Poste de travail</div><div class="block-desc">Opération / MOS</div></div>
@@ -338,7 +341,7 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-s
       <svg class="drawing-line" id="drawingLine"></svg>
       <div class="canvas-hint" id="canvasHint">
         <div class="canvas-hint-icon">〰</div>
-        <div class="canvas-hint-text"><strong>Glissez des blocs</strong> depuis le panneau gauche<br>pour modéliser votre flux</div>
+        <div class="canvas-hint-text"><strong>Cliquez ou glissez un bloc</strong> depuis le panneau gauche<br>pour modéliser votre flux</div>
       </div>
     </div>
 
@@ -492,50 +495,98 @@ function getClientXY(e) {
   return { x: e.clientX, y: e.clientY };
 }
 
-// ─── DRAG FROM LIBRARY ────────────────────────────────────────────────────────
-let touchDragType = null, touchDragLabel = null, touchGhost = null;
+// ─── DRAG FROM LIBRARY (Pointer Events — works on PC, tablet, mobile) ──────────
+let pDragType = null, pDragLabel = null, pDragGhost = null, pDragging = false;
 
 document.querySelectorAll('.block-template').forEach(el => {
-  el.setAttribute('draggable','true');
-  el.addEventListener('dragstart', e => {
-    e.dataTransfer.setData('blockType', el.dataset.type);
-    e.dataTransfer.setData('blockLabel', el.dataset.label);
+  el.style.cursor = 'grab';
+  el.style.userSelect = 'none';
+  el.style.touchAction = 'none';
+
+  // ── CLICK to add block at center of canvas ──────────────────────────────────
+  el.addEventListener('click', e => {
+    if (pDragging) return; // ignore click if it was a drag
+    const r = canvas.getBoundingClientRect();
+    const cx = (r.width / 2 / scale) - 75 + (nodes.length * 20 % 200);
+    const cy = (r.height / 2 / scale) - 45 + (nodes.length * 10 % 100);
+    addNode(el.dataset.type, el.dataset.label, cx, cy);
+    updateHint();
+    markDirty();
   });
-  el.addEventListener('touchstart', e => {
+
+  // ── POINTER DOWN — start drag ──────────────────────────────────────────────
+  el.addEventListener('pointerdown', e => {
     e.preventDefault();
-    touchDragType = el.dataset.type; touchDragLabel = el.dataset.label;
-    touchGhost = document.createElement('div');
-    touchGhost.style.cssText = 'position:fixed;z-index:9999;pointer-events:none;background:var(--surface);border:1.5px solid var(--accent);border-radius:10px;padding:0.5rem 0.9rem;font-size:0.82rem;color:var(--text);font-family:DM Sans,sans-serif;opacity:0.9;box-shadow:0 8px 30px rgba(0,0,0,0.4);';
-    touchGhost.textContent = touchDragLabel;
-    document.body.appendChild(touchGhost);
-    const {x,y} = getClientXY(e);
-    touchGhost.style.left=(x-60)+'px'; touchGhost.style.top=(y-20)+'px';
-  }, {passive:false});
-  el.addEventListener('touchmove', e => {
-    e.preventDefault(); if (!touchGhost) return;
-    const {x,y}=getClientXY(e); touchGhost.style.left=(x-60)+'px'; touchGhost.style.top=(y-20)+'px';
-  }, {passive:false});
-  el.addEventListener('touchend', e => {
-    e.preventDefault();
-    if (touchGhost) { touchGhost.remove(); touchGhost=null; }
-    if (!touchDragType) return;
-    const {x,y}=getClientXY(e);
-    const r=canvas.getBoundingClientRect();
-    if (x>=r.left && x<=r.right && y>=r.top && y<=r.bottom) {
-      addNode(touchDragType, touchDragLabel, (x-r.left)/scale-75, (y-r.top)/scale-45);
-      updateHint();
+    pDragging = false;
+    pDragType = el.dataset.type;
+    pDragLabel = el.dataset.label;
+    el.setPointerCapture(e.pointerId);
+
+    // Create ghost
+    pDragGhost = document.createElement('div');
+    pDragGhost.style.cssText = `
+      position:fixed;z-index:9999;pointer-events:none;
+      background:#111620;border:1.5px solid #00e5ff;border-radius:10px;
+      padding:0.5rem 0.9rem;font-size:0.82rem;color:#e2e8f5;
+      font-family:'DM Sans',sans-serif;opacity:0.9;
+      box-shadow:0 8px 30px rgba(0,0,0,0.5);
+      transform:rotate(2deg);transition:opacity 0.15s;
+    `;
+    pDragGhost.textContent = pDragLabel;
+    document.body.appendChild(pDragGhost);
+    pDragGhost.style.left = (e.clientX - 60) + 'px';
+    pDragGhost.style.top  = (e.clientY - 20) + 'px';
+  });
+
+  // ── POINTER MOVE ───────────────────────────────────────────────────────────
+  el.addEventListener('pointermove', e => {
+    if (!pDragGhost) return;
+    pDragging = true;
+    pDragGhost.style.left = (e.clientX - 60) + 'px';
+    pDragGhost.style.top  = (e.clientY - 20) + 'px';
+
+    // Highlight canvas if hovering over it
+    const r = canvas.getBoundingClientRect();
+    const over = e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
+    canvas.style.boxShadow = over ? 'inset 0 0 0 2px rgba(0,229,255,0.3)' : '';
+  });
+
+  // ── POINTER UP — drop ──────────────────────────────────────────────────────
+  el.addEventListener('pointerup', e => {
+    canvas.style.boxShadow = '';
+    if (pDragGhost) { pDragGhost.remove(); pDragGhost = null; }
+
+    if (!pDragging || !pDragType) {
+      pDragType = null; pDragLabel = null; pDragging = false;
+      return;
     }
-    touchDragType=null; touchDragLabel=null;
-  }, {passive:false});
+
+    const r = canvas.getBoundingClientRect();
+    if (e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) {
+      addNode(pDragType, pDragLabel, (e.clientX - r.left) / scale - 75, (e.clientY - r.top) / scale - 45);
+      updateHint();
+      markDirty();
+    }
+
+    pDragType = null; pDragLabel = null;
+    setTimeout(() => { pDragging = false; }, 50);
+  });
+
+  el.addEventListener('pointercancel', () => {
+    canvas.style.boxShadow = '';
+    if (pDragGhost) { pDragGhost.remove(); pDragGhost = null; }
+    pDragType = null; pDragLabel = null; pDragging = false;
+  });
 });
 
+// Keep ondragover/ondrop as fallback for browsers that don't support pointer capture
 function onDragOver(e) { e.preventDefault(); }
 function onDrop(e) {
   e.preventDefault();
-  const type=e.dataTransfer.getData('blockType'), label=e.dataTransfer.getData('blockLabel');
+  const type = e.dataTransfer.getData('blockType'), label = e.dataTransfer.getData('blockLabel');
   if (!type) return;
-  const r=canvas.getBoundingClientRect();
-  addNode(type, label, (e.clientX-r.left)/scale-75, (e.clientY-r.top)/scale-45);
+  const r = canvas.getBoundingClientRect();
+  addNode(type, label, (e.clientX - r.left) / scale - 75, (e.clientY - r.top) / scale - 45);
   updateHint();
 }
 
@@ -561,22 +612,69 @@ function renderNode(node) {
   el.style.left = node.x+'px'; el.style.top = node.y+'px'; el.style.width = '155px';
   el.innerHTML = buildNodeHTML(node);
 
-  el.addEventListener('mousedown', e => {
-    if (e.target.classList.contains('port') || e.target.classList.contains('node-mos-btn')) return;
-    e.stopPropagation(); selectNode(node.id); startDragNode(e, el, node);
-  });
-  el.addEventListener('touchstart', e => {
-    if (e.target.classList.contains('port') || e.target.classList.contains('node-mos-btn')) return;
-    e.stopPropagation(); e.preventDefault(); selectNode(node.id); startDragNodeTouch(e, el, node);
-  }, {passive:false});
-
-  el.querySelector('.port-out').addEventListener('mousedown', e => { e.stopPropagation(); startConnection(node.id, e); });
-  el.querySelector('.port-out').addEventListener('touchstart', e => { e.stopPropagation(); e.preventDefault(); startConnectionTouch(node.id, e); }, {passive:false});
-  el.querySelector('.port-in').addEventListener('mouseup', e => { if (isDrawingConnection && connectionStart.nodeId!==node.id) endConnection(node.id); });
-  el.querySelector('.port-in').addEventListener('touchend', e => { e.preventDefault(); if (isDrawingConnection && connectionStart.nodeId!==node.id) endConnection(node.id); }, {passive:false});
-
+  bindNodeEvents(el, node);
   canvas.appendChild(el);
 }
+
+function bindNodeEvents(el, node) {
+  el.style.touchAction = 'none';
+  el.style.userSelect = 'none';
+
+  // Drag & select
+  el.addEventListener('pointerdown', e => {
+    if (e.target.classList.contains('port') || e.target.classList.contains('node-mos-btn')) return;
+    e.stopPropagation(); e.preventDefault();
+    selectNode(node.id);
+    // Start drag with pointer capture
+    isDraggingNode = true;
+    el.setPointerCapture(e.pointerId);
+    const rect = el.getBoundingClientRect();
+    dragOffsetX = (e.clientX - rect.left) / scale;
+    dragOffsetY = (e.clientY - rect.top)  / scale;
+
+    function onMove(ev) {
+      if (!isDraggingNode) return;
+      const r = canvas.getBoundingClientRect();
+      node.x = (ev.clientX - r.left) / scale - dragOffsetX;
+      node.y = (ev.clientY - r.top)  / scale - dragOffsetY;
+      el.style.left = node.x + 'px';
+      el.style.top  = node.y + 'px';
+      renderConnections();
+    }
+    function onUp() {
+      isDraggingNode = false;
+      el.removeEventListener('pointermove', onMove);
+      el.removeEventListener('pointerup', onUp);
+      el.removeEventListener('pointercancel', onUp);
+    }
+    el.addEventListener('pointermove', onMove);
+    el.addEventListener('pointerup', onUp);
+    el.addEventListener('pointercancel', onUp);
+  });
+
+  // Port OUT - start connection
+  const portOut = el.querySelector('.port-out');
+  if (portOut) {
+    portOut.style.touchAction = 'none';
+    portOut.addEventListener('pointerdown', e => {
+      e.stopPropagation(); e.preventDefault();
+      startConnectionPointer(node.id, e);
+    });
+  }
+
+  // Port IN - end connection
+  const portIn = el.querySelector('.port-in');
+  if (portIn) {
+    portIn.style.touchAction = 'none';
+    portIn.addEventListener('pointerup', e => {
+      e.preventDefault();
+      if (isDrawingConnection && connectionStart && connectionStart.nodeId !== node.id) {
+        endConnection(node.id);
+      }
+    });
+  }
+}
+
 
 function buildNodeHTML(node) {
   const config = BLOCK_CONFIG[node.type];
@@ -609,18 +707,7 @@ function refreshNodeDisplay(nodeId) {
   if (!el) return;
   el.innerHTML = buildNodeHTML(node);
   // Re-bind events on ports
-  el.querySelector('.port-out').addEventListener('mousedown', e => { e.stopPropagation(); startConnection(node.id, e); });
-  el.querySelector('.port-out').addEventListener('touchstart', e => { e.stopPropagation(); e.preventDefault(); startConnectionTouch(node.id, e); }, {passive:false});
-  el.querySelector('.port-in').addEventListener('mouseup', e => { if (isDrawingConnection && connectionStart.nodeId!==node.id) endConnection(node.id); });
-  el.querySelector('.port-in').addEventListener('touchend', e => { e.preventDefault(); if (isDrawingConnection && connectionStart.nodeId!==node.id) endConnection(node.id); }, {passive:false});
-  el.addEventListener('mousedown', e => {
-    if (e.target.classList.contains('port') || e.target.classList.contains('node-mos-btn')) return;
-    e.stopPropagation(); selectNode(node.id); startDragNode(e, el, node);
-  });
-  el.addEventListener('touchstart', e => {
-    if (e.target.classList.contains('port') || e.target.classList.contains('node-mos-btn')) return;
-    e.stopPropagation(); e.preventDefault(); selectNode(node.id); startDragNodeTouch(e, el, node);
-  }, {passive:false});
+  bindNodeEvents(el, node);
   if (selectedNodeId === nodeId) el.classList.add('selected');
   updateKPIs();
 }
@@ -647,28 +734,48 @@ function getNodeVAPercent(node) {
   return total>0 ? Math.round((va/total)*100) : null;
 }
 
-// ─── DRAG NODE ────────────────────────────────────────────────────────────────
-function startDragNode(e, el, node) {
-  isDraggingNode = true;
-  const rect=el.getBoundingClientRect();
-  dragOffsetX=(e.clientX-rect.left)/scale; dragOffsetY=(e.clientY-rect.top)/scale;
-  function onMove(e) {
-    if (!isDraggingNode) return;
-    const r=canvas.getBoundingClientRect();
-    node.x=(e.clientX-r.left)/scale-dragOffsetX; node.y=(e.clientY-r.top)/scale-dragOffsetY;
-    el.style.left=node.x+'px'; el.style.top=node.y+'px'; renderConnections();
+// ─── NODE DRAG ────────────────────────────────────────────────────────────────
+// Handled inline in bindNodeEvents via PointerEvents
+
+// ─── CONNECTION (PointerEvents) ───────────────────────────────────────────────
+function startConnectionPointer(nodeId, e) {
+  isDrawingConnection = true;
+  connectionStart = { nodeId };
+  const portEl = document.getElementById(`port-out-${nodeId}`);
+  const rect = portEl.getBoundingClientRect(), cr = canvas.getBoundingClientRect();
+  connectionStart.x = (rect.left + rect.width/2 - cr.left) / scale;
+  connectionStart.y = (rect.top  + rect.height/2 - cr.top)  / scale;
+
+  drawingPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  drawingPath.setAttribute('fill', 'none');
+  drawingPath.setAttribute('stroke', 'rgba(0,229,255,0.5)');
+  drawingPath.setAttribute('stroke-width', '2');
+  drawingPath.setAttribute('stroke-dasharray', '6,3');
+  drawingSvg.appendChild(drawingPath);
+
+  function onMove(ev) {
+    if (!isDrawingConnection || !drawingPath) return;
+    const cr2 = canvas.getBoundingClientRect();
+    const mx = (ev.clientX - cr2.left) / scale;
+    const my = (ev.clientY - cr2.top)  / scale;
+    drawingPath.setAttribute('d', makeCurve(connectionStart.x, connectionStart.y, mx, my));
   }
-  function onUp() { isDraggingNode=false; document.removeEventListener('mousemove',onMove); document.removeEventListener('mouseup',onUp); }
-  document.addEventListener('mousemove',onMove); document.addEventListener('mouseup',onUp);
+  function onUp(ev) {
+    document.removeEventListener('pointermove', onMove);
+    document.removeEventListener('pointerup', onUp);
+    if (isDrawingConnection) cancelConnection();
+  }
+  document.addEventListener('pointermove', onMove);
+  document.addEventListener('pointerup', onUp);
 }
-function startDragNodeTouch(e, el, node) {
-  isDraggingNode = true;
-  const {x,y}=getClientXY(e), rect=el.getBoundingClientRect();
-  dragOffsetX=(x-rect.left)/scale; dragOffsetY=(y-rect.top)/scale;
-  function onMove(e) { e.preventDefault(); if(!isDraggingNode)return; const {x,y}=getClientXY(e); const r=canvas.getBoundingClientRect(); node.x=(x-r.left)/scale-dragOffsetX; node.y=(y-r.top)/scale-dragOffsetY; el.style.left=node.x+'px'; el.style.top=node.y+'px'; renderConnections(); }
-  function onUp() { isDraggingNode=false; document.removeEventListener('touchmove',onMove); document.removeEventListener('touchend',onUp); }
-  document.addEventListener('touchmove',onMove,{passive:false}); document.addEventListener('touchend',onUp);
-}
+
+// Keep old functions as aliases for compatibility
+function startConnection(nodeId, e) { startConnectionPointer(nodeId, e); }
+function startConnectionTouch(nodeId, e) { startConnectionPointer(nodeId, e); }
+function startDragNode(e, el, node) {}
+function startDragNodeTouch(e, el, node) {}
+
+
 
 // ─── SELECTION ────────────────────────────────────────────────────────────────
 function selectNode(id) {
@@ -677,8 +784,13 @@ function selectNode(id) {
   const el=document.getElementById(`node-${id}`); if(el) el.classList.add('selected');
   showProps(id);
 }
-canvas.addEventListener('mousedown', e => { if(e.target===canvas||e.target.tagName==='svg'||e.target===svg) { deselectAll(); if(isDrawingConnection) cancelConnection(); }});
-canvas.addEventListener('touchstart', e => { if(e.target===canvas||e.target.tagName==='svg'||e.target===svg) { deselectAll(); if(isDrawingConnection) cancelConnection(); }},{passive:true});
+canvas.addEventListener('pointerdown', e => {
+  if (e.target === canvas || e.target === svg || e.target.tagName === 'svg') {
+    deselectAll();
+    if (isDrawingConnection) cancelConnection();
+  }
+});
+
 function deselectAll() {
   if(selectedNodeId){ const el=document.getElementById(`node-${selectedNodeId}`); if(el) el.classList.remove('selected'); }
   selectedNodeId=null;
@@ -760,19 +872,7 @@ function startConnection(nodeId, e) {
   function onUp() { document.removeEventListener('mousemove',onMove); document.removeEventListener('mouseup',onUp); if(isDrawingConnection)cancelConnection(); }
   document.addEventListener('mousemove',onMove); document.addEventListener('mouseup',onUp);
 }
-function startConnectionTouch(nodeId, e) {
-  isDrawingConnection=true; connectionStart={nodeId};
-  const portEl=document.getElementById(`port-out-${nodeId}`);
-  const rect=portEl.getBoundingClientRect(), cr=canvas.getBoundingClientRect();
-  connectionStart.x=(rect.left+rect.width/2-cr.left)/scale; connectionStart.y=(rect.top+rect.height/2-cr.top)/scale;
-  drawingPath=document.createElementNS('http://www.w3.org/2000/svg','path');
-  drawingPath.setAttribute('fill','none'); drawingPath.setAttribute('stroke','rgba(0,229,255,0.5)');
-  drawingPath.setAttribute('stroke-width','2'); drawingPath.setAttribute('stroke-dasharray','6,3');
-  drawingSvg.appendChild(drawingPath);
-  function onMove(e) { e.preventDefault(); if(!isDrawingConnection||!drawingPath)return; const {x,y}=getClientXY(e); const cr=canvas.getBoundingClientRect(); drawingPath.setAttribute('d',makeCurve(connectionStart.x,connectionStart.y,(x-cr.left)/scale,(y-cr.top)/scale)); const els=document.elementsFromPoint(x,y); const pi=els.find(el=>el.classList&&el.classList.contains('port-in')); if(pi){const tid=parseInt(pi.id.replace('port-in-','')); if(tid&&tid!==nodeId){endConnection(tid); document.removeEventListener('touchmove',onMove); document.removeEventListener('touchend',onUp); return;}} }
-  function onUp() { document.removeEventListener('touchmove',onMove); document.removeEventListener('touchend',onUp); if(isDrawingConnection)cancelConnection(); }
-  document.addEventListener('touchmove',onMove,{passive:false}); document.addEventListener('touchend',onUp);
-}
+// startConnectionTouch removed - using startConnectionPointer
 function endConnection(toId) {
   if(!isDrawingConnection)return;
   const fromId=connectionStart.nodeId;
