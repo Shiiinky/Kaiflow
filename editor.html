@@ -46,9 +46,9 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-s
 .blocks-panel::-webkit-scrollbar-thumb { background: var(--border2); }
 .panel-section { padding: 1rem 0.8rem 0.5rem; }
 .panel-section-title { font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); font-weight: 500; margin-bottom: 0.6rem; padding-left: 0.2rem; }
-.block-template { display: flex; align-items: center; gap: 0.65rem; padding: 0.6rem 0.7rem; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 0.5rem; cursor: grab; transition: all 0.15s; background: var(--bg); user-select: none; }
+.block-template { display: flex; align-items: center; gap: 0.65rem; padding: 0.6rem 0.7rem; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 0.5rem; cursor: grab; transition: all 0.15s; background: var(--bg); user-select: none; touch-action: none; -webkit-user-select: none; }
 .block-template:hover { border-color: var(--border2); background: var(--surface2); transform: translateX(2px); }
-.block-template:active { cursor: grabbing; opacity: 0.7; } .block-template { touch-action: none; }
+.block-template:active { cursor: grabbing; opacity: 0.7; }
 .block-icon { width: 30px; height: 30px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 0.9rem; flex-shrink: 0; }
 .block-icon.work { background: rgba(0,229,255,0.1); border: 1px solid rgba(0,229,255,0.2); }
 .block-icon.stock { background: rgba(34,211,160,0.1); border: 1px solid rgba(34,211,160,0.2); }
@@ -538,10 +538,9 @@ document.querySelectorAll('.block-template').forEach(el => {
   el.style.userSelect = 'none';
   el.style.touchAction = 'none';
 
-  // MOUSE
+  // MOUSE — no preventDefault on mousedown so click still fires normally
   el.addEventListener('mousedown', e => {
     if (e.button !== 0) return;
-    e.preventDefault();
     libDragType = type; libDragLabel = label;
     libStartX = e.clientX; libStartY = e.clientY; libDragging = false;
 
@@ -554,7 +553,8 @@ document.querySelectorAll('.block-template').forEach(el => {
         libGhost.style.left = (ev.clientX - 60) + 'px';
         libGhost.style.top  = (ev.clientY - 20) + 'px';
         const r = canvas.getBoundingClientRect();
-        canvas.style.outline = (ev.clientX >= r.left && ev.clientX <= r.right && ev.clientY >= r.top && ev.clientY <= r.bottom) ? '2px solid rgba(0,229,255,0.35)' : '';
+        canvas.style.outline = (ev.clientX >= r.left && ev.clientX <= r.right && ev.clientY >= r.top && ev.clientY <= r.bottom)
+          ? '2px solid rgba(0,229,255,0.35)' : '';
       }
     }
     function onUp(ev) {
@@ -563,16 +563,14 @@ document.querySelectorAll('.block-template').forEach(el => {
       const wasDrag = libDragging;
       const cx = ev.clientX, cy = ev.clientY;
       libCleanup();
-      if (wasDrag) libDropOnCanvas(cx, cy, type, label);
-      // else: handled by click below
+      if (wasDrag) {
+        libDropOnCanvas(cx, cy, type, label);
+      } else {
+        libDropAtCenter(type, label);
+      }
     }
     document.addEventListener('mousemove', onMove);
     document.addEventListener('mouseup', onUp);
-  });
-
-  el.addEventListener('click', e => {
-    if (libDragging) return;
-    libDropAtCenter(type, label);
   });
 
   // TOUCH
