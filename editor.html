@@ -279,7 +279,7 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-s
   <div class="topbar-spacer"></div>
   <div class="topbar-actions">
     <div class="save-status" id="saveStatus">Sauvegardé</div>
-    <button class="tb-btn">↗ Export PDF</button>
+    <button class="tb-btn" onclick="exportPDF()">↗ Export PDF</button>
     <button class="tb-btn primary" onclick="saveFlux()">💾 Sauvegarder</button>
   </div>
 </header>
@@ -1133,6 +1133,158 @@ function loadDemo() {
   });
   for(let i=0;i<nodes.length-1;i++) connections.push({from:nodes[i].id,to:nodes[i+1].id});
   setTimeout(()=>{renderConnections();updateKPIs();updateHint();},80);
+}
+
+// ─── EXPORT PDF ───────────────────────────────────────────────────────────────
+function exportPDF() {
+  const title = document.getElementById('fluxTitle').value || 'Kaiflow — Rapport';
+  
+  // Gather KPI data
+  const kpiTakt = document.getElementById('kpiTakt').textContent;
+  const kpiCycle = document.getElementById('kpiCycle').textContent;
+  const kpiLead = document.getElementById('kpiLead').textContent;
+  const kpiBottleneck = document.getElementById('kpiBottleneck').textContent;
+  const kpiRendement = document.getElementById('kpiRendement').textContent;
+  const kpiVA = document.getElementById('kpiVA').textContent;
+  const kpiCharge = document.getElementById('kpiCharge').textContent;
+  const kpiPostes = document.getElementById('kpiPostes').textContent;
+  const now = new Date().toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+  const isOk = !kpiBottleneck.includes('—') && kpiRendement !== '—' && parseInt(kpiRendement) >= 85;
+
+  // Build node table rows
+  const nodeRows = nodes.map((n, i) => {
+    const cycle = getEffectiveCycle(n) || '—';
+    const vaP = getNodeVAPercent(n);
+    const config = BLOCK_CONFIG[n.type];
+    const isBottleneck = n.id === nodes.find(nd => getEffectiveCycle(nd) === Math.max(...nodes.map(x => getEffectiveCycle(x)||0)))?.id;
+    return `<tr style="${isBottleneck && !isOk ? 'background:#fff3ee;' : i%2===0?'background:#f8fafb':''}">
+      <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;">${i+1}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;">${config.icon} ${n.label}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;text-align:center;">${config.label}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;text-align:center;font-weight:600;color:${isBottleneck&&!isOk?'#ff6b35':'#111'}">${cycle !== '—' ? cycle+'s' : '—'}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;text-align:center;">${n.ops || '—'}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;text-align:center;">${vaP !== null ? vaP+'% VA' : n.vsm === 'va' ? 'VA' : 'NVA'}</td>
+      <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;text-align:center;">${isBottleneck && !isOk ? '⚠ Goulot' : '✓ OK'}</td>
+    </tr>`;
+  }).join('');
+
+  // Build MOS detail rows
+  const mosRows = nodes.filter(n => n.mos && n.mos.tasks.length > 0).map(n => {
+    const taskRows = n.mos.tasks.map((t,i) => `
+      <tr style="${i%2===0?'background:#f8fafb':''}">
+        <td style="padding:6px 10px;border-bottom:1px solid #e5e7eb;">${i+1}</td>
+        <td style="padding:6px 10px;border-bottom:1px solid #e5e7eb;">${t.desc || '—'}</td>
+        <td style="padding:6px 10px;border-bottom:1px solid #e5e7eb;text-align:center;color:#3b82f6;">${t.manual||0}s</td>
+        <td style="padding:6px 10px;border-bottom:1px solid #e5e7eb;text-align:center;color:#f59e0b;">${t.machine||0}s</td>
+        <td style="padding:6px 10px;border-bottom:1px solid #e5e7eb;text-align:center;color:#22d3a0;">${t.move||0}s</td>
+        <td style="padding:6px 10px;border-bottom:1px solid #e5e7eb;text-align:center;color:#f43f5e;">${t.wait||0}s</td>
+        <td style="padding:6px 10px;border-bottom:1px solid #e5e7eb;text-align:center;"><span style="background:${t.vsm==='va'?'#d1fae5':'#fee2e2'};color:${t.vsm==='va'?'#065f46':'#991b1b'};padding:2px 8px;border-radius:99px;font-size:11px;">${t.vsm==='va'?'VA':'NVA'}</span></td>
+      </tr>`).join('');
+    return `
+      <h3 style="font-size:14px;font-weight:700;margin:24px 0 8px;color:#111;">📋 MOS — ${n.label}</h3>
+      <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:16px;">
+        <thead><tr style="background:#f1f5f9;">
+          <th style="padding:8px 10px;text-align:left;font-weight:600;">#</th>
+          <th style="padding:8px 10px;text-align:left;font-weight:600;">Tâche</th>
+          <th style="padding:8px 10px;text-align:center;color:#3b82f6;">Manuel</th>
+          <th style="padding:8px 10px;text-align:center;color:#f59e0b;">Machine</th>
+          <th style="padding:8px 10px;text-align:center;color:#22d3a0;">Dépl.</th>
+          <th style="padding:8px 10px;text-align:center;color:#f43f5e;">Attente</th>
+          <th style="padding:8px 10px;text-align:center;">VA/NVA</th>
+        </tr></thead>
+        <tbody>${taskRows}</tbody>
+      </table>`;
+  }).join('');
+
+  const html = `<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>${title}</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Helvetica Neue', Arial, sans-serif; color: #111; font-size: 13px; line-height: 1.5; padding: 40px; max-width: 900px; margin: 0 auto; }
+  @media print { body { padding: 20px; } .no-print { display: none !important; } }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:20px;border-bottom:3px solid #00e5ff;margin-bottom:28px;">
+  <div>
+    <div style="font-size:22px;font-weight:800;letter-spacing:-0.5px;">Kai<span style="color:#00e5ff;">flow</span></div>
+    <div style="font-size:11px;color:#6b7a96;margin-top:2px;text-transform:uppercase;letter-spacing:0.08em;">Rapport de flux de production</div>
+  </div>
+  <div style="text-align:right;">
+    <div style="font-size:16px;font-weight:700;">${title}</div>
+    <div style="font-size:11px;color:#6b7a96;margin-top:3px;">${now}</div>
+  </div>
+</div>
+
+<!-- STATUT GLOBAL -->
+<div style="background:${isOk?'#f0fdf4':'#fff7f5'};border:1px solid ${isOk?'#86efac':'#fca5a5'};border-radius:10px;padding:14px 20px;margin-bottom:24px;display:flex;align-items:center;gap:12px;">
+  <div style="font-size:24px;">${isOk?'✅':'⚠️'}</div>
+  <div>
+    <div style="font-weight:700;font-size:14px;color:${isOk?'#166534':'#991b1b'};">Statut : ${isOk?'Flux nominal — Aucun goulot détecté':'Attention — Goulot d'étranglement détecté'}</div>
+    <div style="font-size:12px;color:#6b7a96;margin-top:2px;">${isOk?'Tous les postes respectent le takt time cible.':'Le poste "'+kpiBottleneck+'" dépasse le takt time. Action corrective recommandée.'}</div>
+  </div>
+</div>
+
+<!-- KPIs GRID -->
+<h2 style="font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#6b7a96;margin-bottom:12px;">Indicateurs clés de performance</h2>
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px;">
+  ${[
+    {label:'Takt Time', value:kpiTakt, color:'#111'},
+    {label:'Temps cycle max', value:kpiCycle, color: isOk?'#166534':'#991b1b'},
+    {label:'Lead Time', value:kpiLead, color:'#0369a1'},
+    {label:'Rendement ligne', value:kpiRendement, color: parseInt(kpiRendement)>=85?'#166534':'#991b1b'},
+    {label:'VA / NVA', value:kpiVA, color:'#0369a1'},
+    {label:'Taux de charge', value:kpiCharge, color:'#111'},
+    {label:'Goulot', value:kpiBottleneck, color: isOk?'#166534':'#991b1b'},
+    {label:'Nb. blocs', value:kpiPostes, color:'#111'},
+  ].map(k => `<div style="background:#f8fafc;border:1px solid #e5e7eb;border-radius:8px;padding:12px;">
+    <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:#6b7a96;margin-bottom:6px;">${k.label}</div>
+    <div style="font-size:18px;font-weight:800;color:${k.color};">${k.value}</div>
+  </div>`).join('')}
+</div>
+
+<!-- NODES TABLE -->
+<h2 style="font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#6b7a96;margin-bottom:12px;">Détail des postes</h2>
+<table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:28px;">
+  <thead>
+    <tr style="background:#f1f5f9;">
+      <th style="padding:10px 12px;text-align:left;font-weight:600;">#</th>
+      <th style="padding:10px 12px;text-align:left;font-weight:600;">Poste</th>
+      <th style="padding:10px 12px;text-align:center;font-weight:600;">Type</th>
+      <th style="padding:10px 12px;text-align:center;font-weight:600;">Temps cycle</th>
+      <th style="padding:10px 12px;text-align:center;font-weight:600;">Opérateurs</th>
+      <th style="padding:10px 12px;text-align:center;font-weight:600;">VA/NVA</th>
+      <th style="padding:10px 12px;text-align:center;font-weight:600;">Statut</th>
+    </tr>
+  </thead>
+  <tbody>${nodeRows}</tbody>
+</table>
+
+<!-- MOS DETAILS -->
+${mosRows ? `<h2 style="font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#6b7a96;margin-bottom:4px;">Modes Opératoires Standards</h2>${mosRows}` : ''}
+
+<!-- FOOTER -->
+<div style="margin-top:40px;padding-top:16px;border-top:1px solid #e5e7eb;display:flex;justify-content:space-between;font-size:11px;color:#6b7a96;">
+  <div>Généré par Kaiflow · kaiflow.fr</div>
+  <div>${now}</div>
+</div>
+
+<div class="no-print" style="margin-top:30px;text-align:center;">
+  <button onclick="window.print()" style="background:#00e5ff;color:#000;border:none;border-radius:8px;padding:12px 28px;font-size:14px;font-weight:600;cursor:pointer;">🖨 Imprimer / Enregistrer en PDF</button>
+  <button onclick="window.close()" style="background:transparent;border:1px solid #e5e7eb;border-radius:8px;padding:12px 20px;font-size:14px;cursor:pointer;margin-left:10px;">Fermer</button>
+</div>
+
+</body>
+</html>`;
+
+  const win = window.open('', '_blank');
+  win.document.write(html);
+  win.document.close();
 }
 
 // ─── AUTH + LOAD ─────────────────────────────────────────────────────────────

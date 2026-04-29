@@ -855,9 +855,9 @@ body {
           <span class="section-count">6 flux</span>
         </div>
         <div class="section-actions">
-          <button class="filter-btn active">Tous</button>
-          <button class="filter-btn">Alertes</button>
-          <button class="filter-btn">OK</button>
+          <button class="filter-btn active" onclick="filterFlux('all', this)">Tous</button>
+          <button class="filter-btn" onclick="filterFlux('alert', this)">Alertes</button>
+          <button class="filter-btn" onclick="filterFlux('ok', this)">OK</button>
         </div>
       </div>
 
@@ -1186,7 +1186,7 @@ body {
 
     <div class="modal-actions">
       <button class="modal-btn-cancel" onclick="closeModal()">Annuler</button>
-      <button class="modal-btn-create">Créer et modéliser →</button>
+      <button class="modal-btn-create" onclick="createFlux()">Créer et modéliser →</button>
     </div>
   </div>
 </div>
@@ -1314,6 +1314,43 @@ body {
   }
 
   // ─── INIT ─────────────────────────────────────────────────────────────────
+  // ─── CREATE NEW FLUX ─────────────────────────────────────────────────────
+  async function createFlux() {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session) return;
+
+    const nom = document.querySelector('#modal input[type="text"]')?.value || 'Nouveau flux';
+    const type = document.querySelector('#modal select')?.value || '';
+    const takt = parseInt(document.querySelector('#modal input[type="number"]')?.value) || null;
+
+    const { data, error } = await supabaseClient.from('flux').insert({
+      user_id: session.user.id,
+      nom: nom || 'Nouveau flux',
+      type_production: type,
+      takt_time_cible: takt,
+      nodes: '[]',
+      connections: '[]'
+    }).select().single();
+
+    if (data && !error) {
+      window.location.href = '/editor?id=' + data.id;
+    } else {
+      console.error(error);
+      alert('Erreur lors de la création du flux.');
+    }
+  }
+
+  // ─── FILTER FLUX ──────────────────────────────────────────────────────────
+  function filterFlux(type, btn) {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.flux-card').forEach(card => {
+      if (type === 'all') { card.style.display = ''; return; }
+      if (type === 'alert') card.style.display = card.classList.contains('has-alert') ? '' : 'none';
+      if (type === 'ok') card.style.display = !card.classList.contains('has-alert') ? '' : 'none';
+    });
+  }
+
   async function init() {
     await initAuth();
     const { data: { session } } = await supabaseClient.auth.getSession();

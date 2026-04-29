@@ -792,7 +792,7 @@
     <li><a href="#how">Comment ça marche</a></li>
     <li><a href="#features">Fonctionnalités</a></li>
     <li><a href="#pricing">Tarifs</a></li>
-    <li><a href="#cta" class="nav-cta">Accès bêta</a></li>
+    <li><a href="/signup" class="nav-cta">Accès bêta</a></li>
   </ul>
 </nav>
 
@@ -1010,7 +1010,7 @@
         <li>KPIs de base (takt time, temps de cycle)</li>
         <li>Export PDF</li>
       </ul>
-      <button class="plan-btn outline">Commencer gratuitement</button>
+      <button class="plan-btn outline" onclick="window.location.href='/signup'">Commencer gratuitement</button>
     </div>
 
     <div class="plan-card featured reveal">
@@ -1026,7 +1026,7 @@
         <li>Comparaison de scénarios</li>
         <li>Support prioritaire</li>
       </ul>
-      <button class="plan-btn filled">Accès bêta gratuit →</button>
+      <button class="plan-btn filled" onclick="window.location.href='/signup'">Accès bêta gratuit →</button>
     </div>
 
     <div class="plan-card reveal">
@@ -1040,7 +1040,7 @@
         <li>Formation & onboarding dédié</li>
         <li>SLA garanti</li>
       </ul>
-      <button class="plan-btn outline">Nous contacter</button>
+      <button class="plan-btn outline" onclick="window.location.href='mailto:contact@kaiflow.fr'">Nous contacter</button>
     </div>
   </div>
 </section>
@@ -1052,10 +1052,21 @@
   <p class="section-desc reveal">Kaiflow est en phase bêta. Laissez votre email pour obtenir un accès gratuit et participer à la construction du produit.</p>
 
   <div class="cta-form reveal">
-    <input type="email" class="cta-input" placeholder="votre@entreprise.fr">
-    <button class="btn-primary">Obtenir l'accès →</button>
+    <input type="email" class="cta-input" id="ctaEmail" placeholder="votre@entreprise.fr">
+    <button class="btn-primary" onclick="submitCTA()">Obtenir l'accès →</button>
   </div>
-  <p style="color: var(--muted); font-size: 0.8rem; margin-top: 1rem;" class="reveal">Aucune carte bancaire requise · Accès 100% gratuit pendant la bêta</p>
+  <p id="ctaMsg" style="color: var(--muted); font-size: 0.8rem; margin-top: 1rem;" class="reveal">Aucune carte bancaire requise · Accès 100% gratuit pendant la bêta</p>
+  <script>
+  function submitCTA() {
+    const email = document.getElementById('ctaEmail').value.trim();
+    if (!email || !email.includes('@')) {
+      document.getElementById('ctaMsg').textContent = '⚠ Veuillez entrer un email valide.';
+      document.getElementById('ctaMsg').style.color = 'var(--warn)';
+      return;
+    }
+    window.location.href = '/signup';
+  }
+  </script>
 </section>
 
 <!-- FOOTER -->
