@@ -495,100 +495,82 @@ function getClientXY(e) {
   return { x: e.clientX, y: e.clientY };
 }
 
-// ─── DRAG FROM LIBRARY (Pointer Events — works on PC, tablet, mobile) ──────────
-let pDragType = null, pDragLabel = null, pDragGhost = null, pDragging = false;
+// ─── DRAG FROM LIBRARY ────────────────────────────────────────────────────────
+let pDragType = null, pDragLabel = null, pDragGhost = null;
+let pDragStartX = 0, pDragStartY = 0, pDragMoved = false;
+const DRAG_THRESHOLD = 8; // pixels before considered a drag
 
 document.querySelectorAll('.block-template').forEach(el => {
   el.style.cursor = 'grab';
   el.style.userSelect = 'none';
   el.style.touchAction = 'none';
 
-  // ── CLICK to add block at center of canvas ──────────────────────────────────
-  el.addEventListener('click', e => {
-    if (pDragging) return; // ignore click if it was a drag
-    const r = canvas.getBoundingClientRect();
-    const cx = (r.width / 2 / scale) - 75 + (nodes.length * 20 % 200);
-    const cy = (r.height / 2 / scale) - 45 + (nodes.length * 10 % 100);
-    addNode(el.dataset.type, el.dataset.label, cx, cy);
-    updateHint();
-    markDirty();
-  });
-
-  // ── POINTER DOWN — start drag ──────────────────────────────────────────────
   el.addEventListener('pointerdown', e => {
     e.preventDefault();
-    pDragging = false;
     pDragType = el.dataset.type;
     pDragLabel = el.dataset.label;
-    el.setPointerCapture(e.pointerId);
+    pDragStartX = e.clientX;
+    pDragStartY = e.clientY;
+    pDragMoved = false;
 
-    // Create ghost
-    pDragGhost = document.createElement('div');
-    pDragGhost.style.cssText = `
-      position:fixed;z-index:9999;pointer-events:none;
-      background:#111620;border:1.5px solid #00e5ff;border-radius:10px;
-      padding:0.5rem 0.9rem;font-size:0.82rem;color:#e2e8f5;
-      font-family:'DM Sans',sans-serif;opacity:0.9;
-      box-shadow:0 8px 30px rgba(0,0,0,0.5);
-      transform:rotate(2deg);transition:opacity 0.15s;
-    `;
-    pDragGhost.textContent = pDragLabel;
-    document.body.appendChild(pDragGhost);
-    pDragGhost.style.left = (e.clientX - 60) + 'px';
-    pDragGhost.style.top  = (e.clientY - 20) + 'px';
-  });
+    // Listen on document so we track outside the element
+    function onMove(ev) {
+      const dx = ev.clientX - pDragStartX;
+      const dy = ev.clientY - pDragStartY;
+      const dist = Math.sqrt(dx*dx + dy*dy);
 
-  // ── POINTER MOVE ───────────────────────────────────────────────────────────
-  el.addEventListener('pointermove', e => {
-    if (!pDragGhost) return;
-    pDragging = true;
-    pDragGhost.style.left = (e.clientX - 60) + 'px';
-    pDragGhost.style.top  = (e.clientY - 20) + 'px';
+      if (!pDragMoved && dist > DRAG_THRESHOLD) {
+        pDragMoved = true;
+        // Create ghost only once movement confirmed
+        pDragGhost = document.createElement('div');
+        pDragGhost.style.cssText = 'position:fixed;z-index:9999;pointer-events:none;background:#111620;border:1.5px solid #00e5ff;border-radius:10px;padding:0.5rem 0.9rem;font-size:0.82rem;color:#e2e8f5;font-family:'DM Sans',sans-serif;opacity:0.9;box-shadow:0 8px 30px rgba(0,0,0,0.5);transform:rotate(2deg);';
+        pDragGhost.textContent = pDragLabel;
+        document.body.appendChild(pDragGhost);
+      }
 
-    // Highlight canvas if hovering over it
-    const r = canvas.getBoundingClientRect();
-    const over = e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom;
-    canvas.style.boxShadow = over ? 'inset 0 0 0 2px rgba(0,229,255,0.3)' : '';
-  });
-
-  // ── POINTER UP — drop ──────────────────────────────────────────────────────
-  el.addEventListener('pointerup', e => {
-    canvas.style.boxShadow = '';
-    if (pDragGhost) { pDragGhost.remove(); pDragGhost = null; }
-
-    if (!pDragging || !pDragType) {
-      pDragType = null; pDragLabel = null; pDragging = false;
-      return;
+      if (pDragGhost) {
+        pDragGhost.style.left = (ev.clientX - 60) + 'px';
+        pDragGhost.style.top  = (ev.clientY - 20) + 'px';
+        const r = canvas.getBoundingClientRect();
+        const over = ev.clientX >= r.left && ev.clientX <= r.right && ev.clientY >= r.top && ev.clientY <= r.bottom;
+        canvas.style.outline = over ? '2px solid rgba(0,229,255,0.4)' : '';
+      }
     }
 
-    const r = canvas.getBoundingClientRect();
-    if (e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) {
-      addNode(pDragType, pDragLabel, (e.clientX - r.left) / scale - 75, (e.clientY - r.top) / scale - 45);
-      updateHint();
-      markDirty();
+    function onUp(ev) {
+      document.removeEventListener('pointermove', onMove);
+      document.removeEventListener('pointerup', onUp);
+      canvas.style.outline = '';
+
+      if (pDragGhost) { pDragGhost.remove(); pDragGhost = null; }
+
+      if (pDragMoved) {
+        // It was a drag — drop on canvas if over it
+        const r = canvas.getBoundingClientRect();
+        if (ev.clientX >= r.left && ev.clientX <= r.right && ev.clientY >= r.top && ev.clientY <= r.bottom) {
+          addNode(pDragType, pDragLabel, (ev.clientX - r.left) / scale - 75, (ev.clientY - r.top) / scale - 45);
+          updateHint(); markDirty();
+        }
+      } else {
+        // It was a click — add at center of canvas
+        const r = canvas.getBoundingClientRect();
+        const offset = nodes.length * 30;
+        const cx = (r.width  / 2 / scale) - 75 + (offset % 180);
+        const cy = (r.height / 2 / scale) - 45 + Math.floor(offset / 180) * 60;
+        addNode(pDragType, pDragLabel, cx, cy);
+        updateHint(); markDirty();
+      }
+
+      pDragType = null; pDragLabel = null; pDragMoved = false;
     }
 
-    pDragType = null; pDragLabel = null;
-    setTimeout(() => { pDragging = false; }, 50);
-  });
-
-  el.addEventListener('pointercancel', () => {
-    canvas.style.boxShadow = '';
-    if (pDragGhost) { pDragGhost.remove(); pDragGhost = null; }
-    pDragType = null; pDragLabel = null; pDragging = false;
+    document.addEventListener('pointermove', onMove);
+    document.addEventListener('pointerup', onUp);
   });
 });
 
-// Keep ondragover/ondrop as fallback for browsers that don't support pointer capture
 function onDragOver(e) { e.preventDefault(); }
-function onDrop(e) {
-  e.preventDefault();
-  const type = e.dataTransfer.getData('blockType'), label = e.dataTransfer.getData('blockLabel');
-  if (!type) return;
-  const r = canvas.getBoundingClientRect();
-  addNode(type, label, (e.clientX - r.left) / scale - 75, (e.clientY - r.top) / scale - 45);
-  updateHint();
-}
+function onDrop(e) { e.preventDefault(); }
 
 // ─── ADD NODE ─────────────────────────────────────────────────────────────────
 function addNode(type, label, x, y) {
