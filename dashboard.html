@@ -824,25 +824,25 @@ body {
       <div class="summary-card c-accent">
         <div class="card-icon">〰</div>
         <div class="card-label">Flux actifs</div>
-        <div class="card-value accent">6</div>
+        <div class="card-value accent" id="summaryFlux">—</div>
         <div class="card-sub">lignes modélisées <span class="card-trend up">+1 ce mois</span></div>
       </div>
       <div class="summary-card c-ok">
         <div class="card-icon">✓</div>
         <div class="card-label">Rendement moyen</div>
-        <div class="card-value ok">81%</div>
+        <div class="card-value ok" id="summaryRendement">—</div>
         <div class="card-sub">sur toutes les lignes <span class="card-trend up">+3%</span></div>
       </div>
       <div class="summary-card c-warn">
         <div class="card-icon">⚠</div>
         <div class="card-label">Goulots détectés</div>
-        <div class="card-value warn">2</div>
+        <div class="card-value warn" id="summaryGoulots">—</div>
         <div class="card-sub">lignes concernées <span class="card-trend down">action requise</span></div>
       </div>
       <div class="summary-card c-muted">
         <div class="card-icon">⏱</div>
         <div class="card-label">Takt time moyen</div>
-        <div class="card-value" style="color:var(--text)">54s</div>
+        <div class="card-value" style="color:var(--text)" id="summaryTakt">—</div>
         <div class="card-sub">toutes lignes confondues</div>
       </div>
     </div>
@@ -861,210 +861,9 @@ body {
         </div>
       </div>
 
-      <div class="flux-grid" id="fluxGrid" style="display:none">
+      <div class="flux-grid" id="fluxGrid" style="display:none"></div>
 
-        <!-- FLUX 1 — Alert -->
-        <div class="flux-card has-alert">
-          <div class="flux-preview">
-            <div class="mini-flow">
-              <div class="mini-block ok">Appro.</div>
-              <div class="mini-arrow">→</div>
-              <div class="mini-block warn">Assemblage ⚠</div>
-              <div class="mini-arrow">→</div>
-              <div class="mini-block ok">Contrôle</div>
-              <div class="mini-arrow">→</div>
-              <div class="mini-block ok">Expéd.</div>
-            </div>
-            <div class="alert-badge">⚠ Goulot</div>
-          </div>
-          <div class="flux-body">
-            <div class="flux-header-row">
-              <div>
-                <div class="flux-name">Ligne A — Assemblage</div>
-                <div class="flux-meta">Modifié il y a 2h · 4 postes</div>
-              </div>
-              <div class="flux-status warn">Alerte</div>
-            </div>
-            <div class="kpi-row">
-              <div class="kpi-mini">
-                <div class="kpi-mini-label">Takt time</div>
-                <div class="kpi-mini-value neutral">58s</div>
-              </div>
-              <div class="kpi-mini">
-                <div class="kpi-mini-label">Temps cycle</div>
-                <div class="kpi-mini-value warn">78s</div>
-              </div>
-              <div class="kpi-mini">
-                <div class="kpi-mini-label">Rendement</div>
-                <div class="kpi-mini-value warn">74%</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- FLUX 2 — OK -->
-        <div class="flux-card">
-          <div class="flux-preview">
-            <div class="mini-flow">
-              <div class="mini-block ok">Découpe</div>
-              <div class="mini-arrow">→</div>
-              <div class="mini-block ok">Formage</div>
-              <div class="mini-arrow">→</div>
-              <div class="mini-block ok">Soudure</div>
-              <div class="mini-arrow">→</div>
-              <div class="mini-block ok">Finition</div>
-            </div>
-          </div>
-          <div class="flux-body">
-            <div class="flux-header-row">
-              <div>
-                <div class="flux-name">Ligne B — Métallurgie</div>
-                <div class="flux-meta">Modifié hier · 4 postes</div>
-              </div>
-              <div class="flux-status ok">Nominal</div>
-            </div>
-            <div class="kpi-row">
-              <div class="kpi-mini">
-                <div class="kpi-mini-label">Takt time</div>
-                <div class="kpi-mini-value neutral">45s</div>
-              </div>
-              <div class="kpi-mini">
-                <div class="kpi-mini-label">Temps cycle</div>
-                <div class="kpi-mini-value ok">42s</div>
-              </div>
-              <div class="kpi-mini">
-                <div class="kpi-mini-label">Rendement</div>
-                <div class="kpi-mini-value ok">93%</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- FLUX 3 — Alert -->
-        <div class="flux-card has-alert">
-          <div class="flux-preview">
-            <div class="mini-flow">
-              <div class="mini-block ok">Injection</div>
-              <div class="mini-arrow">→</div>
-              <div class="mini-block ok">Refroid.</div>
-              <div class="mini-arrow">→</div>
-              <div class="mini-block warn">Contrôle ⚠</div>
-              <div class="mini-arrow">→</div>
-              <div class="mini-block ok">Emball.</div>
-            </div>
-            <div class="alert-badge">⚠ Goulot</div>
-          </div>
-          <div class="flux-body">
-            <div class="flux-header-row">
-              <div>
-                <div class="flux-name">Ligne C — Plastique</div>
-                <div class="flux-meta">Modifié il y a 3j · 4 postes</div>
-              </div>
-              <div class="flux-status warn">Alerte</div>
-            </div>
-            <div class="kpi-row">
-              <div class="kpi-mini">
-                <div class="kpi-mini-label">Takt time</div>
-                <div class="kpi-mini-value neutral">60s</div>
-              </div>
-              <div class="kpi-mini">
-                <div class="kpi-mini-label">Temps cycle</div>
-                <div class="kpi-mini-value warn">71s</div>
-              </div>
-              <div class="kpi-mini">
-                <div class="kpi-mini-label">Rendement</div>
-                <div class="kpi-mini-value warn">84%</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- FLUX 4 -->
-        <div class="flux-card">
-          <div class="flux-preview">
-            <div class="mini-flow">
-              <div class="mini-block ok">Réception</div>
-              <div class="mini-arrow">→</div>
-              <div class="mini-block ok">Tri</div>
-              <div class="mini-arrow">→</div>
-              <div class="mini-block ok">Stockage</div>
-              <div class="mini-arrow">→</div>
-              <div class="mini-block ok">Expéd.</div>
-            </div>
-          </div>
-          <div class="flux-body">
-            <div class="flux-header-row">
-              <div>
-                <div class="flux-name">Logistique — Entrepôt</div>
-                <div class="flux-meta">Modifié il y a 1 sem · 4 postes</div>
-              </div>
-              <div class="flux-status ok">Nominal</div>
-            </div>
-            <div class="kpi-row">
-              <div class="kpi-mini">
-                <div class="kpi-mini-label">Takt time</div>
-                <div class="kpi-mini-value neutral">30s</div>
-              </div>
-              <div class="kpi-mini">
-                <div class="kpi-mini-label">Temps cycle</div>
-                <div class="kpi-mini-value ok">28s</div>
-              </div>
-              <div class="kpi-mini">
-                <div class="kpi-mini-label">Rendement</div>
-                <div class="kpi-mini-value ok">93%</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- FLUX 5 -->
-        <div class="flux-card">
-          <div class="flux-preview">
-            <div class="mini-flow">
-              <div class="mini-block ok">Usinage</div>
-              <div class="mini-arrow">→</div>
-              <div class="mini-block ok">Traitement</div>
-              <div class="mini-arrow">→</div>
-              <div class="mini-block ok">Assemblage</div>
-            </div>
-          </div>
-          <div class="flux-body">
-            <div class="flux-header-row">
-              <div>
-                <div class="flux-name">Ligne D — Usinage CNC</div>
-                <div class="flux-meta">Modifié il y a 5j · 3 postes</div>
-              </div>
-              <div class="flux-status ok">Nominal</div>
-            </div>
-            <div class="kpi-row">
-              <div class="kpi-mini">
-                <div class="kpi-mini-label">Takt time</div>
-                <div class="kpi-mini-value neutral">90s</div>
-              </div>
-              <div class="kpi-mini">
-                <div class="kpi-mini-label">Temps cycle</div>
-                <div class="kpi-mini-value ok">85s</div>
-              </div>
-              <div class="kpi-mini">
-                <div class="kpi-mini-label">Rendement</div>
-                <div class="kpi-mini-value ok">88%</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- NEW FLUX placeholder -->
-        <div class="flux-card" onclick="openModal()" style="border-style: dashed; display:flex; align-items:center; justify-content:center; min-height:190px; opacity:0.5; transition: opacity 0.2s;" onmouseenter="this.style.opacity=1" onmouseleave="this.style.opacity=0.5">
-          <div style="text-align:center; color:var(--muted2);">
-            <div style="font-size:2rem; margin-bottom:0.5rem;">✚</div>
-            <div style="font-size:0.88rem; font-weight:500;">Nouveau flux</div>
-          </div>
-        </div>
-
-      </div>
-    </div>
-
-    <!-- BOTTOM ROW -->
+      <!-- BOTTOM ROW -->
     <div class="bottom-row">
 
       <!-- Activity -->
@@ -1073,84 +872,18 @@ body {
           <div class="panel-title">Activité récente</div>
           <a class="panel-link">Tout voir →</a>
         </div>
-        <div class="activity-list">
-          <div class="activity-item">
-            <div class="activity-dot warn"></div>
-            <div class="activity-text">
-              <div class="activity-msg"><strong>Goulot détecté</strong> sur Ligne A — poste Assemblage dépasse le takt time de 20s</div>
-              <div class="activity-time">Il y a 2 heures</div>
-            </div>
-          </div>
-          <div class="activity-item">
-            <div class="activity-dot info"></div>
-            <div class="activity-text">
-              <div class="activity-msg"><strong>Ligne B</strong> mise à jour — temps de cycle réduit à 42s après optimisation</div>
-              <div class="activity-time">Hier à 14h32</div>
-            </div>
-          </div>
-          <div class="activity-item">
-            <div class="activity-dot warn"></div>
-            <div class="activity-text">
-              <div class="activity-msg"><strong>Alerte</strong> sur Ligne C — poste Contrôle qualité saturé</div>
-              <div class="activity-time">Il y a 3 jours</div>
-            </div>
-          </div>
-          <div class="activity-item">
-            <div class="activity-dot ok"></div>
-            <div class="activity-text">
-              <div class="activity-msg"><strong>Ligne D</strong> ajoutée — flux Usinage CNC modélisé (3 postes)</div>
-              <div class="activity-time">Il y a 5 jours</div>
-            </div>
-          </div>
-          <div class="activity-item">
-            <div class="activity-dot ok"></div>
-            <div class="activity-text">
-              <div class="activity-msg"><strong>Export PDF</strong> généré pour Ligne B — partagé avec l'équipe</div>
-              <div class="activity-time">Il y a 1 semaine</div>
-            </div>
-          </div>
+        <div class="activity-list" id="activityList">
+          <div style="padding:1.5rem;text-align:center;color:var(--muted);font-size:0.85rem;">Aucune activité récente</div>
         </div>
-      </div>
+        </div>
 
       <!-- Rendements -->
       <div class="panel stats-panel">
         <div class="panel-header">
           <div class="panel-title">Rendement par ligne</div>
+        <div id="statBars" style="padding:1rem 1.3rem;text-align:center;color:var(--muted);font-size:0.82rem;">
+          Créez des flux pour voir les statistiques
         </div>
-        <div class="stat-bar-item">
-          <div class="stat-bar-header">
-            <span class="stat-bar-name">Ligne B — Métallurgie</span>
-            <span class="stat-bar-val ok">93%</span>
-          </div>
-          <div class="stat-bar-track"><div class="stat-bar-fill ok" style="width:93%"></div></div>
-        </div>
-        <div class="stat-bar-item">
-          <div class="stat-bar-header">
-            <span class="stat-bar-name">Logistique — Entrepôt</span>
-            <span class="stat-bar-val ok">93%</span>
-          </div>
-          <div class="stat-bar-track"><div class="stat-bar-fill ok" style="width:93%"></div></div>
-        </div>
-        <div class="stat-bar-item">
-          <div class="stat-bar-header">
-            <span class="stat-bar-name">Ligne D — Usinage CNC</span>
-            <span class="stat-bar-val ok">88%</span>
-          </div>
-          <div class="stat-bar-track"><div class="stat-bar-fill ok" style="width:88%"></div></div>
-        </div>
-        <div class="stat-bar-item">
-          <div class="stat-bar-header">
-            <span class="stat-bar-name">Ligne C — Plastique</span>
-            <span class="stat-bar-val warn">84%</span>
-          </div>
-          <div class="stat-bar-track"><div class="stat-bar-fill warn" style="width:84%"></div></div>
-        </div>
-        <div class="stat-bar-item">
-          <div class="stat-bar-header">
-            <span class="stat-bar-name">Ligne A — Assemblage</span>
-            <span class="stat-bar-val warn">74%</span>
-          </div>
-          <div class="stat-bar-track"><div class="stat-bar-fill warn" style="width:74%"></div></div>
         </div>
       </div>
 
@@ -1329,9 +1062,63 @@ body {
     newCard.innerHTML = '<div style="text-align:center;color:var(--muted2);"><div style="font-size:2rem;margin-bottom:0.5rem">✚</div><div style="font-size:0.88rem;font-weight:500">Nouveau flux</div></div>';
     grid.appendChild(newCard);
 
-    // Update summary count
-    const countEl = document.querySelector('.summary-card.c-accent .card-value');
-    if (countEl) countEl.textContent = data.length;
+    // Update summary cards with real data
+    const elFlux = document.getElementById('summaryFlux');
+    if (elFlux) elFlux.textContent = data.length;
+
+    // Calc average rendement and goulots
+    let totalRend = 0, rendCount = 0, goulotCount = 0, taktSum = 0, taktCount = 0;
+    data.forEach(flux => {
+      const ns = JSON.parse(flux.nodes || '[]');
+      const wn = ns.filter(n => n.type==='work'||n.type==='control');
+      const cycles = wn.map(n => n.cycle).filter(Boolean);
+      if (!cycles.length) return;
+      const maxC = Math.max(...cycles);
+      const takt = flux.takt_time_cible || Math.round(cycles.reduce((a,b)=>a+b,0)/cycles.length*1.15);
+      const rend = Math.round((takt/maxC)*100);
+      totalRend += rend; rendCount++;
+      if (maxC > takt) goulotCount++;
+      taktSum += takt; taktCount++;
+    });
+    const elRend = document.getElementById('summaryRendement');
+    if (elRend && rendCount) elRend.textContent = Math.round(totalRend/rendCount) + '%';
+    const elGoulot = document.getElementById('summaryGoulots');
+    if (elGoulot) elGoulot.textContent = goulotCount;
+    const elTakt = document.getElementById('summaryTakt');
+    if (elTakt && taktCount) elTakt.textContent = Math.round(taktSum/taktCount) + 's';
+
+    // Update stat bars with real data
+    const statBars = document.getElementById('statBars');
+    if (statBars && rendCount) {
+      const sorted = [...data].filter(f => {
+        const ns = JSON.parse(f.nodes||'[]');
+        return ns.some(n=>n.cycle);
+      }).map(f => {
+        const ns = JSON.parse(f.nodes||'[]');
+        const cycles = ns.filter(n=>n.cycle).map(n=>n.cycle);
+        const maxC = Math.max(...cycles);
+        const takt = f.takt_time_cible || Math.round(cycles.reduce((a,b)=>a+b,0)/cycles.length*1.15);
+        return { nom: f.nom, rend: Math.round((takt/maxC)*100), isOk: maxC<=takt };
+      }).sort((a,b)=>b.rend-a.rend);
+      statBars.innerHTML = sorted.map(s => `
+        <div class="stat-bar-item">
+          <div class="stat-bar-header">
+            <span class="stat-bar-name">${s.nom}</span>
+            <span class="stat-bar-val ${s.isOk?'ok':'warn'}">${s.rend}%</span>
+          </div>
+          <div class="stat-bar-track"><div class="stat-bar-fill ${s.isOk?'ok':'warn'}" style="width:${s.rend}%"></div></div>
+        </div>`).join('');
+    }
+
+    // Update activity feed
+    const actList = document.getElementById('activityList');
+    if (actList && data.length) {
+      actList.innerHTML = data.slice(0,5).map(f => {
+        const diffH = Math.floor((Date.now()-new Date(f.updated_at))/3600000);
+        const timeLabel = diffH<1?"à l'instant":diffH<24?`il y a ${diffH}h`:`il y a ${Math.floor(diffH/24)}j`;
+        return `<div class="activity-item"><div class="activity-dot info"></div><div class="activity-text"><div class="activity-msg"><strong>${f.nom}</strong> — modifié ${timeLabel}</div><div class="activity-time">${new Date(f.updated_at).toLocaleDateString('fr-FR')}</div></div></div>`;
+      }).join('');
+    }
   }
 
   // ─── INIT ─────────────────────────────────────────────────────────────────
@@ -1349,9 +1136,11 @@ body {
       nom: nom || 'Nouveau flux',
       type_production: type,
       takt_time_cible: takt,
-      nodes: '[]',
-      connections: '[]'
+      nodes: [],
+      connections: []
     }).select().single();
+
+    if (error) console.error('Supabase error:', JSON.stringify(error));
 
     if (data && !error) {
       window.location.href = '/editor?id=' + data.id;

@@ -921,8 +921,8 @@ async function saveFlux() {
   const payload = {
     user_id: currentUser.id,
     nom: title,
-    nodes: JSON.stringify(nodes),
-    connections: JSON.stringify(connections),
+    nodes: nodes,
+    connections: connections,
     updated_at: new Date().toISOString()
   };
 
@@ -1310,8 +1310,8 @@ async function initEditor() {
       currentFluxId = data.id;
       document.getElementById('fluxTitle').value = data.nom;
       // Restore nodes
-      const savedNodes = JSON.parse(data.nodes || '[]');
-      const savedConns = JSON.parse(data.connections || '[]');
+      const savedNodes = Array.isArray(data.nodes) ? data.nodes : JSON.parse(data.nodes || '[]');
+      const savedConns = Array.isArray(data.connections) ? data.connections : JSON.parse(data.connections || '[]');
       savedNodes.forEach(n => {
         const node = addNode(n.type, n.label, n.x, n.y);
         Object.assign(node, n);
