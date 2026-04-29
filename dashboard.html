@@ -1124,29 +1124,44 @@ body {
   // ─── INIT ─────────────────────────────────────────────────────────────────
   // ─── CREATE NEW FLUX ─────────────────────────────────────────────────────
   async function createFlux() {
-    const { data: { session } } = await supabaseClient.auth.getSession();
-    if (!session) return;
+    const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
+    if (sessionError || !session) {
+      window.location.href = '/login';
+      return;
+    }
 
-    const nom = document.querySelector('#modal input[type="text"]')?.value || 'Nouveau flux';
+    const nom = document.querySelector('#modal input[type="text"]')?.value?.trim() || 'Nouveau flux';
     const type = document.querySelector('#modal select')?.value || '';
-    const takt = parseInt(document.querySelector('#modal input[type="number"]')?.value) || null;
+    const taktRaw = document.querySelector('#modal input[type="number"]')?.value;
+    const takt = taktRaw ? parseInt(taktRaw) : null;
 
-    const { data, error } = await supabaseClient.from('flux').insert({
-      user_id: session.user.id,
-      nom: nom || 'Nouveau flux',
-      type_production: type,
-      takt_time_cible: takt,
-      nodes: [],
-      connections: []
-    }).select().single();
+    // Close modal and show loading
+    const btn = document.querySelector('.modal-btn-create');
+    if (btn) { btn.disabled = true; btn.textContent = 'Création…'; }
 
-    if (error) console.error('Supabase error:', JSON.stringify(error));
+    const { data, error } = await supabaseClient
+      .from('flux')
+      .insert({
+        user_id: session.user.id,
+        nom: nom,
+        type_production: type || null,
+        takt_time_cible: takt,
+        nodes: JSON.stringify([]),
+        connections: JSON.stringify([])
+      })
+      .select('id')
+      .single();
 
-    if (data && !error) {
+    if (btn) { btn.disabled = false; btn.textContent = 'Créer et modéliser →'; }
+
+    if (error) {
+      console.error('Supabase insert error:', JSON.stringify(error));
+      alert('Erreur : ' + (error.message || JSON.stringify(error)));
+      return;
+    }
+
+    if (data?.id) {
       window.location.href = '/editor?id=' + data.id;
-    } else {
-      console.error(error);
-      alert('Erreur lors de la création du flux.');
     }
   }
 
