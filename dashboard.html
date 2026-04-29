@@ -788,13 +788,16 @@ body {
     <a class="nav-item">
       <span class="nav-icon">⚙</span> Paramètres
     </a>
+    <a class="nav-item" onclick="logout()" style="cursor:pointer;color:var(--warn)">
+      <span class="nav-icon">↪</span> Déconnexion
+    </a>
   </nav>
 
-  <div class="sidebar-user">
-    <div class="user-avatar">ML</div>
+  <div class="sidebar-user" onclick="window.location.href='/account'" style="cursor:pointer" title="Mon compte">
+    <div class="user-avatar" id="userAvatar">…</div>
     <div class="user-info">
-      <div class="user-name">Marc Lefebvre</div>
-      <div class="user-role">Resp. Production</div>
+      <div class="user-name" id="userName">Chargement…</div>
+      <div class="user-role" id="userRole">—</div>
     </div>
   </div>
 </aside>
@@ -1188,13 +1191,44 @@ body {
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
-  // Date
+  // ─── SUPABASE AUTH ────────────────────────────────────────────────────────
+  const SUPABASE_URL = 'https://tjgpmdsaorhoshkprecc.supabase.co';
+  const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRqZ3BtZHNhb3Job3Noa3ByZWNjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDI4MTMsImV4cCI6MjA5Mjk3ODgxM30.ZpLeIKRHx46kq41AzRKnydmz-3U61-5kdM1ZVj-29H8';
+  const { createClient } = supabase;
+  const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  async function initAuth() {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session) {
+      window.location.href = '/login';
+      return;
+    }
+    const user = session.user;
+    const meta = user.user_metadata || {};
+    const firstName = meta.first_name || '';
+    const lastName = meta.last_name || '';
+    const fullName = (firstName + ' ' + lastName).trim() || user.email;
+    const initials = ((firstName[0]||'') + (lastName[0]||'')).toUpperCase() || user.email[0].toUpperCase();
+    const company = meta.company || 'Mon entreprise';
+    const plan = meta.plan || 'free';
+
+    document.getElementById('userAvatar').textContent = initials;
+    document.getElementById('userName').textContent = fullName;
+    document.getElementById('userRole').textContent = company;
+
+    // Update topbar title with company
+    const titleEl = document.querySelector('.topbar-title');
+    if (titleEl) titleEl.innerHTML = 'Dashboard <span class="section-count">— ' + company + '</span>';
+  }
+
+  // ─── DATE ─────────────────────────────────────────────────────────────────
   const d = new Date();
   const opts = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
   document.getElementById('topbar-date').textContent = d.toLocaleDateString('fr-FR', opts);
 
-  // Filter buttons
+  // ─── FILTER BUTTONS ───────────────────────────────────────────────────────
   document.querySelectorAll('.filter-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
@@ -1202,7 +1236,7 @@ body {
     });
   });
 
-  // Modal
+  // ─── MODAL ────────────────────────────────────────────────────────────────
   function openModal() {
     document.getElementById('modal').classList.add('open');
   }
@@ -1210,6 +1244,14 @@ body {
     if (!e || e.target === document.getElementById('modal')) {
       document.getElementById('modal').classList.remove('open');
     }
+  }
+
+  // ─── INIT ─────────────────────────────────────────────────────────────────
+  initAuth();
+
+  async function logout() {
+    await supabaseClient.auth.signOut();
+    window.location.href = '/login';
   }
 </script>
 </body>
