@@ -9,7 +9,8 @@
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
-  --bg: #0b0e14; --surface: #111620; --surface2: #161c28; --border: #1e2736; --border2: #253044;
+  --bg: #0b0e14; --surface: #111620; --surface2: #161c28;
+  --border: #1e2736; --border2: #253044;
   --accent: #00e5ff; --accent-dim: rgba(0,229,255,0.1);
   --warn: #ff6b35; --warn-dim: rgba(255,107,53,0.12);
   --ok: #22d3a0; --ok-dim: rgba(34,211,160,0.1);
@@ -18,7 +19,6 @@
 }
 html, body { height: 100%; overflow: hidden; }
 body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; font-weight: 300; display: flex; flex-direction: column; }
-
 /* TOPBAR */
 .topbar { height: 54px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 1.2rem; gap: 1rem; flex-shrink: 0; z-index: 50; }
 .logo-mark { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.1rem; letter-spacing: -0.02em; }
@@ -36,10 +36,8 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-s
 .tb-btn.primary:hover { box-shadow: 0 4px 16px rgba(0,229,255,0.25); }
 .save-status { font-size: 0.75rem; color: var(--ok); display: flex; align-items: center; gap: 0.35rem; }
 .save-status::before { content: ''; width: 6px; height: 6px; background: var(--ok); border-radius: 50%; }
-
 /* LAYOUT */
 .editor-layout { flex: 1; display: flex; overflow: hidden; }
-
 /* BLOCKS PANEL */
 .blocks-panel { width: 190px; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto; }
 .blocks-panel::-webkit-scrollbar { width: 3px; }
@@ -56,7 +54,6 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-s
 .block-icon.control { background: rgba(160,120,255,0.1); border: 1px solid rgba(160,120,255,0.2); }
 .block-name { font-size: 0.8rem; font-weight: 500; color: var(--text); }
 .block-desc { font-size: 0.67rem; color: var(--muted); margin-top: 0.1rem; }
-
 /* CANVAS AREA */
 .canvas-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
 .canvas-toolbar { height: 42px; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 1rem; gap: 0.5rem; background: var(--bg); flex-shrink: 0; }
@@ -73,7 +70,6 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-s
 .canvas-hint-icon { font-size: 2.5rem; opacity: 0.2; margin-bottom: 0.75rem; }
 .canvas-hint-text { font-size: 0.88rem; line-height: 1.6; }
 .canvas-hint-text strong { color: var(--muted2); font-weight: 500; }
-
 /* FLOW NODES */
 .flow-node { position: absolute; min-width: 150px; background: var(--surface); border: 1.5px solid var(--border); border-radius: 10px; cursor: move; user-select: none; transition: box-shadow 0.15s, border-color 0.15s; z-index: 10; touch-action: none; }
 .flow-node:hover { border-color: var(--border2); box-shadow: 0 8px 30px rgba(0,0,0,0.4); }
@@ -96,16 +92,13 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-s
 .node-field-val.warn { color: var(--warn); }
 .node-field-val.neutral { color: var(--text); }
 .node-field-val.accent { color: var(--accent); }
-
 /* VA/NVA bar on node */
 .node-vana-bar { height: 3px; display: flex; border-radius: 0 0 8px 8px; overflow: hidden; }
 .vna-va { background: var(--ok); transition: width 0.4s; }
 .vna-nva { background: var(--warn); transition: width 0.4s; }
-
 /* MOS button */
 .node-mos-btn { width: 100%; margin-top: 0.4rem; padding: 0.3rem; background: var(--accent-dim); border: 1px solid rgba(0,229,255,0.2); border-radius: 5px; color: var(--accent); font-family: 'DM Sans', sans-serif; font-size: 0.68rem; cursor: pointer; transition: all 0.15s; }
 .node-mos-btn:hover { background: rgba(0,229,255,0.15); }
-
 /* Ports */
 .port { position: absolute; width: 10px; height: 10px; background: var(--border2); border: 2px solid var(--surface); border-radius: 50%; cursor: crosshair; z-index: 30; transition: background 0.15s, transform 0.15s; }
 .port:hover { background: var(--accent); }
@@ -113,7 +106,6 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-s
 .port.port-out:hover { transform: translateY(-50%) scale(1.4); }
 .port.port-in { left: -5px; top: 50%; transform: translateY(-50%); }
 .port.port-in:hover { transform: translateY(-50%) scale(1.4); }
-
 /* KPI BAR */
 .kpi-bar { background: var(--surface); border-top: 1px solid var(--border); display: flex; align-items: stretch; flex-shrink: 0; overflow-x: auto; }
 .kpi-bar::-webkit-scrollbar { height: 3px; }
@@ -127,7 +119,6 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-s
 .kpi-value.accent { color: var(--accent); }
 .kpi-sub { font-size: 0.6rem; color: var(--muted); margin-top: 0.15rem; }
 .kpi-alert-tag { display: inline-flex; align-items: center; gap: 0.3rem; background: var(--warn-dim); color: var(--warn); font-size: 0.58rem; font-weight: 600; padding: 0.15rem 0.5rem; border-radius: 100px; margin-top: 0.15rem; border: 1px solid rgba(255,107,53,0.25); }
-
 /* TIME TYPE LEGEND */
 .time-legend { display: flex; align-items: center; gap: 0.8rem; padding: 0 1rem; border-right: 1px solid var(--border); }
 .legend-dot { display: flex; align-items: center; gap: 0.3rem; font-size: 0.6rem; color: var(--muted2); }
@@ -136,7 +127,6 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-s
 .legend-dot.machine::before { background: var(--machine); }
 .legend-dot.move::before { background: var(--move); }
 .legend-dot.wait::before { background: var(--wait); }
-
 /* RIGHT PANEL */
 .props-panel { width: 230px; background: var(--surface); border-left: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto; }
 .props-panel::-webkit-scrollbar { width: 3px; }
@@ -160,20 +150,17 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-s
 .delete-btn:hover { background: var(--warn-dim); border-color: var(--warn); }
 .open-mos-btn { width: 100%; margin-top: 0.5rem; padding: 0.55rem; background: var(--accent-dim); border: 1px solid rgba(0,229,255,0.3); border-radius: 7px; color: var(--accent); font-family: 'DM Sans', sans-serif; font-size: 0.8rem; font-weight: 500; cursor: pointer; transition: all 0.15s; }
 .open-mos-btn:hover { background: rgba(0,229,255,0.15); }
-
 /* ─── MOS MODAL ─────────────────────────────────────────────────────────── */
 .mos-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 300; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.25s; backdrop-filter: blur(6px); }
 .mos-overlay.open { opacity: 1; pointer-events: all; }
 .mos-modal { background: var(--surface); border: 1px solid var(--border2); border-radius: 18px; width: min(96vw, 820px); max-height: 92vh; display: flex; flex-direction: column; transform: translateY(24px); transition: transform 0.25s; box-shadow: 0 40px 100px rgba(0,0,0,0.6); }
 .mos-overlay.open .mos-modal { transform: translateY(0); }
-
 .mos-header { padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 1rem; }
 .mos-title-group { flex: 1; }
 .mos-title { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 800; margin-bottom: 0.2rem; }
 .mos-subtitle { font-size: 0.75rem; color: var(--muted); }
 .mos-close { width: 32px; height: 32px; border-radius: 8px; background: transparent; border: 1px solid var(--border); color: var(--muted2); font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
 .mos-close:hover { background: var(--surface2); color: var(--text); }
-
 /* MOS summary strip */
 .mos-summary { display: flex; padding: 0.8rem 1.5rem; gap: 0; border-bottom: 1px solid var(--border); background: var(--bg); }
 .mos-kpi { flex: 1; text-align: center; border-right: 1px solid var(--border); }
@@ -185,7 +172,6 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-s
 .mos-kpi-val.move { color: var(--move); }
 .mos-kpi-val.wait { color: var(--wait); }
 .mos-kpi-val.total { color: var(--accent); }
-
 /* MOS gantt bar */
 .mos-gantt { padding: 0.6rem 1.5rem; border-bottom: 1px solid var(--border); background: var(--bg); }
 .mos-gantt-label { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 0.4rem; }
@@ -195,21 +181,17 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-s
 .gantt-seg.machine { background: var(--machine); }
 .gantt-seg.move { background: var(--move); }
 .gantt-seg.wait { background: var(--wait); }
-
 /* MOS body */
 .mos-body { flex: 1; overflow-y: auto; padding: 1rem 1.5rem; }
 .mos-body::-webkit-scrollbar { width: 4px; }
 .mos-body::-webkit-scrollbar-thumb { background: var(--border2); }
-
 /* Meta fields */
 .mos-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; margin-bottom: 1.2rem; }
 .meta-field label { display: block; font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.09em; color: var(--muted); margin-bottom: 0.3rem; }
 .meta-field input { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 0.45rem 0.7rem; font-family: 'DM Sans', sans-serif; font-size: 0.82rem; color: var(--text); outline: none; transition: border-color 0.2s; }
 .meta-field input:focus { border-color: var(--accent); }
-
 /* Tasks table */
 .tasks-section-title { font-family: 'Syne', sans-serif; font-size: 0.8rem; font-weight: 700; color: var(--muted2); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.6rem; margin-top: 0.5rem; }
-
 .tasks-header { display: grid; grid-template-columns: 28px 1fr 72px 72px 72px 72px 72px 30px; gap: 0.4rem; align-items: center; padding: 0.3rem 0.5rem; margin-bottom: 0.3rem; }
 .th { font-size: 0.58rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); font-weight: 500; text-align: center; }
 .th.left { text-align: left; }
@@ -217,13 +199,11 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-s
 .th.machine-h { color: var(--machine); }
 .th.move-h { color: var(--move); }
 .th.wait-h { color: var(--wait); }
-
 .task-row { display: grid; grid-template-columns: 28px 1fr 72px 72px 72px 72px 72px 30px; gap: 0.4rem; align-items: center; padding: 0.35rem 0.5rem; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 0.4rem; background: var(--bg); transition: border-color 0.15s; position: relative; }
 .task-row:hover { border-color: var(--border2); }
 .task-row.has-data { border-left: 3px solid; }
 .task-row.va { border-left-color: var(--ok); }
 .task-row.nva { border-left-color: var(--warn); }
-
 .task-num { font-family: 'Syne', sans-serif; font-size: 0.75rem; font-weight: 700; color: var(--muted); text-align: center; }
 .task-input { background: transparent; border: none; outline: none; font-family: 'DM Sans', sans-serif; font-size: 0.82rem; color: var(--text); width: 100%; padding: 0.2rem 0; }
 .task-input::placeholder { color: var(--muted); font-size: 0.78rem; }
@@ -236,40 +216,36 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-s
 .task-cumul { font-family: 'Syne', sans-serif; font-size: 0.75rem; color: var(--accent); text-align: center; font-weight: 600; }
 .task-del { background: transparent; border: none; color: var(--muted); cursor: pointer; font-size: 0.85rem; transition: color 0.15s; padding: 0.2rem; }
 .task-del:hover { color: var(--warn); }
-
 .task-type-tag { display: flex; gap: 0.3rem; margin-top: 0.15rem; }
 .type-badge { font-size: 0.58rem; padding: 0.1rem 0.4rem; border-radius: 100px; font-weight: 500; cursor: pointer; transition: all 0.15s; border: 1px solid transparent; }
 .type-badge.va-tag { background: var(--ok-dim); color: var(--ok); border-color: rgba(34,211,160,0.2); }
 .type-badge.nva-tag { background: var(--warn-dim); color: var(--warn); border-color: rgba(255,107,53,0.2); }
 .type-badge.active { opacity: 1; }
 .type-badge:not(.active) { opacity: 0.35; }
-
 .add-task-btn { width: 100%; margin-top: 0.5rem; padding: 0.55rem; background: transparent; border: 1px dashed var(--border2); border-radius: 8px; color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 0.82rem; cursor: pointer; transition: all 0.15s; }
 .add-task-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
-
 /* Non-cyclés */
 .noncycles-section { margin-top: 1.2rem; border-top: 1px solid var(--border); padding-top: 0.9rem; }
 .nc-row { display: grid; grid-template-columns: 1fr 60px 60px 60px 30px; gap: 0.4rem; align-items: center; padding: 0.3rem 0.5rem; border: 1px solid var(--border); border-radius: 6px; margin-bottom: 0.35rem; background: var(--bg); }
-
 /* MOS footer */
 .mos-footer { padding: 1rem 1.5rem; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 1rem; }
 .mos-footer-kpi { font-size: 0.78rem; color: var(--muted2); }
 .mos-footer-kpi strong { color: var(--text); font-weight: 500; }
 .mos-save-btn { margin-left: auto; background: var(--accent); color: #000; border: none; border-radius: 8px; padding: 0.6rem 1.4rem; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: all 0.15s; }
 .mos-save-btn:hover { box-shadow: 0 6px 20px rgba(0,229,255,0.25); }
-
 /* VA/NVA tooltip tag in KPI bar */
 .vana-kpi { display: flex; flex-direction: column; align-items: center; }
 .vana-mini-bar { width: 60px; height: 5px; border-radius: 3px; overflow: hidden; display: flex; margin-top: 0.3rem; }
-
-@keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 .flow-node { animation: fadeUp 0.3s ease both; }
 .content::-webkit-scrollbar { width: 5px; }
 </style>
 </head>
 <body>
 
-<!-- TOPBAR -->
 <header class="topbar">
   <div class="logo-mark">Kai<em>flow</em></div>
   <div class="topbar-sep"></div>
@@ -286,7 +262,6 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-s
 
 <div class="editor-layout">
 
-  <!-- LEFT PANEL -->
   <div class="blocks-panel">
     <div class="panel-section">
       <div class="panel-section-title">Blocs</div>
@@ -310,6 +285,7 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-s
         <div><div class="block-name">Contrôle qualité</div><div class="block-desc">Inspection</div></div>
       </div>
     </div>
+    
     <div class="panel-section">
       <div class="panel-section-title">Légende temps</div>
       <div style="display:flex;flex-direction:column;gap:0.35rem;padding:0 0.2rem;">
@@ -325,7 +301,6 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-s
     </div>
   </div>
 
-  <!-- CANVAS -->
   <div class="canvas-area">
     <div class="canvas-toolbar">
       <button class="tool-btn" title="Zoom +" onclick="zoom(1.15)">＋</button>
@@ -335,8 +310,8 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-s
       <button class="tool-btn" title="Supprimer" onclick="deleteSelected()">🗑</button>
       <span class="zoom-info" id="zoomInfo">100%</span>
     </div>
-
-    <div class="canvas" id="canvas" ondragover="onDragOver(event)" ondrop="onDrop(event)" style="touch-action:none;">
+    
+    <div class="canvas" id="canvas" style="touch-action:none;">
       <svg class="connections-svg" id="connectionsSvg" style="touch-action:none;"></svg>
       <svg class="drawing-line" id="drawingLine"></svg>
       <div class="canvas-hint" id="canvasHint">
@@ -345,7 +320,6 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-s
       </div>
     </div>
 
-    <!-- KPI BAR -->
     <div class="kpi-bar" id="kpiBar">
       <div class="kpi-item"><div class="kpi-label">Takt Time</div><div class="kpi-value neutral" id="kpiTakt">—</div><div class="kpi-sub">demande saisie</div></div>
       <div class="kpi-item"><div class="kpi-label">Temps cycle max</div><div class="kpi-value neutral" id="kpiCycle">—</div><div class="kpi-sub" id="kpiCycleSub">poste le plus lent</div></div>
@@ -362,20 +336,24 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-s
     </div>
   </div>
 
-  <!-- RIGHT PANEL -->
   <div class="props-panel">
     <div class="props-header"><div class="props-title">Propriétés</div><div class="props-subtitle" id="propsSubtitle">Sélectionnez un bloc</div></div>
+    
     <div class="props-empty" id="propsEmpty"><div class="props-empty-icon">↖</div><div class="props-empty-text">Cliquez sur un bloc pour modifier ses propriétés</div></div>
+    
     <div class="props-form" id="propsForm">
       <div class="prop-field"><label class="prop-label">Nom</label><input class="prop-input" id="propName" type="text" placeholder="ex: Assemblage"></div>
+      
       <div class="prop-field" id="pfTakt">
         <label class="prop-label">Takt time cible</label>
         <input class="prop-input" id="propTakt" type="number" placeholder="ex: 60">
         <div class="prop-unit">secondes / pièce</div>
       </div>
+      
       <div class="prop-field" id="pfCycle"><label class="prop-label">Temps de cycle</label><input class="prop-input" id="propCycle" type="number" placeholder="ex: 45"><div class="prop-unit">sec (auto si MOS rempli)</div></div>
       <div class="prop-field" id="pfOps"><label class="prop-label">Nb. opérateurs</label><input class="prop-input" id="propOps" type="number" placeholder="1" min="1"></div>
       <div class="prop-field" id="pfCapacity"><label class="prop-label">Capacité dispo</label><input class="prop-input" id="propCapacity" type="number" placeholder="ex: 480"><div class="prop-unit">secondes / période</div></div>
+      
       <div class="prop-field" id="pfType">
         <label class="prop-label">Classification VSM</label>
         <select class="prop-select" id="propVSM">
@@ -383,16 +361,18 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-s
           <option value="nva">⚠ Non Valeur Ajoutée (NVA)</option>
         </select>
       </div>
+
       <div class="prop-field" id="pfQty" style="display:none"><label class="prop-label">Quantité en stock</label><input class="prop-input" id="propQty" type="number" placeholder="50"><div class="prop-unit">pièces</div></div>
       <div class="prop-field" id="pfStockMax" style="display:none"><label class="prop-label">Stock max (alerte)</label><input class="prop-input" id="propStockMax" type="number" placeholder="100"><div class="prop-unit">pièces</div></div>
       <div class="prop-field" id="pfDist" style="display:none"><label class="prop-label">Distance</label><input class="prop-input" id="propDist" type="number" placeholder="30"><div class="prop-unit">mètres</div></div>
+      
       <button class="open-mos-btn" id="openMosBtn" onclick="openMOS()" style="display:none">📋 Mode Opératoire Standard</button>
       <button class="delete-btn" onclick="deleteSelected()">🗑 Supprimer</button>
     </div>
   </div>
+
 </div>
 
-<!-- ─── MOS MODAL ──────────────────────────────────────────────────────────── -->
 <div class="mos-overlay" id="mosOverlay">
   <div class="mos-modal">
     <div class="mos-header">
@@ -403,7 +383,6 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-s
       <button class="mos-close" onclick="closeMOS()">✕</button>
     </div>
 
-    <!-- Résumé temps -->
     <div class="mos-summary">
       <div class="mos-kpi"><div class="mos-kpi-label">Manuel</div><div class="mos-kpi-val manual" id="mosTotal-manual">0s</div></div>
       <div class="mos-kpi"><div class="mos-kpi-label">Machine</div><div class="mos-kpi-val machine" id="mosTotal-machine">0s</div></div>
@@ -413,7 +392,6 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-s
       <div class="mos-kpi"><div class="mos-kpi-label">%VA</div><div class="mos-kpi-val" id="mosTotal-va" style="color:var(--ok)">—</div></div>
     </div>
 
-    <!-- Gantt bar -->
     <div class="mos-gantt">
       <div class="mos-gantt-label">Répartition du temps de cycle</div>
       <div class="mos-gantt-bar" id="mosGanttBar">
@@ -425,7 +403,6 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-s
     </div>
 
     <div class="mos-body">
-      <!-- Meta -->
       <div class="mos-meta">
         <div class="meta-field"><label>Nom du process</label><input id="mosProcessName" type="text" placeholder="ex: Finition"></div>
         <div class="meta-field"><label>Auteur</label><input id="mosAuthor" type="text" placeholder="Nom"></div>
@@ -433,7 +410,6 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-s
         <div class="meta-field"><label>Nb. pièces / MOS</label><input id="mosNbPieces" type="number" placeholder="1" value="1" oninput="updateMOSCalcs()"></div>
       </div>
 
-      <!-- Tasks -->
       <div class="tasks-section-title">Décomposition des tâches</div>
       <div class="tasks-header">
         <div class="th">#</div>
@@ -448,7 +424,6 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-s
       <div id="tasksList"></div>
       <button class="add-task-btn" onclick="addTask()">✚ Ajouter une tâche</button>
 
-      <!-- Non cyclés -->
       <div class="noncycles-section">
         <div class="tasks-section-title">Activités non cyclées</div>
         <div style="display:grid;grid-template-columns:1fr 60px 60px 60px 30px;gap:0.4rem;margin-bottom:0.4rem;padding:0 0.5rem;">
@@ -461,6 +436,7 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-s
         <div id="ncList"></div>
         <button class="add-task-btn" onclick="addNC()">✚ Ajouter une activité</button>
       </div>
+
     </div>
 
     <div class="mos-footer">
@@ -482,10 +458,10 @@ const svg = document.getElementById('connectionsSvg');
 const drawingSvg = document.getElementById('drawingLine');
 
 const BLOCK_CONFIG = {
-  work:      { icon: '🔧', label: 'Poste de travail', color: 'work',      hasTime: true,  hasOps: true,  hasMOS: true  },
-  stock:     { icon: '📦', label: 'Stock',            color: 'stock',     hasTime: false, hasOps: false, hasMOS: false, hasQty: true },
-  transport: { icon: '🚚', label: 'Transport',        color: 'transport', hasTime: true,  hasOps: false, hasMOS: false, hasDist: true },
-  control:   { icon: '✅', label: 'Contrôle qualité', color: 'control',   hasTime: true,  hasOps: true,  hasMOS: true  },
+  work: { icon: '🔧', label: 'Poste de travail', color: 'work', hasTime: true, hasOps: true, hasMOS: true },
+  stock: { icon: '📦', label: 'Stock', color: 'stock', hasTime: false, hasOps: false, hasMOS: false, hasQty: true },
+  transport: { icon: '🚚', label: 'Transport', color: 'transport', hasTime: true, hasOps: false, hasMOS: false, hasDist: true },
+  control: { icon: '✅', label: 'Contrôle qualité', color: 'control', hasTime: true, hasOps: true, hasMOS: true },
 };
 
 // ─── UNIFIED TOUCH/MOUSE HELPERS ─────────────────────────────────────────────
@@ -496,24 +472,15 @@ function getClientXY(e) {
 }
 
 // ─── DRAG FROM LIBRARY ────────────────────────────────────────────────────────
-// mousemove + touchmove on document — no pointer capture, works everywhere
-
-let libGhost = null, libDragging = false, libDragType = null, libDragLabel = null;
-let libStartX = 0, libStartY = 0;
 const LIB_THRESHOLD = 6;
-
-function libCleanup() {
-  if (libGhost) { libGhost.remove(); libGhost = null; }
-  canvas.style.outline = '';
-  libDragging = false; libDragType = null; libDragLabel = null;
-}
 
 function libCreateGhost(label, x, y) {
   const g = document.createElement('div');
   g.style.cssText = 'position:fixed;z-index:9999;pointer-events:none;background:#111620;border:1.5px solid #00e5ff;border-radius:10px;padding:0.5rem 0.9rem;font-size:0.82rem;color:#e2e8f5;white-space:nowrap;box-shadow:0 8px 30px rgba(0,0,0,0.5);opacity:0.92;transform:rotate(2deg);';
   g.textContent = label;
   document.body.appendChild(g);
-  g.style.left = (x - 60) + 'px'; g.style.top = (y - 20) + 'px';
+  g.style.left = (x - 60) + 'px';
+  g.style.top = (y - 20) + 'px';
   return g;
 }
 
@@ -521,7 +488,8 @@ function libDropOnCanvas(clientX, clientY, type, label) {
   const r = canvas.getBoundingClientRect();
   if (clientX >= r.left && clientX <= r.right && clientY >= r.top && clientY <= r.bottom) {
     addNode(type, label, (clientX - r.left) / scale - 75, (clientY - r.top) / scale - 45);
-    updateHint(); markDirty();
+    updateHint();
+    markDirty();
   }
 }
 
@@ -529,96 +497,69 @@ function libDropAtCenter(type, label) {
   const r = canvas.getBoundingClientRect();
   const off = nodes.length * 30;
   addNode(type, label, (r.width/2/scale)-75+(off%200), (r.height/2/scale)-45+Math.floor(off/200)*70);
-  updateHint(); markDirty();
+  updateHint();
+  markDirty();
 }
 
 document.querySelectorAll('.block-template').forEach(el => {
   const type = el.dataset.type, label = el.dataset.label;
   el.style.cursor = 'grab';
-  el.style.userSelect = 'none';
   el.style.touchAction = 'none';
+  el.style.userSelect = 'none';
 
-  // MOUSE — no preventDefault on mousedown so click still fires normally
-  el.addEventListener('mousedown', e => {
-    if (e.button !== 0) return;
-    libDragType = type; libDragLabel = label;
-    libStartX = e.clientX; libStartY = e.clientY; libDragging = false;
+  el.addEventListener('pointerdown', e => {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    
+    e.preventDefault();
+    el.setPointerCapture(e.pointerId);
+
+    let isDragging = false;
+    let ghost = null;
+    const startX = e.clientX;
+    const startY = e.clientY;
 
     function onMove(ev) {
-      if (!libDragging && Math.hypot(ev.clientX - libStartX, ev.clientY - libStartY) > LIB_THRESHOLD) {
-        libDragging = true;
-        libGhost = libCreateGhost(label, ev.clientX, ev.clientY);
+      if (!isDragging && Math.hypot(ev.clientX - startX, ev.clientY - startY) > LIB_THRESHOLD) {
+        isDragging = true;
+        ghost = libCreateGhost(label, ev.clientX, ev.clientY);
       }
-      if (libGhost) {
-        libGhost.style.left = (ev.clientX - 60) + 'px';
-        libGhost.style.top  = (ev.clientY - 20) + 'px';
+      if (ghost) {
+        ghost.style.left = (ev.clientX - 60) + 'px';
+        ghost.style.top = (ev.clientY - 20) + 'px';
         const r = canvas.getBoundingClientRect();
-        canvas.style.outline = (ev.clientX >= r.left && ev.clientX <= r.right && ev.clientY >= r.top && ev.clientY <= r.bottom)
-          ? '2px solid rgba(0,229,255,0.35)' : '';
+        canvas.style.outline = (ev.clientX >= r.left && ev.clientX <= r.right && ev.clientY >= r.top && ev.clientY <= r.bottom) ? '2px solid rgba(0,229,255,0.35)' : '';
       }
     }
+
     function onUp(ev) {
-      document.removeEventListener('mousemove', onMove);
-      document.removeEventListener('mouseup', onUp);
-      const wasDrag = libDragging;
-      const cx = ev.clientX, cy = ev.clientY;
-      libCleanup();
-      if (wasDrag) {
-        libDropOnCanvas(cx, cy, type, label);
+      el.removeEventListener('pointermove', onMove);
+      el.removeEventListener('pointerup', onUp);
+      el.removeEventListener('pointercancel', onUp);
+      el.releasePointerCapture(e.pointerId);
+
+      if (ghost) {
+        ghost.remove();
+        ghost = null;
+      }
+      canvas.style.outline = '';
+
+      if (isDragging) {
+        libDropOnCanvas(ev.clientX, ev.clientY, type, label);
       } else {
         libDropAtCenter(type, label);
       }
     }
-    document.addEventListener('mousemove', onMove);
-    document.addEventListener('mouseup', onUp);
+
+    el.addEventListener('pointermove', onMove);
+    el.addEventListener('pointerup', onUp);
+    el.addEventListener('pointercancel', onUp);
   });
-
-  // TOUCH
-  el.addEventListener('touchstart', e => {
-    e.preventDefault();
-    const t = e.touches[0];
-    libDragType = type; libDragLabel = label;
-    libStartX = t.clientX; libStartY = t.clientY; libDragging = false;
-
-    function onMove(ev) {
-      ev.preventDefault();
-      const tc = ev.touches[0];
-      if (!libDragging && Math.hypot(tc.clientX - libStartX, tc.clientY - libStartY) > LIB_THRESHOLD) {
-        libDragging = true;
-        libGhost = libCreateGhost(label, tc.clientX, tc.clientY);
-      }
-      if (libGhost) {
-        libGhost.style.left = (tc.clientX - 60) + 'px';
-        libGhost.style.top  = (tc.clientY - 20) + 'px';
-        const r = canvas.getBoundingClientRect();
-        canvas.style.outline = (tc.clientX >= r.left && tc.clientX <= r.right && tc.clientY >= r.top && tc.clientY <= r.bottom) ? '2px solid rgba(0,229,255,0.35)' : '';
-      }
-    }
-    function onEnd(ev) {
-      document.removeEventListener('touchmove', onMove);
-      document.removeEventListener('touchend', onEnd);
-      const wasDrag = libDragging;
-      const tc = ev.changedTouches[0];
-      libCleanup();
-      if (wasDrag) libDropOnCanvas(tc.clientX, tc.clientY, type, label);
-      else libDropAtCenter(type, label);
-    }
-    document.addEventListener('touchmove', onMove, { passive: false });
-    document.addEventListener('touchend', onEnd);
-  }, { passive: false });
 });
-
-function onDragOver(e) { e.preventDefault(); }
-function onDrop(e) { e.preventDefault(); }
 
 // ─── ADD NODE ─────────────────────────────────────────────────────────────────
 function addNode(type, label, x, y) {
   const id = ++nodeCounter;
-  const node = { id, type, label, x, y, cycle: null, ops: 1, capacity: 480,
-    qty: null, stockMax: null, dist: null, vsm: type==='stock'||type==='transport'?'nva':'va',
-    takt: null,
-    mos: { processName:'', author:'', taktTime:null, nbPieces:1, tasks:[], nc:[] }
-  };
+  const node = { id, type, label, x, y, cycle: null, ops: 1, capacity: 480, qty: null, stockMax: null, dist: null, vsm: type==='stock'||type==='transport'?'nva':'va', takt: null, mos: { processName:'', author:'', taktTime:null, nbPieces:1, tasks:[], nc:[] } };
   nodes.push(node);
   renderNode(node);
   updateKPIs();
@@ -629,10 +570,12 @@ function addNode(type, label, x, y) {
 function renderNode(node) {
   const config = BLOCK_CONFIG[node.type];
   const el = document.createElement('div');
-  el.className = 'flow-node'; el.id = `node-${node.id}`;
-  el.style.left = node.x+'px'; el.style.top = node.y+'px'; el.style.width = '155px';
+  el.className = 'flow-node';
+  el.id = `node-${node.id}`;
+  el.style.left = node.x+'px';
+  el.style.top = node.y+'px';
+  el.style.width = '155px';
   el.innerHTML = buildNodeHTML(node);
-
   bindNodeEvents(el, node);
   canvas.appendChild(el);
 }
@@ -644,30 +587,35 @@ function bindNodeEvents(el, node) {
   // Drag & select
   el.addEventListener('pointerdown', e => {
     if (e.target.classList.contains('port') || e.target.classList.contains('node-mos-btn')) return;
-    e.stopPropagation(); e.preventDefault();
+    e.stopPropagation();
+    e.preventDefault();
     selectNode(node.id);
+    
     // Start drag with pointer capture
     isDraggingNode = true;
     el.setPointerCapture(e.pointerId);
+    
     const rect = el.getBoundingClientRect();
     dragOffsetX = (e.clientX - rect.left) / scale;
-    dragOffsetY = (e.clientY - rect.top)  / scale;
+    dragOffsetY = (e.clientY - rect.top) / scale;
 
     function onMove(ev) {
       if (!isDraggingNode) return;
       const r = canvas.getBoundingClientRect();
       node.x = (ev.clientX - r.left) / scale - dragOffsetX;
-      node.y = (ev.clientY - r.top)  / scale - dragOffsetY;
+      node.y = (ev.clientY - r.top) / scale - dragOffsetY;
       el.style.left = node.x + 'px';
-      el.style.top  = node.y + 'px';
+      el.style.top = node.y + 'px';
       renderConnections();
     }
+
     function onUp() {
       isDraggingNode = false;
       el.removeEventListener('pointermove', onMove);
       el.removeEventListener('pointerup', onUp);
       el.removeEventListener('pointercancel', onUp);
     }
+
     el.addEventListener('pointermove', onMove);
     el.addEventListener('pointerup', onUp);
     el.addEventListener('pointercancel', onUp);
@@ -678,7 +626,8 @@ function bindNodeEvents(el, node) {
   if (portOut) {
     portOut.style.touchAction = 'none';
     portOut.addEventListener('pointerdown', e => {
-      e.stopPropagation(); e.preventDefault();
+      e.stopPropagation();
+      e.preventDefault();
       startConnectionPointer(node.id, e);
     });
   }
@@ -696,13 +645,12 @@ function bindNodeEvents(el, node) {
   }
 }
 
-
 function buildNodeHTML(node) {
   const config = BLOCK_CONFIG[node.type];
   const cycleVal = getEffectiveCycle(node);
   const mosTaskCount = node.mos.tasks.filter(t=>t.desc).length;
   const vaPercent = getNodeVAPercent(node);
-
+  
   return `
     <div class="node-header">
       <div class="node-type-icon ${config.color}">${config.icon}</div>
@@ -727,7 +675,6 @@ function refreshNodeDisplay(nodeId) {
   const el = document.getElementById(`node-${nodeId}`);
   if (!el) return;
   el.innerHTML = buildNodeHTML(node);
-  // Re-bind events on ports
   bindNodeEvents(el, node);
   if (selectedNodeId === nodeId) el.classList.add('selected');
   updateKPIs();
@@ -755,9 +702,6 @@ function getNodeVAPercent(node) {
   return total>0 ? Math.round((va/total)*100) : null;
 }
 
-// ─── NODE DRAG ────────────────────────────────────────────────────────────────
-// Handled inline in bindNodeEvents via PointerEvents
-
 // ─── CONNECTION (PointerEvents) ───────────────────────────────────────────────
 function startConnectionPointer(nodeId, e) {
   isDrawingConnection = true;
@@ -765,8 +709,8 @@ function startConnectionPointer(nodeId, e) {
   const portEl = document.getElementById(`port-out-${nodeId}`);
   const rect = portEl.getBoundingClientRect(), cr = canvas.getBoundingClientRect();
   connectionStart.x = (rect.left + rect.width/2 - cr.left) / scale;
-  connectionStart.y = (rect.top  + rect.height/2 - cr.top)  / scale;
-
+  connectionStart.y = (rect.top + rect.height/2 - cr.top) / scale;
+  
   drawingPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
   drawingPath.setAttribute('fill', 'none');
   drawingPath.setAttribute('stroke', 'rgba(0,229,255,0.5)');
@@ -778,33 +722,35 @@ function startConnectionPointer(nodeId, e) {
     if (!isDrawingConnection || !drawingPath) return;
     const cr2 = canvas.getBoundingClientRect();
     const mx = (ev.clientX - cr2.left) / scale;
-    const my = (ev.clientY - cr2.top)  / scale;
+    const my = (ev.clientY - cr2.top) / scale;
     drawingPath.setAttribute('d', makeCurve(connectionStart.x, connectionStart.y, mx, my));
   }
+
   function onUp(ev) {
     document.removeEventListener('pointermove', onMove);
     document.removeEventListener('pointerup', onUp);
     if (isDrawingConnection) cancelConnection();
   }
+
   document.addEventListener('pointermove', onMove);
   document.addEventListener('pointerup', onUp);
 }
 
-// Keep old functions as aliases for compatibility
 function startConnection(nodeId, e) { startConnectionPointer(nodeId, e); }
 function startConnectionTouch(nodeId, e) { startConnectionPointer(nodeId, e); }
-function startDragNode(e, el, node) {}
-function startDragNodeTouch(e, el, node) {}
-
-
 
 // ─── SELECTION ────────────────────────────────────────────────────────────────
 function selectNode(id) {
-  if (selectedNodeId) { const p=document.getElementById(`node-${selectedNodeId}`); if(p) p.classList.remove('selected'); }
+  if (selectedNodeId) {
+    const p=document.getElementById(`node-${selectedNodeId}`);
+    if(p) p.classList.remove('selected');
+  }
   selectedNodeId=id;
-  const el=document.getElementById(`node-${id}`); if(el) el.classList.add('selected');
+  const el=document.getElementById(`node-${id}`);
+  if(el) el.classList.add('selected');
   showProps(id);
 }
+
 canvas.addEventListener('pointerdown', e => {
   if (e.target === canvas || e.target === svg || e.target.tagName === 'svg') {
     deselectAll();
@@ -813,7 +759,10 @@ canvas.addEventListener('pointerdown', e => {
 });
 
 function deselectAll() {
-  if(selectedNodeId){ const el=document.getElementById(`node-${selectedNodeId}`); if(el) el.classList.remove('selected'); }
+  if(selectedNodeId){
+    const el=document.getElementById(`node-${selectedNodeId}`);
+    if(el) el.classList.remove('selected');
+  }
   selectedNodeId=null;
   document.getElementById('propsEmpty').style.display='flex';
   document.getElementById('propsForm').classList.remove('visible');
@@ -822,7 +771,8 @@ function deselectAll() {
 
 // ─── PROPS PANEL ──────────────────────────────────────────────────────────────
 function showProps(id) {
-  const node=nodes.find(n=>n.id===id); if(!node) return;
+  const node=nodes.find(n=>n.id===id);
+  if(!node) return;
   const config=BLOCK_CONFIG[node.type];
   document.getElementById('propsEmpty').style.display='none';
   document.getElementById('propsForm').classList.add('visible');
@@ -836,6 +786,7 @@ function showProps(id) {
   document.getElementById('propQty').value=node.qty||'';
   document.getElementById('propStockMax').value=node.stockMax||'';
   document.getElementById('propDist').value=node.dist||'';
+  
   document.getElementById('pfCycle').style.display=config.hasTime?'block':'none';
   document.getElementById('pfOps').style.display=config.hasOps?'block':'none';
   document.getElementById('pfCapacity').style.display=config.hasTime?'block':'none';
@@ -850,7 +801,9 @@ function showProps(id) {
 ['propName','propCycle','propOps','propCapacity','propTakt','propVSM','propQty','propStockMax','propDist'].forEach(id => {
   document.getElementById(id).addEventListener('input', () => {
     if(!selectedNodeId) return;
-    const node=nodes.find(n=>n.id===selectedNodeId); if(!node) return;
+    const node=nodes.find(n=>n.id===selectedNodeId);
+    if(!node) return;
+    
     node.label=document.getElementById('propName').value||node.label;
     node.cycle=parseFloat(document.getElementById('propCycle').value)||null;
     node.ops=parseInt(document.getElementById('propOps').value)||1;
@@ -860,9 +813,11 @@ function showProps(id) {
     node.qty=parseFloat(document.getElementById('propQty').value)||null;
     node.stockMax=parseFloat(document.getElementById('propStockMax').value)||null;
     node.dist=parseFloat(document.getElementById('propDist').value)||null;
+    
     refreshNodeDisplay(selectedNodeId);
     renderConnections();
-    updateKPIs(); markDirty();
+    updateKPIs();
+    markDirty();
   });
 });
 
@@ -876,73 +831,83 @@ function deleteSelected() {
   document.getElementById('propsEmpty').style.display='flex';
   document.getElementById('propsForm').classList.remove('visible');
   document.getElementById('propsSubtitle').textContent='Sélectionnez un bloc';
-  renderConnections(); updateKPIs(); updateHint();
+  renderConnections();
+  updateKPIs();
+  updateHint();
 }
 
 // ─── CONNECTIONS ──────────────────────────────────────────────────────────────
-function startConnection(nodeId, e) {
-  isDrawingConnection=true; connectionStart={nodeId};
-  const portEl=document.getElementById(`port-out-${nodeId}`);
-  const rect=portEl.getBoundingClientRect(), r=canvas.getBoundingClientRect();
-  connectionStart.x=(rect.left+rect.width/2-r.left)/scale; connectionStart.y=(rect.top+rect.height/2-r.top)/scale;
-  drawingPath=document.createElementNS('http://www.w3.org/2000/svg','path');
-  drawingPath.setAttribute('fill','none'); drawingPath.setAttribute('stroke','rgba(0,229,255,0.5)');
-  drawingPath.setAttribute('stroke-width','2'); drawingPath.setAttribute('stroke-dasharray','6,3');
-  drawingSvg.appendChild(drawingPath);
-  function onMove(e) { if(!isDrawingConnection||!drawingPath)return; const r=canvas.getBoundingClientRect(); drawingPath.setAttribute('d',makeCurve(connectionStart.x,connectionStart.y,(e.clientX-r.left)/scale,(e.clientY-r.top)/scale)); }
-  function onUp() { document.removeEventListener('mousemove',onMove); document.removeEventListener('mouseup',onUp); if(isDrawingConnection)cancelConnection(); }
-  document.addEventListener('mousemove',onMove); document.addEventListener('mouseup',onUp);
-}
-// startConnectionTouch removed - using startConnectionPointer
 function endConnection(toId) {
   if(!isDrawingConnection)return;
   const fromId=connectionStart.nodeId;
-  if(!connections.find(c=>c.from===fromId&&c.to===toId)&&fromId!==toId) connections.push({from:fromId,to:toId});
-  cancelConnection(); renderConnections(); updateKPIs();
+  if(!connections.find(c=>c.from===fromId&&c.to===toId)&&fromId!==toId)
+    connections.push({from:fromId,to:toId});
+  cancelConnection();
+  renderConnections();
+  updateKPIs();
 }
-function cancelConnection() { isDrawingConnection=false; connectionStart=null; if(drawingPath){drawingPath.remove();drawingPath=null;} }
-function makeCurve(x1,y1,x2,y2) { const cx=(x1+x2)/2; return `M ${x1} ${y1} C ${cx} ${y1}, ${cx} ${y2}, ${x2} ${y2}`; }
+
+function cancelConnection() {
+  isDrawingConnection=false;
+  connectionStart=null;
+  if(drawingPath){drawingPath.remove();drawingPath=null;}
+}
+
+function makeCurve(x1,y1,x2,y2) {
+  const cx=(x1+x2)/2;
+  return `M ${x1} ${y1} C ${cx} ${y1}, ${cx} ${y2}, ${x2} ${y2}`;
+}
+
 function getPortPos(nodeId, portType) {
-  const portEl=document.getElementById(`port-${portType}-${nodeId}`); if(!portEl)return null;
+  const portEl=document.getElementById(`port-${portType}-${nodeId}`);
+  if(!portEl)return null;
   const rect=portEl.getBoundingClientRect(), r=canvas.getBoundingClientRect();
   return {x:(rect.left+rect.width/2-r.left)/scale, y:(rect.top+rect.height/2-r.top)/scale};
 }
+
 function renderConnections() {
   svg.innerHTML='';
   connections.forEach(conn => {
-    const from=getPortPos(conn.from,'out'), to=getPortPos(conn.to,'in'); if(!from||!to)return;
+    const from=getPortPos(conn.from,'out'), to=getPortPos(conn.to,'in');
+    if(!from||!to)return;
     const path=document.createElementNS('http://www.w3.org/2000/svg','path');
-    path.setAttribute('d',makeCurve(from.x,from.y,to.x,to.y)); path.setAttribute('class','connection-path active'); svg.appendChild(path);
+    path.setAttribute('d',makeCurve(from.x,from.y,to.x,to.y));
+    path.setAttribute('class','connection-path active');
+    svg.appendChild(path);
+    
     const angle=Math.atan2(to.y-from.y,to.x-from.x), arr=document.createElementNS('http://www.w3.org/2000/svg','polygon');
     const ax=to.x-6*Math.cos(angle), ay=to.y-6*Math.sin(angle);
     arr.setAttribute('points',`${to.x},${to.y} ${ax-4*Math.sin(angle)},${ay+4*Math.cos(angle)} ${ax+4*Math.sin(angle)},${ay-4*Math.cos(angle)}`);
-    arr.setAttribute('fill','rgba(0,229,255,0.6)'); svg.appendChild(arr);
+    arr.setAttribute('fill','rgba(0,229,255,0.6)');
+    svg.appendChild(arr);
   });
 }
 
 // ─── KPIs ─────────────────────────────────────────────────────────────────────
 function updateKPIs() {
   document.getElementById('kpiPostes').textContent = nodes.length;
-
   const workNodes = nodes.filter(n=>n.type==='work'||n.type==='control');
   const cycles = workNodes.map(n=>({node:n, cycle:getEffectiveCycle(n)})).filter(c=>c.cycle);
-
+  
   // Lead Time = sum of all effective cycles + stocks waiting
-  const stockTime = nodes.filter(n=>n.type==='stock').reduce((s,n)=>s+(n.qty||0)*2,0); // rough estimate
+  const stockTime = nodes.filter(n=>n.type==='stock').reduce((s,n)=>s+(n.qty||0)*2,0);
   const leadTime = cycles.reduce((s,c)=>s+c.cycle,0) + stockTime;
   document.getElementById('kpiLead').textContent = leadTime>0 ? fmtTime(leadTime) : '—';
-
+  
   // VA / NVA global
   let totalVA=0, totalNVA=0;
   nodes.forEach(n => {
-    const c=getEffectiveCycle(n); if(!c)return;
+    const c=getEffectiveCycle(n);
+    if(!c)return;
     if (n.mos&&n.mos.tasks.length>0) {
       n.mos.tasks.forEach(t=>{
         const tt=(parseFloat(t.manual)||0)+(parseFloat(t.move)||0)+(parseFloat(t.wait)||0);
-        if(t.vsm==='va') totalVA+=tt; else totalNVA+=tt;
+        if(t.vsm==='va') totalVA+=tt;
+        else totalNVA+=tt;
       });
     } else {
-      if(n.vsm==='va') totalVA+=c; else totalNVA+=c;
+      if(n.vsm==='va') totalVA+=c;
+      else totalNVA+=c;
     }
   });
   const totalTime=totalVA+totalNVA;
@@ -951,48 +916,65 @@ function updateKPIs() {
     document.getElementById('kpiVA').textContent = vaP+'%';
     document.getElementById('kpiVA').className = 'kpi-value '+(vaP>=60?'ok':'warn');
     const bar=document.getElementById('vanaBar');
-    bar.children[0].style.width=vaP+'%'; bar.children[1].style.width=(100-vaP)+'%';
+    bar.children[0].style.width=vaP+'%';
+    bar.children[1].style.width=(100-vaP)+'%';
   } else {
     document.getElementById('kpiVA').textContent='—';
     document.getElementById('kpiVA').className='kpi-value neutral';
   }
 
   if (cycles.length===0) {
-    ['kpiTakt','kpiCycle','kpiBottleneck','kpiRendement','kpiCharge'].forEach(id=>{ const el=document.getElementById(id); el.textContent='—'; el.className='kpi-value neutral'; });
+    ['kpiTakt','kpiCycle','kpiBottleneck','kpiRendement','kpiCharge'].forEach(id=>{
+      const el=document.getElementById(id);
+      el.textContent='—'; el.className='kpi-value neutral';
+    });
     document.getElementById('kpiBottleneckSub').innerHTML='';
-    nodes.forEach(n=>{ const el=document.getElementById(`node-${n.id}`); if(el){el.classList.remove('bottleneck');} const a=document.getElementById(`alert-${n.id}`); if(a)a.style.display='none'; });
+    nodes.forEach(n=>{
+      const el=document.getElementById(`node-${n.id}`);
+      if(el){el.classList.remove('bottleneck');}
+      const a=document.getElementById(`alert-${n.id}`);
+      if(a)a.style.display='none';
+    });
     return;
   }
-
+  
   const maxCycleObj = cycles.reduce((a,b)=>b.cycle>a.cycle?b:a);
   const maxCycle = maxCycleObj.cycle;
   const bottleneck = maxCycleObj.node;
-
-  // Takt time: use node's takt, or global estimate
+  
   const taktSrc = nodes.find(n=>n.takt);
   const takt = taktSrc ? taktSrc.takt : Math.round(cycles.reduce((s,c)=>s+c.cycle,0)/cycles.length*1.15);
   const isOk = maxCycle<=takt;
   const rendement = Math.round((takt/maxCycle)*100);
-
+  
   document.getElementById('kpiTakt').textContent = takt+'s';
   document.getElementById('kpiTakt').className = 'kpi-value neutral';
+  
   const cycleEl=document.getElementById('kpiCycle');
-  cycleEl.textContent=maxCycle+'s'; cycleEl.className='kpi-value '+(isOk?'ok':'warn');
+  cycleEl.textContent=maxCycle+'s';
+  cycleEl.className='kpi-value '+(isOk?'ok':'warn');
+  
   const bEl=document.getElementById('kpiBottleneck');
-  bEl.textContent=bottleneck.label; bEl.className='kpi-value '+(isOk?'ok':'warn');
+  bEl.textContent=bottleneck.label;
+  bEl.className='kpi-value '+(isOk?'ok':'warn');
   bEl.style.fontSize='0.82rem';
+  
   document.getElementById('kpiBottleneckSub').innerHTML=isOk?'<span style="color:var(--ok);font-size:0.6rem">✓ Dans les limites</span>':'<span class="kpi-alert-tag">⚠ Dépasse le takt</span>';
+  
   const rEl=document.getElementById('kpiRendement');
-  rEl.textContent=rendement+'%'; rEl.className='kpi-value '+(rendement>=85?'ok':'warn');
-
+  rEl.textContent=rendement+'%';
+  rEl.className='kpi-value '+(rendement>=85?'ok':'warn');
+  
   // Taux de charge moyen
   const avgCharge = cycles.reduce((s,c)=>{
     const cap=c.node.capacity||480;
     return s+(c.cycle/cap*100);
   },0)/cycles.length;
+  
   const chargeEl=document.getElementById('kpiCharge');
-  chargeEl.textContent=Math.round(avgCharge)+'%'; chargeEl.className='kpi-value '+(avgCharge>100?'warn':avgCharge>80?'ok':'neutral');
-
+  chargeEl.textContent=Math.round(avgCharge)+'%';
+  chargeEl.className='kpi-value '+(avgCharge>100?'warn':avgCharge>80?'ok':'neutral');
+  
   nodes.forEach(n=>{
     const el=document.getElementById(`node-${n.id}`);
     const alertEl=document.getElementById(`alert-${n.id}`);
@@ -1016,8 +998,10 @@ function zoom(factor) {
   nodes.forEach(n=>{const el=document.getElementById(`node-${n.id}`); if(el){el.style.left=n.x*scale+'px';el.style.top=n.y*scale+'px';el.style.transform=`scale(${scale})`;el.style.transformOrigin='top left';}});
   renderConnections();
 }
+
 function resetZoom() {
-  scale=1; document.getElementById('zoomInfo').textContent='100%';
+  scale=1;
+  document.getElementById('zoomInfo').textContent='100%';
   canvas.style.backgroundSize='32px 32px';
   nodes.forEach(n=>{const el=document.getElementById(`node-${n.id}`); if(el){el.style.left=n.x+'px';el.style.top=n.y+'px';el.style.transform='';}});
   renderConnections();
@@ -1028,36 +1012,35 @@ const SUPABASE_URL = 'https://tjgpmdsaorhoshkprecc.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRqZ3BtZHNhb3Job3Noa3ByZWNjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDI4MTMsImV4cCI6MjA5Mjk3ODgxM30.ZpLeIKRHx46kq41AzRKnydmz-3U61-5kdM1ZVj-29H8';
 const { createClient } = supabase;
 const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
+
 let currentUser = null;
-let currentFluxId = null; // ID du flux en cours d'édition
+let currentFluxId = null;
 
 // ─── HINT / SAVE ─────────────────────────────────────────────────────────────
-function updateHint() { document.getElementById('canvasHint').style.opacity=nodes.length===0?'1':'0'; }
+function updateHint() {
+  document.getElementById('canvasHint').style.opacity=nodes.length===0?'1':'0';
+}
+
 let dirty=false;
-function markDirty() { dirty=true; document.getElementById('saveStatus').textContent='Non sauvegardé'; document.getElementById('saveStatus').style.color='var(--warn)'; }
+function markDirty() {
+  dirty=true;
+  document.getElementById('saveStatus').textContent='Non sauvegardé';
+  document.getElementById('saveStatus').style.color='var(--warn)';
+}
 
 async function saveFlux() {
   if (!currentUser) return;
   const title = document.getElementById('fluxTitle').value || 'Nouveau flux';
-  const payload = {
-    user_id: currentUser.id,
-    nom: title,
-    nodes: nodes,
-    connections: connections,
-    updated_at: new Date().toISOString()
-  };
-
+  const payload = { user_id: currentUser.id, nom: title, nodes: nodes, connections: connections, updated_at: new Date().toISOString() };
   let error;
   if (currentFluxId) {
-    // Update existing
     ({ error } = await supabaseClient.from('flux').update(payload).eq('id', currentFluxId));
   } else {
-    // Insert new
     const { data, error: err } = await supabaseClient.from('flux').insert(payload).select().single();
     error = err;
     if (data) currentFluxId = data.id;
   }
-
+  
   if (error) {
     document.getElementById('saveStatus').textContent = '⚠ Erreur sauvegarde';
     document.getElementById('saveStatus').style.color = 'var(--warn)';
@@ -1066,16 +1049,11 @@ async function saveFlux() {
     dirty = false;
     document.getElementById('saveStatus').textContent = 'Sauvegardé ✓';
     document.getElementById('saveStatus').style.color = 'var(--ok)';
-    // Auto-save indicator reset after 3s
-    setTimeout(() => {
-      if (!dirty) document.getElementById('saveStatus').textContent = 'Sauvegardé';
-    }, 3000);
+    setTimeout(() => { if (!dirty) document.getElementById('saveStatus').textContent = 'Sauvegardé'; }, 3000);
   }
 }
 
-// Auto-save every 30 seconds if dirty
 setInterval(() => { if (dirty && currentUser) saveFlux(); }, 30000);
-
 document.getElementById('fluxTitle').addEventListener('input', markDirty);
 
 // ─── MOS MODAL ────────────────────────────────────────────────────────────────
@@ -1084,56 +1062,71 @@ function openMOS() {
   if(!selectedNodeId&&!currentMOSNodeId) return;
   const id=currentMOSNodeId||selectedNodeId;
   currentMOSNodeId=id;
-  const node=nodes.find(n=>n.id===id); if(!node) return;
+  const node=nodes.find(n=>n.id===id);
+  if(!node) return;
+  
   document.getElementById('mosModalTitle').textContent='MOS — '+node.label;
   document.getElementById('mosProcessName').value=node.mos.processName||'';
   document.getElementById('mosAuthor').value=node.mos.author||'';
   document.getElementById('mosTaktTime').value=node.mos.taktTime||'';
   document.getElementById('mosNbPieces').value=node.mos.nbPieces||1;
+  
   renderTasksList(node.mos.tasks);
   renderNCList(node.mos.nc);
   updateMOSCalcs();
   document.getElementById('mosOverlay').classList.add('open');
 }
-function closeMOS() { document.getElementById('mosOverlay').classList.remove('open'); currentMOSNodeId=null; }
+
+function closeMOS() {
+  document.getElementById('mosOverlay').classList.remove('open');
+  currentMOSNodeId=null;
+}
+
 function saveMOS() {
-  const node=nodes.find(n=>n.id===currentMOSNodeId); if(!node)return;
+  const node=nodes.find(n=>n.id===currentMOSNodeId);
+  if(!node)return;
   node.mos.processName=document.getElementById('mosProcessName').value;
   node.mos.author=document.getElementById('mosAuthor').value;
   node.mos.taktTime=parseFloat(document.getElementById('mosTaktTime').value)||null;
   node.mos.nbPieces=parseInt(document.getElementById('mosNbPieces').value)||1;
-  // Cycle auto-update
+  
   const totalManual=node.mos.tasks.reduce((s,t)=>s+(parseFloat(t.manual)||0),0);
   const totalMove=node.mos.tasks.reduce((s,t)=>s+(parseFloat(t.move)||0),0);
   const totalWait=node.mos.tasks.reduce((s,t)=>s+(parseFloat(t.wait)||0),0);
-  // cycle = manual + move + wait (machine runs in parallel, not added to operator cycle)
-  if(totalManual+totalMove+totalWait>0) node.cycle=null; // will use MOS computed value
+  if(totalManual+totalMove+totalWait>0) node.cycle=null;
+  
   refreshNodeDisplay(currentMOSNodeId);
-  updateKPIs(); markDirty();
+  updateKPIs();
+  markDirty();
   closeMOS();
 }
 
 // ─── TASKS ────────────────────────────────────────────────────────────────────
 let taskIdCounter=0;
 function addTask(data={}) {
-  const node=nodes.find(n=>n.id===currentMOSNodeId); if(!node)return;
+  const node=nodes.find(n=>n.id===currentMOSNodeId);
+  if(!node)return;
   const task={id:++taskIdCounter, desc:data.desc||'', manual:data.manual||'', machine:data.machine||'', move:data.move||'', wait:data.wait||'', vsm:data.vsm||'va'};
   node.mos.tasks.push(task);
   renderTasksList(node.mos.tasks);
   updateMOSCalcs();
 }
+
 function removeTask(taskId) {
-  const node=nodes.find(n=>n.id===currentMOSNodeId); if(!node)return;
+  const node=nodes.find(n=>n.id===currentMOSNodeId);
+  if(!node)return;
   node.mos.tasks=node.mos.tasks.filter(t=>t.id!==taskId);
-  renderTasksList(node.mos.tasks); updateMOSCalcs();
+  renderTasksList(node.mos.tasks);
+  updateMOSCalcs();
 }
+
 function renderTasksList(tasks) {
   const container=document.getElementById('tasksList');
   container.innerHTML='';
   let cumul=0;
   tasks.forEach((task,i)=>{
     const m=parseFloat(task.manual)||0, mc=parseFloat(task.machine)||0, mv=parseFloat(task.move)||0, w=parseFloat(task.wait)||0;
-    cumul += m+mv+w; // machine runs parallel
+    cumul += m+mv+w;
     const row=document.createElement('div');
     row.className='task-row'+(task.desc?' has-data':'')+(task.vsm?' '+task.vsm:'');
     row.innerHTML=`
@@ -1154,26 +1147,37 @@ function renderTasksList(tasks) {
     container.appendChild(row);
   });
 }
+
 function updateTask(taskId, field, val) {
-  const node=nodes.find(n=>n.id===currentMOSNodeId); if(!node)return;
-  const task=node.mos.tasks.find(t=>t.id===taskId); if(!task)return;
+  const node=nodes.find(n=>n.id===currentMOSNodeId);
+  if(!node)return;
+  const task=node.mos.tasks.find(t=>t.id===taskId);
+  if(!task)return;
   task[field]=val;
-  renderTasksList(node.mos.tasks); updateMOSCalcs();
-}
-function setTaskVSM(taskId, vsm) {
-  const node=nodes.find(n=>n.id===currentMOSNodeId); if(!node)return;
-  const task=node.mos.tasks.find(t=>t.id===taskId); if(!task)return;
-  task.vsm=vsm; renderTasksList(node.mos.tasks); updateMOSCalcs();
+  renderTasksList(node.mos.tasks);
+  updateMOSCalcs();
 }
 
-// Non-cyclés
+function setTaskVSM(taskId, vsm) {
+  const node=nodes.find(n=>n.id===currentMOSNodeId);
+  if(!node)return;
+  const task=node.mos.tasks.find(t=>t.id===taskId);
+  if(!task)return;
+  task.vsm=vsm;
+  renderTasksList(node.mos.tasks);
+  updateMOSCalcs();
+}
+
 function addNC(data={}) {
-  const node=nodes.find(n=>n.id===currentMOSNodeId); if(!node)return;
+  const node=nodes.find(n=>n.id===currentMOSNodeId);
+  if(!node)return;
   node.mos.nc.push({id:++taskIdCounter, desc:data.desc||'', temps:data.temps||'', pieces:data.pieces||'', freq:data.freq||''});
   renderNCList(node.mos.nc);
 }
+
 function renderNCList(nc) {
-  const container=document.getElementById('ncList'); container.innerHTML='';
+  const container=document.getElementById('ncList');
+  container.innerHTML='';
   nc.forEach((item,i)=>{
     const row=document.createElement('div');
     row.className='nc-row';
@@ -1186,23 +1190,38 @@ function renderNCList(nc) {
     container.appendChild(row);
   });
 }
-function updateNC(id,field,val) { const node=nodes.find(n=>n.id===currentMOSNodeId); if(!node)return; const item=node.mos.nc.find(n=>n.id===id); if(item) item[field]=val; }
-function removeNC(id) { const node=nodes.find(n=>n.id===currentMOSNodeId); if(!node)return; node.mos.nc=node.mos.nc.filter(n=>n.id!==id); renderNCList(node.mos.nc); }
+
+function updateNC(id,field,val) {
+  const node=nodes.find(n=>n.id===currentMOSNodeId);
+  if(!node)return;
+  const item=node.mos.nc.find(n=>n.id===id);
+  if(item) item[field]=val;
+}
+
+function removeNC(id) {
+  const node=nodes.find(n=>n.id===currentMOSNodeId);
+  if(!node)return;
+  node.mos.nc=node.mos.nc.filter(n=>n.id!==id);
+  renderNCList(node.mos.nc);
+}
 
 function updateMOSCalcs() {
-  const node=nodes.find(n=>n.id===currentMOSNodeId); if(!node)return;
+  const node=nodes.find(n=>n.id===currentMOSNodeId);
+  if(!node)return;
   const tasks=node.mos.tasks;
   let manual=0,machine=0,move=0,wait=0,va=0,nva=0;
+  
   tasks.forEach(t=>{
     const m=parseFloat(t.manual)||0, mc=parseFloat(t.machine)||0, mv=parseFloat(t.move)||0, w=parseFloat(t.wait)||0;
     manual+=m; machine+=mc; move+=mv; wait+=w;
     const tt=m+mv+w;
     if(t.vsm==='va') va+=tt; else nva+=tt;
   });
-  const cycle=manual+move+wait; // operator cycle
+  
+  const cycle=manual+move+wait;
   const total=va+nva;
   const vaP=total>0?Math.round(va/total*100):0;
-
+  
   document.getElementById('mosTotal-manual').textContent=manual+'s';
   document.getElementById('mosTotal-machine').textContent=machine+'s';
   document.getElementById('mosTotal-move').textContent=move+'s';
@@ -1213,7 +1232,6 @@ function updateMOSCalcs() {
   document.getElementById('mosFooterVA').textContent=va+'s ('+vaP+'%)';
   document.getElementById('mosFooterNVA').textContent=nva+'s ('+(100-vaP)+'%)';
 
-  // Gantt
   if(cycle+machine>0) {
     const tot=manual+machine+move+wait||1;
     document.getElementById('gantt-manual').style.width=(manual/tot*100)+'%';
@@ -1227,21 +1245,19 @@ function updateMOSCalcs() {
 // ─── DEMO ─────────────────────────────────────────────────────────────────────
 function loadDemo() {
   const demo=[
-    {type:'work', label:'Approvisionnement', x:30, y:110, cycle:42, ops:1, vsm:'va', capacity:480, takt:60,
-      mos:{processName:'Appro',author:'',taktTime:60,nbPieces:1,tasks:[
-        {id:++taskIdCounter,desc:'Récupérer les pièces en stock',manual:20,machine:0,move:15,wait:0,vsm:'nva'},
-        {id:++taskIdCounter,desc:'Préparer le poste',manual:7,machine:0,move:0,wait:0,vsm:'va'},
-      ],nc:[]}},
+    {type:'work', label:'Approvisionnement', x:30, y:110, cycle:42, ops:1, vsm:'va', capacity:480, takt:60, mos:{processName:'Appro',author:'',taktTime:60,nbPieces:1,tasks:[
+      {id:++taskIdCounter,desc:'Récupérer les pièces en stock',manual:20,machine:0,move:15,wait:0,vsm:'nva'},
+      {id:++taskIdCounter,desc:'Préparer le poste',manual:7,machine:0,move:0,wait:0,vsm:'va'},
+    ],nc:[]}},
     {type:'stock', label:'Stock entrant', x:220, y:110, qty:30, stockMax:50, vsm:'nva'},
-    {type:'work', label:'Assemblage', x:390, y:110, cycle:78, ops:2, vsm:'va', capacity:480, takt:60,
-      mos:{processName:'Assemblage',author:'',taktTime:60,nbPieces:1,tasks:[
-        {id:++taskIdCounter,desc:'Démoulage 2 tubes proto',manual:240,machine:0,move:0,wait:0,vsm:'va'},
-        {id:++taskIdCounter,desc:'Chargement + gomme dans moule',manual:570,machine:2700,move:5,wait:0,vsm:'va'},
-        {id:++taskIdCounter,desc:'Dépose primaire sur tubes',manual:180,machine:0,move:5,wait:0,vsm:'va'},
-        {id:++taskIdCounter,desc:'Ébarbage 1er tube',manual:300,machine:0,move:0,wait:0,vsm:'va'},
-        {id:++taskIdCounter,desc:'Ébarbage 2nd tube',manual:300,machine:0,move:5,wait:0,vsm:'va'},
-        {id:++taskIdCounter,desc:'Dépose secondaire',manual:180,machine:0,move:30,wait:0,vsm:'va'},
-      ],nc:[]}},
+    {type:'work', label:'Assemblage', x:390, y:110, cycle:78, ops:2, vsm:'va', capacity:480, takt:60, mos:{processName:'Assemblage',author:'',taktTime:60,nbPieces:1,tasks:[
+      {id:++taskIdCounter,desc:'Démoulage 2 tubes proto',manual:240,machine:0,move:0,wait:0,vsm:'va'},
+      {id:++taskIdCounter,desc:'Chargement + gomme dans moule',manual:570,machine:2700,move:5,wait:0,vsm:'va'},
+      {id:++taskIdCounter,desc:'Dépose primaire sur tubes',manual:180,machine:0,move:5,wait:0,vsm:'va'},
+      {id:++taskIdCounter,desc:'Ébarbage 1er tube',manual:300,machine:0,move:0,wait:0,vsm:'va'},
+      {id:++taskIdCounter,desc:'Ébarbage 2nd tube',manual:300,machine:0,move:5,wait:0,vsm:'va'},
+      {id:++taskIdCounter,desc:'Dépose secondaire',manual:180,machine:0,move:30,wait:0,vsm:'va'},
+    ],nc:[]}},
     {type:'control', label:'Contrôle qualité', x:570, y:110, cycle:35, ops:1, vsm:'va', capacity:480},
     {type:'transport', label:'Transfert sortie', x:750, y:110, dist:20, vsm:'nva', cycle:12},
     {type:'work', label:'Expédition', x:920, y:110, cycle:28, ops:1, vsm:'va', capacity:480},
@@ -1260,7 +1276,6 @@ function loadDemo() {
 function exportPDF() {
   const title = document.getElementById('fluxTitle').value || 'Kaiflow — Rapport';
   
-  // Gather KPI data
   const kpiTakt = document.getElementById('kpiTakt').textContent;
   const kpiCycle = document.getElementById('kpiCycle').textContent;
   const kpiLead = document.getElementById('kpiLead').textContent;
@@ -1269,15 +1284,16 @@ function exportPDF() {
   const kpiVA = document.getElementById('kpiVA').textContent;
   const kpiCharge = document.getElementById('kpiCharge').textContent;
   const kpiPostes = document.getElementById('kpiPostes').textContent;
+  
   const now = new Date().toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
   const isOk = !kpiBottleneck.includes('—') && kpiRendement !== '—' && parseInt(kpiRendement) >= 85;
 
-  // Build node table rows
   const nodeRows = nodes.map((n, i) => {
     const cycle = getEffectiveCycle(n) || '—';
     const vaP = getNodeVAPercent(n);
     const config = BLOCK_CONFIG[n.type];
     const isBottleneck = n.id === nodes.find(nd => getEffectiveCycle(nd) === Math.max(...nodes.map(x => getEffectiveCycle(x)||0)))?.id;
+    
     return `<tr style="${isBottleneck && !isOk ? 'background:#fff3ee;' : i%2===0?'background:#f8fafb':''}">
       <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;">${i+1}</td>
       <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;">${config.icon} ${n.label}</td>
@@ -1289,117 +1305,109 @@ function exportPDF() {
     </tr>`;
   }).join('');
 
-  // Build MOS detail rows
   const mosRows = nodes.filter(n => n.mos && n.mos.tasks.length > 0).map(n => {
     const taskRows = n.mos.tasks.map((t,i) => `
-      <tr style="${i%2===0?'background:#f8fafb':''}">
-        <td style="padding:6px 10px;border-bottom:1px solid #e5e7eb;">${i+1}</td>
-        <td style="padding:6px 10px;border-bottom:1px solid #e5e7eb;">${t.desc || '—'}</td>
-        <td style="padding:6px 10px;border-bottom:1px solid #e5e7eb;text-align:center;color:#3b82f6;">${t.manual||0}s</td>
-        <td style="padding:6px 10px;border-bottom:1px solid #e5e7eb;text-align:center;color:#f59e0b;">${t.machine||0}s</td>
-        <td style="padding:6px 10px;border-bottom:1px solid #e5e7eb;text-align:center;color:#22d3a0;">${t.move||0}s</td>
-        <td style="padding:6px 10px;border-bottom:1px solid #e5e7eb;text-align:center;color:#f43f5e;">${t.wait||0}s</td>
-        <td style="padding:6px 10px;border-bottom:1px solid #e5e7eb;text-align:center;"><span style="background:${t.vsm==='va'?'#d1fae5':'#fee2e2'};color:${t.vsm==='va'?'#065f46':'#991b1b'};padding:2px 8px;border-radius:99px;font-size:11px;">${t.vsm==='va'?'VA':'NVA'}</span></td>
-      </tr>`).join('');
+    <tr style="${i%2===0?'background:#f8fafb':''}">
+      <td style="padding:6px 10px;border-bottom:1px solid #e5e7eb;">${i+1}</td>
+      <td style="padding:6px 10px;border-bottom:1px solid #e5e7eb;">${t.desc || '—'}</td>
+      <td style="padding:6px 10px;border-bottom:1px solid #e5e7eb;text-align:center;color:#3b82f6;">${t.manual||0}s</td>
+      <td style="padding:6px 10px;border-bottom:1px solid #e5e7eb;text-align:center;color:#f59e0b;">${t.machine||0}s</td>
+      <td style="padding:6px 10px;border-bottom:1px solid #e5e7eb;text-align:center;color:#22d3a0;">${t.move||0}s</td>
+      <td style="padding:6px 10px;border-bottom:1px solid #e5e7eb;text-align:center;color:#f43f5e;">${t.wait||0}s</td>
+      <td style="padding:6px 10px;border-bottom:1px solid #e5e7eb;text-align:center;"><span style="background:${t.vsm==='va'?'#d1fae5':'#fee2e2'};color:${t.vsm==='va'?'#065f46':'#991b1b'};padding:2px 8px;border-radius:99px;font-size:11px;">${t.vsm==='va'?'VA':'NVA'}</span></td>
+    </tr>`).join('');
+    
     return `
-      <h3 style="font-size:14px;font-weight:700;margin:24px 0 8px;color:#111;">📋 MOS — ${n.label}</h3>
-      <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:16px;">
-        <thead><tr style="background:#f1f5f9;">
-          <th style="padding:8px 10px;text-align:left;font-weight:600;">#</th>
-          <th style="padding:8px 10px;text-align:left;font-weight:600;">Tâche</th>
-          <th style="padding:8px 10px;text-align:center;color:#3b82f6;">Manuel</th>
-          <th style="padding:8px 10px;text-align:center;color:#f59e0b;">Machine</th>
-          <th style="padding:8px 10px;text-align:center;color:#22d3a0;">Dépl.</th>
-          <th style="padding:8px 10px;text-align:center;color:#f43f5e;">Attente</th>
-          <th style="padding:8px 10px;text-align:center;">VA/NVA</th>
-        </tr></thead>
-        <tbody>${taskRows}</tbody>
-      </table>`;
+    <h3 style="font-size:14px;font-weight:700;margin:24px 0 8px;color:#111;">📋 MOS — ${n.label}</h3>
+    <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:16px;">
+      <thead><tr style="background:#f1f5f9;">
+        <th style="padding:8px 10px;text-align:left;font-weight:600;">#</th>
+        <th style="padding:8px 10px;text-align:left;font-weight:600;">Tâche</th>
+        <th style="padding:8px 10px;text-align:center;color:#3b82f6;">Manuel</th>
+        <th style="padding:8px 10px;text-align:center;color:#f59e0b;">Machine</th>
+        <th style="padding:8px 10px;text-align:center;color:#22d3a0;">Dépl.</th>
+        <th style="padding:8px 10px;text-align:center;color:#f43f5e;">Attente</th>
+        <th style="padding:8px 10px;text-align:center;">VA/NVA</th>
+      </tr></thead>
+      <tbody>${taskRows}</tbody>
+    </table>`;
   }).join('');
 
   const html = `<!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<title>${title}</title>
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Helvetica Neue', Arial, sans-serif; color: #111; font-size: 13px; line-height: 1.5; padding: 40px; max-width: 900px; margin: 0 auto; }
-  @media print { body { padding: 20px; } .no-print { display: none !important; } }
-</style>
+  <meta charset="UTF-8">
+  <title>${title}</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Helvetica Neue', Arial, sans-serif; color: #111; font-size: 13px; line-height: 1.5; padding: 40px; max-width: 900px; margin: 0 auto; }
+    @media print { body { padding: 20px; } .no-print { display: none !important; } }
+  </style>
 </head>
 <body>
-
-<!-- HEADER -->
-<div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:20px;border-bottom:3px solid #00e5ff;margin-bottom:28px;">
-  <div>
-    <div style="font-size:22px;font-weight:800;letter-spacing:-0.5px;">Kai<span style="color:#00e5ff;">flow</span></div>
-    <div style="font-size:11px;color:#6b7a96;margin-top:2px;text-transform:uppercase;letter-spacing:0.08em;">Rapport de flux de production</div>
+  <div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:20px;border-bottom:3px solid #00e5ff;margin-bottom:28px;">
+    <div>
+      <div style="font-size:22px;font-weight:800;letter-spacing:-0.5px;">Kai<span style="color:#00e5ff;">flow</span></div>
+      <div style="font-size:11px;color:#6b7a96;margin-top:2px;text-transform:uppercase;letter-spacing:0.08em;">Rapport de flux de production</div>
+    </div>
+    <div style="text-align:right;">
+      <div style="font-size:16px;font-weight:700;">${title}</div>
+      <div style="font-size:11px;color:#6b7a96;margin-top:3px;">${now}</div>
+    </div>
   </div>
-  <div style="text-align:right;">
-    <div style="font-size:16px;font-weight:700;">${title}</div>
-    <div style="font-size:11px;color:#6b7a96;margin-top:3px;">${now}</div>
+
+  <div style="background:${isOk?'#f0fdf4':'#fff7f5'};border:1px solid ${isOk?'#86efac':'#fca5a5'};border-radius:10px;padding:14px 20px;margin-bottom:24px;display:flex;align-items:center;gap:12px;">
+    <div style="font-size:24px;">${isOk?'✅':'⚠️'}</div>
+    <div>
+      <div style="font-weight:700;font-size:14px;color:${isOk?'#166534':'#991b1b'};">Statut : ${isOk?'Flux nominal — Aucun goulot détecté':"Attention — Goulot d'étranglement détecté"}</div>
+      <div style="font-size:12px;color:#6b7a96;margin-top:2px;">${isOk?'Tous les postes respectent le takt time cible.':'Le poste "'+kpiBottleneck+'" dépasse le takt time. Action corrective recommandée.'}</div>
+    </div>
   </div>
-</div>
 
-<!-- STATUT GLOBAL -->
-<div style="background:${isOk?'#f0fdf4':'#fff7f5'};border:1px solid ${isOk?'#86efac':'#fca5a5'};border-radius:10px;padding:14px 20px;margin-bottom:24px;display:flex;align-items:center;gap:12px;">
-  <div style="font-size:24px;">${isOk?'✅':'⚠️'}</div>
-  <div>
-    <div style="font-weight:700;font-size:14px;color:${isOk?'#166534':'#991b1b'};">Statut : ${isOk?'Flux nominal — Aucun goulot détecté':'Attention — Goulot d'étranglement détecté'}</div>
-    <div style="font-size:12px;color:#6b7a96;margin-top:2px;">${isOk?'Tous les postes respectent le takt time cible.':'Le poste "'+kpiBottleneck+'" dépasse le takt time. Action corrective recommandée.'}</div>
+  <h2 style="font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#6b7a96;margin-bottom:12px;">Indicateurs clés de performance</h2>
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px;">
+    ${[
+      {label:'Takt Time', value:kpiTakt, color:'#111'},
+      {label:'Temps cycle max', value:kpiCycle, color: isOk?'#166534':'#991b1b'},
+      {label:'Lead Time', value:kpiLead, color:'#0369a1'},
+      {label:'Rendement ligne', value:kpiRendement, color: parseInt(kpiRendement)>=85?'#166534':'#991b1b'},
+      {label:'VA / NVA', value:kpiVA, color:'#0369a1'},
+      {label:'Taux de charge', value:kpiCharge, color:'#111'},
+      {label:'Goulot', value:kpiBottleneck, color: isOk?'#166534':'#991b1b'},
+      {label:'Nb. blocs', value:kpiPostes, color:'#111'},
+    ].map(k => `<div style="background:#f8fafc;border:1px solid #e5e7eb;border-radius:8px;padding:12px;">
+      <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:#6b7a96;margin-bottom:6px;">${k.label}</div>
+      <div style="font-size:18px;font-weight:800;color:${k.color};">${k.value}</div>
+    </div>`).join('')}
   </div>
-</div>
 
-<!-- KPIs GRID -->
-<h2 style="font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#6b7a96;margin-bottom:12px;">Indicateurs clés de performance</h2>
-<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px;">
-  ${[
-    {label:'Takt Time', value:kpiTakt, color:'#111'},
-    {label:'Temps cycle max', value:kpiCycle, color: isOk?'#166534':'#991b1b'},
-    {label:'Lead Time', value:kpiLead, color:'#0369a1'},
-    {label:'Rendement ligne', value:kpiRendement, color: parseInt(kpiRendement)>=85?'#166534':'#991b1b'},
-    {label:'VA / NVA', value:kpiVA, color:'#0369a1'},
-    {label:'Taux de charge', value:kpiCharge, color:'#111'},
-    {label:'Goulot', value:kpiBottleneck, color: isOk?'#166534':'#991b1b'},
-    {label:'Nb. blocs', value:kpiPostes, color:'#111'},
-  ].map(k => `<div style="background:#f8fafc;border:1px solid #e5e7eb;border-radius:8px;padding:12px;">
-    <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:#6b7a96;margin-bottom:6px;">${k.label}</div>
-    <div style="font-size:18px;font-weight:800;color:${k.color};">${k.value}</div>
-  </div>`).join('')}
-</div>
+  <h2 style="font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#6b7a96;margin-bottom:12px;">Détail des postes</h2>
+  <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:28px;">
+    <thead>
+      <tr style="background:#f1f5f9;">
+        <th style="padding:10px 12px;text-align:left;font-weight:600;">#</th>
+        <th style="padding:10px 12px;text-align:left;font-weight:600;">Poste</th>
+        <th style="padding:10px 12px;text-align:center;font-weight:600;">Type</th>
+        <th style="padding:10px 12px;text-align:center;font-weight:600;">Temps cycle</th>
+        <th style="padding:10px 12px;text-align:center;font-weight:600;">Opérateurs</th>
+        <th style="padding:10px 12px;text-align:center;font-weight:600;">VA/NVA</th>
+        <th style="padding:10px 12px;text-align:center;font-weight:600;">Statut</th>
+      </tr>
+    </thead>
+    <tbody>${nodeRows}</tbody>
+  </table>
 
-<!-- NODES TABLE -->
-<h2 style="font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#6b7a96;margin-bottom:12px;">Détail des postes</h2>
-<table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:28px;">
-  <thead>
-    <tr style="background:#f1f5f9;">
-      <th style="padding:10px 12px;text-align:left;font-weight:600;">#</th>
-      <th style="padding:10px 12px;text-align:left;font-weight:600;">Poste</th>
-      <th style="padding:10px 12px;text-align:center;font-weight:600;">Type</th>
-      <th style="padding:10px 12px;text-align:center;font-weight:600;">Temps cycle</th>
-      <th style="padding:10px 12px;text-align:center;font-weight:600;">Opérateurs</th>
-      <th style="padding:10px 12px;text-align:center;font-weight:600;">VA/NVA</th>
-      <th style="padding:10px 12px;text-align:center;font-weight:600;">Statut</th>
-    </tr>
-  </thead>
-  <tbody>${nodeRows}</tbody>
-</table>
+  ${mosRows ? `<h2 style="font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#6b7a96;margin-bottom:4px;">Modes Opératoires Standards</h2>${mosRows}` : ''}
 
-<!-- MOS DETAILS -->
-${mosRows ? `<h2 style="font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#6b7a96;margin-bottom:4px;">Modes Opératoires Standards</h2>${mosRows}` : ''}
-
-<!-- FOOTER -->
-<div style="margin-top:40px;padding-top:16px;border-top:1px solid #e5e7eb;display:flex;justify-content:space-between;font-size:11px;color:#6b7a96;">
-  <div>Généré par Kaiflow · kaiflow.fr</div>
-  <div>${now}</div>
-</div>
-
-<div class="no-print" style="margin-top:30px;text-align:center;">
-  <button onclick="window.print()" style="background:#00e5ff;color:#000;border:none;border-radius:8px;padding:12px 28px;font-size:14px;font-weight:600;cursor:pointer;">🖨 Imprimer / Enregistrer en PDF</button>
-  <button onclick="window.close()" style="background:transparent;border:1px solid #e5e7eb;border-radius:8px;padding:12px 20px;font-size:14px;cursor:pointer;margin-left:10px;">Fermer</button>
-</div>
-
+  <div style="margin-top:40px;padding-top:16px;border-top:1px solid #e5e7eb;display:flex;justify-content:space-between;font-size:11px;color:#6b7a96;">
+    <div>Généré par Kaiflow · kaiflow.fr</div>
+    <div>${now}</div>
+  </div>
+  
+  <div class="no-print" style="margin-top:30px;text-align:center;">
+    <button onclick="window.print()" style="background:#00e5ff;color:#000;border:none;border-radius:8px;padding:12px 28px;font-size:14px;font-weight:600;cursor:pointer;">🖨 Imprimer / Enregistrer en PDF</button>
+    <button onclick="window.close()" style="background:transparent;border:1px solid #e5e7eb;border-radius:8px;padding:12px 20px;font-size:14px;cursor:pointer;margin-left:10px;">Fermer</button>
+  </div>
 </body>
 </html>`;
 
@@ -1411,28 +1419,29 @@ ${mosRows ? `<h2 style="font-size:14px;font-weight:700;text-transform:uppercase;
 // ─── AUTH + LOAD ─────────────────────────────────────────────────────────────
 async function initEditor() {
   const { data: { session } } = await supabaseClient.auth.getSession();
-  if (!session) { window.location.href = '/login'; return; }
+  if (!session) {
+    window.location.href = '/login';
+    return;
+  }
   currentUser = session.user;
 
-  // Check if we have a flux ID in URL params
   const params = new URLSearchParams(window.location.search);
   const fluxId = params.get('id');
-
   if (fluxId) {
-    // Load existing flux from DB
     const { data, error } = await supabaseClient
       .from('flux')
       .select('*')
       .eq('id', fluxId)
       .eq('user_id', currentUser.id)
       .single();
-
+      
     if (data && !error) {
       currentFluxId = data.id;
       document.getElementById('fluxTitle').value = data.nom;
-      // Restore nodes
+      
       const savedNodes = Array.isArray(data.nodes) ? data.nodes : JSON.parse(data.nodes || '[]');
       const savedConns = Array.isArray(data.connections) ? data.connections : JSON.parse(data.connections || '[]');
+      
       savedNodes.forEach(n => {
         const node = addNode(n.type, n.label, n.x, n.y);
         Object.assign(node, n);
@@ -1446,7 +1455,6 @@ async function initEditor() {
       loadDemo();
     }
   } else {
-    // New flux — empty canvas, no demo
     updateHint();
   }
 }
