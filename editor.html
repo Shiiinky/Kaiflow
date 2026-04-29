@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>Kaiflow — Éditeur v2</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
@@ -901,12 +902,60 @@ function resetZoom() {
   renderConnections();
 }
 
+// ─── SUPABASE ────────────────────────────────────────────────────────────────
+const SUPABASE_URL = 'https://tjgpmdsaorhoshkprecc.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRqZ3BtZHNhb3Job3Noa3ByZWNjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDI4MTMsImV4cCI6MjA5Mjk3ODgxM30.ZpLeIKRHx46kq41AzRKnydmz-3U61-5kdM1ZVj-29H8';
+const { createClient } = supabase;
+const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
+let currentUser = null;
+let currentFluxId = null; // ID du flux en cours d'édition
+
 // ─── HINT / SAVE ─────────────────────────────────────────────────────────────
 function updateHint() { document.getElementById('canvasHint').style.opacity=nodes.length===0?'1':'0'; }
 let dirty=false;
 function markDirty() { dirty=true; document.getElementById('saveStatus').textContent='Non sauvegardé'; document.getElementById('saveStatus').style.color='var(--warn)'; }
-function saveFlux() { dirty=false; document.getElementById('saveStatus').textContent='Sauvegardé'; document.getElementById('saveStatus').style.color='var(--ok)'; }
-document.getElementById('fluxTitle').addEventListener('input',markDirty);
+
+async function saveFlux() {
+  if (!currentUser) return;
+  const title = document.getElementById('fluxTitle').value || 'Nouveau flux';
+  const payload = {
+    user_id: currentUser.id,
+    nom: title,
+    nodes: JSON.stringify(nodes),
+    connections: JSON.stringify(connections),
+    updated_at: new Date().toISOString()
+  };
+
+  let error;
+  if (currentFluxId) {
+    // Update existing
+    ({ error } = await supabaseClient.from('flux').update(payload).eq('id', currentFluxId));
+  } else {
+    // Insert new
+    const { data, error: err } = await supabaseClient.from('flux').insert(payload).select().single();
+    error = err;
+    if (data) currentFluxId = data.id;
+  }
+
+  if (error) {
+    document.getElementById('saveStatus').textContent = '⚠ Erreur sauvegarde';
+    document.getElementById('saveStatus').style.color = 'var(--warn)';
+    console.error(error);
+  } else {
+    dirty = false;
+    document.getElementById('saveStatus').textContent = 'Sauvegardé ✓';
+    document.getElementById('saveStatus').style.color = 'var(--ok)';
+    // Auto-save indicator reset after 3s
+    setTimeout(() => {
+      if (!dirty) document.getElementById('saveStatus').textContent = 'Sauvegardé';
+    }, 3000);
+  }
+}
+
+// Auto-save every 30 seconds if dirty
+setInterval(() => { if (dirty && currentUser) saveFlux(); }, 30000);
+
+document.getElementById('fluxTitle').addEventListener('input', markDirty);
 
 // ─── MOS MODAL ────────────────────────────────────────────────────────────────
 function openMOSForNode(id) { currentMOSNodeId=id; openMOS(); }
@@ -1086,7 +1135,50 @@ function loadDemo() {
   setTimeout(()=>{renderConnections();updateKPIs();updateHint();},80);
 }
 
-loadDemo();
+// ─── AUTH + LOAD ─────────────────────────────────────────────────────────────
+async function initEditor() {
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  if (!session) { window.location.href = '/login'; return; }
+  currentUser = session.user;
+
+  // Check if we have a flux ID in URL params
+  const params = new URLSearchParams(window.location.search);
+  const fluxId = params.get('id');
+
+  if (fluxId) {
+    // Load existing flux from DB
+    const { data, error } = await supabaseClient
+      .from('flux')
+      .select('*')
+      .eq('id', fluxId)
+      .eq('user_id', currentUser.id)
+      .single();
+
+    if (data && !error) {
+      currentFluxId = data.id;
+      document.getElementById('fluxTitle').value = data.nom;
+      // Restore nodes
+      const savedNodes = JSON.parse(data.nodes || '[]');
+      const savedConns = JSON.parse(data.connections || '[]');
+      savedNodes.forEach(n => {
+        const node = addNode(n.type, n.label, n.x, n.y);
+        Object.assign(node, n);
+        if (n.mos) node.mos = n.mos;
+        refreshNodeDisplay(node.id);
+      });
+      connections.push(...savedConns);
+      setTimeout(() => { renderConnections(); updateKPIs(); updateHint(); }, 80);
+      document.getElementById('saveStatus').textContent = 'Flux chargé';
+    } else {
+      loadDemo();
+    }
+  } else {
+    // New flux — load demo
+    loadDemo();
+  }
+}
+
+initEditor();
 </script>
 </body>
 </html>

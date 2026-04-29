@@ -1246,13 +1246,80 @@ body {
     }
   }
 
-  // ─── INIT ─────────────────────────────────────────────────────────────────
-  initAuth();
-
   async function logout() {
     await supabaseClient.auth.signOut();
     window.location.href = '/login';
   }
+
+  // ─── LOAD FLUX FROM DB ────────────────────────────────────────────────────
+  async function loadFlux(userId) {
+    const { data, error } = await supabaseClient
+      .from('flux').select('*').eq('user_id', userId)
+      .order('updated_at', { ascending: false });
+    if (error || !data || data.length === 0) return;
+
+    const grid = document.querySelector('.flux-grid');
+    if (!grid) return;
+    grid.innerHTML = '';
+
+    data.forEach(flux => {
+      const nodes = JSON.parse(flux.nodes || '[]');
+      const workNodes = nodes.filter(n => n.type==='work'||n.type==='control');
+      const cycles = workNodes.map(n => n.cycle).filter(Boolean);
+      const maxCycle = cycles.length ? Math.max(...cycles) : null;
+      const takt = flux.takt_time_cible || (cycles.length ? Math.round(cycles.reduce((a,b)=>a+b,0)/cycles.length*1.15) : null);
+      const rendement = takt && maxCycle ? Math.round((takt/maxCycle)*100) : null;
+      const isOk = !maxCycle || !takt || maxCycle <= takt;
+      const diffH = Math.floor((Date.now() - new Date(flux.updated_at)) / 3600000);
+      const timeLabel = diffH < 1 ? "à l'instant" : diffH < 24 ? `il y a ${diffH}h` : `il y a ${Math.floor(diffH/24)}j`;
+      const miniFlow = nodes.slice(0,5).map((n,i) =>
+        `<div class="mini-block ${n.cycle===maxCycle&&!isOk?'warn':'ok'}">${n.label.substring(0,8)}</div>${i<Math.min(nodes.length-1,4)?'<div class="mini-arrow">→</div>':''}`
+      ).join('');
+
+      const card = document.createElement('div');
+      card.className = 'flux-card' + (isOk?'':' has-alert');
+      card.onclick = () => window.location.href = '/editor?id=' + flux.id;
+      card.innerHTML = `
+        <div class="flux-preview">
+          <div class="mini-flow">${miniFlow || '<div class="mini-block ok">Flux vide</div>'}</div>
+          ${!isOk?'<div class="alert-badge">⚠ Goulot</div>':''}
+        </div>
+        <div class="flux-body">
+          <div class="flux-header-row">
+            <div><div class="flux-name">${flux.nom}</div><div class="flux-meta">Modifié ${timeLabel} · ${nodes.length} blocs</div></div>
+            <div class="flux-status ${isOk?'ok':'warn'}">${isOk?'Nominal':'Alerte'}</div>
+          </div>
+          <div class="kpi-row">
+            <div class="kpi-mini"><div class="kpi-mini-label">Takt time</div><div class="kpi-mini-value neutral">${takt?takt+'s':'—'}</div></div>
+            <div class="kpi-mini"><div class="kpi-mini-label">Temps cycle</div><div class="kpi-mini-value ${isOk?'ok':'warn'}">${maxCycle?maxCycle+'s':'—'}</div></div>
+            <div class="kpi-mini"><div class="kpi-mini-label">Rendement</div><div class="kpi-mini-value ${rendement>=85?'ok':'warn'}">${rendement?rendement+'%':'—'}</div></div>
+          </div>
+        </div>`;
+      grid.appendChild(card);
+    });
+
+    // New flux placeholder
+    const newCard = document.createElement('div');
+    newCard.className = 'flux-card';
+    newCard.onclick = openModal;
+    newCard.style.cssText = 'border-style:dashed;display:flex;align-items:center;justify-content:center;min-height:190px;opacity:0.5;transition:opacity 0.2s;';
+    newCard.onmouseenter = () => newCard.style.opacity='1';
+    newCard.onmouseleave = () => newCard.style.opacity='0.5';
+    newCard.innerHTML = '<div style="text-align:center;color:var(--muted2);"><div style="font-size:2rem;margin-bottom:0.5rem">✚</div><div style="font-size:0.88rem;font-weight:500">Nouveau flux</div></div>';
+    grid.appendChild(newCard);
+
+    // Update summary count
+    const countEl = document.querySelector('.summary-card.c-accent .card-value');
+    if (countEl) countEl.textContent = data.length;
+  }
+
+  // ─── INIT ─────────────────────────────────────────────────────────────────
+  async function init() {
+    await initAuth();
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (session) loadFlux(session.user.id);
+  }
+  init();
 </script>
 </body>
 </html>
