@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kaiflow — Connexion</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
@@ -158,10 +158,11 @@ body::before {
 <script>
 const SUPABASE_URL = 'https://tjgpmdsaorhoshkprecc.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRqZ3BtZHNhb3Job3Noa3ByZWNjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDI4MTMsImV4cCI6MjA5Mjk3ODgxM30.ZpLeIKRHx46kq41AzRKnydmz-3U61-5kdM1ZVj-29H8';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const { createClient } = supabase;
+const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // Redirect if already logged in
-supabase.auth.getSession().then(({ data }) => {
+supabaseClient.auth.getSession().then(({ data }) => {
   if (data.session) window.location.href = '/dashboard';
 });
 
@@ -181,7 +182,7 @@ async function login() {
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span>Connexion…';
 
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
 
   if (error) {
     showAlert(error.message === 'Invalid login credentials' ? 'Email ou mot de passe incorrect.' : error.message, 'error');

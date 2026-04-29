@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kaiflow — Mon compte</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
@@ -206,12 +206,13 @@ nav {
 <script>
 const SUPABASE_URL = 'https://tjgpmdsaorhoshkprecc.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRqZ3BtZHNhb3Job3Noa3ByZWNjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDI4MTMsImV4cCI6MjA5Mjk3ODgxM30.ZpLeIKRHx46kq41AzRKnydmz-3U61-5kdM1ZVj-29H8';
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const { createClient } = supabase;
+const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 let currentUser = null;
 
 async function init() {
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await supabaseClient.auth.getSession();
   if (!session) { window.location.href = '/login'; return; }
   currentUser = session.user;
   const meta = currentUser.user_metadata || {};
@@ -249,7 +250,7 @@ function showAlert(msg, type) {
 }
 
 async function saveProfile() {
-  const { error } = await supabase.auth.updateUser({
+  const { error } = await supabaseClient.auth.updateUser({
     data: {
       first_name: document.getElementById('firstName').value,
       last_name: document.getElementById('lastName').value,
@@ -266,13 +267,13 @@ async function changePassword() {
   const confirm = document.getElementById('confirmPwd').value;
   if (!pwd || pwd.length < 8) { showAlert('Le mot de passe doit contenir au moins 8 caractères.', 'error'); return; }
   if (pwd !== confirm) { showAlert('Les mots de passe ne correspondent pas.', 'error'); return; }
-  const { error } = await supabase.auth.updateUser({ password: pwd });
+  const { error } = await supabaseClient.auth.updateUser({ password: pwd });
   if (error) showAlert('Erreur : ' + error.message, 'error');
   else showAlert('Mot de passe mis à jour !', 'success');
 }
 
 async function logout() {
-  await supabase.auth.signOut();
+  await supabaseClient.auth.signOut();
   window.location.href = '/login';
 }
 
