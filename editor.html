@@ -496,125 +496,122 @@ function getClientXY(e) {
 }
 
 // ─── DRAG FROM LIBRARY ────────────────────────────────────────────────────────
-// Strategy: HTML5 drag for PC mouse, Pointer Events for touch/tablet
-// Click (no movement) = add at center of canvas
+// mousemove + touchmove on document — no pointer capture, works everywhere
 
-let dragCurrentType = null, dragCurrentLabel = null;
+let libGhost = null, libDragging = false, libDragType = null, libDragLabel = null;
+let libStartX = 0, libStartY = 0;
+const LIB_THRESHOLD = 6;
 
-document.querySelectorAll('.block-template').forEach(el => {
-  const type  = el.dataset.type;
-  const label = el.dataset.label;
-
-  // ── PC: HTML5 native drag ──────────────────────────────────────────────────
-  el.setAttribute('draggable', 'true');
-
-  el.addEventListener('dragstart', e => {
-    dragCurrentType  = type;
-    dragCurrentLabel = label;
-    e.dataTransfer.effectAllowed = 'copy';
-    e.dataTransfer.setData('text/plain', type + '|' + label);
-    // Custom drag image
-    const ghost = document.createElement('div');
-    ghost.style.cssText = 'position:fixed;top:-200px;left:-200px;background:#111620;border:1.5px solid #00e5ff;border-radius:10px;padding:0.5rem 0.9rem;font-size:0.82rem;color:#e2e8f5;font-family:sans-serif;';
-    ghost.textContent = label;
-    document.body.appendChild(ghost);
-    e.dataTransfer.setDragImage(ghost, 60, 20);
-    setTimeout(() => ghost.remove(), 0);
-  });
-
-  el.addEventListener('dragend', () => {
-    canvas.style.outline = '';
-    dragCurrentType = null; dragCurrentLabel = null;
-  });
-
-  // ── PC: Click to add at center ─────────────────────────────────────────────
-  el.addEventListener('click', e => {
-    e.stopPropagation();
-    const r = canvas.getBoundingClientRect();
-    const offset = nodes.length * 30;
-    const cx = (r.width  / 2 / scale) - 75 + (offset % 200);
-    const cy = (r.height / 2 / scale) - 45 + Math.floor(offset / 200) * 70;
-    addNode(type, label, cx, cy);
-    updateHint(); markDirty();
-  });
-
-  // ── TABLET/TOUCH: Pointer Events drag ──────────────────────────────────────
-  el.style.touchAction = 'none';
-  let touchGhost = null, touchMoved = false, touchStartX = 0, touchStartY = 0;
-  const TOUCH_THRESHOLD = 10;
-
-  el.addEventListener('pointerdown', e => {
-    if (e.pointerType === 'mouse') return; // mouse handled by HTML5 drag above
-    e.preventDefault();
-    touchMoved = false;
-    touchStartX = e.clientX;
-    touchStartY = e.clientY;
-    dragCurrentType  = type;
-    dragCurrentLabel = label;
-
-    function onTouchMove(ev) {
-      const dist = Math.hypot(ev.clientX - touchStartX, ev.clientY - touchStartY);
-      if (!touchMoved && dist > TOUCH_THRESHOLD) {
-        touchMoved = true;
-        touchGhost = document.createElement('div');
-        touchGhost.style.cssText = 'position:fixed;z-index:9999;pointer-events:none;background:#111620;border:1.5px solid #00e5ff;border-radius:10px;padding:0.5rem 0.9rem;font-size:0.82rem;color:#e2e8f5;font-family:sans-serif;opacity:0.9;box-shadow:0 8px 30px rgba(0,0,0,0.5);';
-        touchGhost.textContent = label;
-        document.body.appendChild(touchGhost);
-      }
-      if (touchGhost) {
-        touchGhost.style.left = (ev.clientX - 60) + 'px';
-        touchGhost.style.top  = (ev.clientY - 20) + 'px';
-        const r = canvas.getBoundingClientRect();
-        canvas.style.outline = (ev.clientX >= r.left && ev.clientX <= r.right && ev.clientY >= r.top && ev.clientY <= r.bottom) ? '2px solid rgba(0,229,255,0.4)' : '';
-      }
-    }
-
-    function onTouchUp(ev) {
-      document.removeEventListener('pointermove', onTouchMove);
-      document.removeEventListener('pointerup', onTouchUp);
-      canvas.style.outline = '';
-      if (touchGhost) { touchGhost.remove(); touchGhost = null; }
-
-      if (touchMoved) {
-        const r = canvas.getBoundingClientRect();
-        if (ev.clientX >= r.left && ev.clientX <= r.right && ev.clientY >= r.top && ev.clientY <= r.bottom) {
-          addNode(type, label, (ev.clientX - r.left) / scale - 75, (ev.clientY - r.top) / scale - 45);
-          updateHint(); markDirty();
-        }
-      } else {
-        // Tap = add at center
-        const r = canvas.getBoundingClientRect();
-        const offset = nodes.length * 30;
-        addNode(type, label, (r.width/2/scale)-75+(offset%200), (r.height/2/scale)-45+Math.floor(offset/200)*70);
-        updateHint(); markDirty();
-      }
-      dragCurrentType = null; dragCurrentLabel = null; touchMoved = false;
-    }
-
-    document.addEventListener('pointermove', onTouchMove);
-    document.addEventListener('pointerup', onTouchUp);
-  });
-});
-
-// HTML5 drop target on canvas
-function onDragOver(e) {
-  e.preventDefault();
-  e.dataTransfer.dropEffect = 'copy';
-  canvas.style.outline = '2px solid rgba(0,229,255,0.4)';
+function libCleanup() {
+  if (libGhost) { libGhost.remove(); libGhost = null; }
+  canvas.style.outline = '';
+  libDragging = false; libDragType = null; libDragLabel = null;
 }
 
-canvas.addEventListener('dragleave', () => { canvas.style.outline = ''; });
+function libCreateGhost(label, x, y) {
+  const g = document.createElement('div');
+  g.style.cssText = 'position:fixed;z-index:9999;pointer-events:none;background:#111620;border:1.5px solid #00e5ff;border-radius:10px;padding:0.5rem 0.9rem;font-size:0.82rem;color:#e2e8f5;white-space:nowrap;box-shadow:0 8px 30px rgba(0,0,0,0.5);opacity:0.92;transform:rotate(2deg);';
+  g.textContent = label;
+  document.body.appendChild(g);
+  g.style.left = (x - 60) + 'px'; g.style.top = (y - 20) + 'px';
+  return g;
+}
 
-function onDrop(e) {
-  e.preventDefault();
-  canvas.style.outline = '';
-  const raw = e.dataTransfer.getData('text/plain');
-  if (!raw) return;
-  const [type, label] = raw.split('|');
+function libDropOnCanvas(clientX, clientY, type, label) {
   const r = canvas.getBoundingClientRect();
-  addNode(type, label, (e.clientX - r.left) / scale - 75, (e.clientY - r.top) / scale - 45);
+  if (clientX >= r.left && clientX <= r.right && clientY >= r.top && clientY <= r.bottom) {
+    addNode(type, label, (clientX - r.left) / scale - 75, (clientY - r.top) / scale - 45);
+    updateHint(); markDirty();
+  }
+}
+
+function libDropAtCenter(type, label) {
+  const r = canvas.getBoundingClientRect();
+  const off = nodes.length * 30;
+  addNode(type, label, (r.width/2/scale)-75+(off%200), (r.height/2/scale)-45+Math.floor(off/200)*70);
   updateHint(); markDirty();
 }
+
+document.querySelectorAll('.block-template').forEach(el => {
+  const type = el.dataset.type, label = el.dataset.label;
+  el.style.cursor = 'grab';
+  el.style.userSelect = 'none';
+  el.style.touchAction = 'none';
+
+  // MOUSE
+  el.addEventListener('mousedown', e => {
+    if (e.button !== 0) return;
+    e.preventDefault();
+    libDragType = type; libDragLabel = label;
+    libStartX = e.clientX; libStartY = e.clientY; libDragging = false;
+
+    function onMove(ev) {
+      if (!libDragging && Math.hypot(ev.clientX - libStartX, ev.clientY - libStartY) > LIB_THRESHOLD) {
+        libDragging = true;
+        libGhost = libCreateGhost(label, ev.clientX, ev.clientY);
+      }
+      if (libGhost) {
+        libGhost.style.left = (ev.clientX - 60) + 'px';
+        libGhost.style.top  = (ev.clientY - 20) + 'px';
+        const r = canvas.getBoundingClientRect();
+        canvas.style.outline = (ev.clientX >= r.left && ev.clientX <= r.right && ev.clientY >= r.top && ev.clientY <= r.bottom) ? '2px solid rgba(0,229,255,0.35)' : '';
+      }
+    }
+    function onUp(ev) {
+      document.removeEventListener('mousemove', onMove);
+      document.removeEventListener('mouseup', onUp);
+      const wasDrag = libDragging;
+      const cx = ev.clientX, cy = ev.clientY;
+      libCleanup();
+      if (wasDrag) libDropOnCanvas(cx, cy, type, label);
+      // else: handled by click below
+    }
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onUp);
+  });
+
+  el.addEventListener('click', e => {
+    if (libDragging) return;
+    libDropAtCenter(type, label);
+  });
+
+  // TOUCH
+  el.addEventListener('touchstart', e => {
+    e.preventDefault();
+    const t = e.touches[0];
+    libDragType = type; libDragLabel = label;
+    libStartX = t.clientX; libStartY = t.clientY; libDragging = false;
+
+    function onMove(ev) {
+      ev.preventDefault();
+      const tc = ev.touches[0];
+      if (!libDragging && Math.hypot(tc.clientX - libStartX, tc.clientY - libStartY) > LIB_THRESHOLD) {
+        libDragging = true;
+        libGhost = libCreateGhost(label, tc.clientX, tc.clientY);
+      }
+      if (libGhost) {
+        libGhost.style.left = (tc.clientX - 60) + 'px';
+        libGhost.style.top  = (tc.clientY - 20) + 'px';
+        const r = canvas.getBoundingClientRect();
+        canvas.style.outline = (tc.clientX >= r.left && tc.clientX <= r.right && tc.clientY >= r.top && tc.clientY <= r.bottom) ? '2px solid rgba(0,229,255,0.35)' : '';
+      }
+    }
+    function onEnd(ev) {
+      document.removeEventListener('touchmove', onMove);
+      document.removeEventListener('touchend', onEnd);
+      const wasDrag = libDragging;
+      const tc = ev.changedTouches[0];
+      libCleanup();
+      if (wasDrag) libDropOnCanvas(tc.clientX, tc.clientY, type, label);
+      else libDropAtCenter(type, label);
+    }
+    document.addEventListener('touchmove', onMove, { passive: false });
+    document.addEventListener('touchend', onEnd);
+  }, { passive: false });
+});
+
+function onDragOver(e) { e.preventDefault(); }
+function onDrop(e) { e.preventDefault(); }
 
 // ─── ADD NODE ─────────────────────────────────────────────────────────────────
 function addNode(type, label, x, y) {

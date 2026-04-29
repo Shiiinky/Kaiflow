@@ -1124,8 +1124,14 @@ body {
   // ─── INIT ─────────────────────────────────────────────────────────────────
   // ─── CREATE NEW FLUX ─────────────────────────────────────────────────────
   async function createFlux() {
-    const { data: { session }, error: sessionError } = await supabaseClient.auth.getSession();
-    if (sessionError || !session) {
+    const btn = document.querySelector('.modal-btn-create');
+    if (btn) { btn.disabled = true; btn.textContent = 'Création…'; }
+
+    // Force refresh session token
+    const { data: refreshData, error: refreshError } = await supabaseClient.auth.refreshSession();
+    const session = refreshData?.session;
+
+    if (refreshError || !session) {
       window.location.href = '/login';
       return;
     }
@@ -1135,10 +1141,6 @@ body {
     const taktRaw = document.querySelector('#modal input[type="number"]')?.value;
     const takt = taktRaw ? parseInt(taktRaw) : null;
 
-    // Close modal and show loading
-    const btn = document.querySelector('.modal-btn-create');
-    if (btn) { btn.disabled = true; btn.textContent = 'Création…'; }
-
     const { data, error } = await supabaseClient
       .from('flux')
       .insert({
@@ -1146,8 +1148,8 @@ body {
         nom: nom,
         type_production: type || null,
         takt_time_cible: takt,
-        nodes: JSON.stringify([]),
-        connections: JSON.stringify([])
+        nodes: [],
+        connections: []
       })
       .select('id')
       .single();
