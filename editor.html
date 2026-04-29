@@ -312,8 +312,8 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-s
     </div>
     
     <div class="canvas" id="canvas" style="touch-action:none;">
-      <svg class="connections-svg" id="connectionsSvg" style="touch-action:none;"></svg>
-      <svg class="drawing-line" id="drawingLine"></svg>
+      <svg class="connections-svg" id="connectionsSvg" style="touch-action:none; pointer-events: none;"></svg>
+      <svg class="drawing-line" id="drawingLine" style="pointer-events: none;"></svg>
       <div class="canvas-hint" id="canvasHint">
         <div class="canvas-hint-icon">〰</div>
         <div class="canvas-hint-text"><strong>Cliquez ou glissez un bloc</strong> depuis le panneau gauche<br>pour modéliser votre flux</div>
@@ -631,18 +631,6 @@ function bindNodeEvents(el, node) {
       startConnectionPointer(node.id, e);
     });
   }
-
-  // Port IN - end connection
-  const portIn = el.querySelector('.port-in');
-  if (portIn) {
-    portIn.style.touchAction = 'none';
-    portIn.addEventListener('pointerup', e => {
-      e.preventDefault();
-      if (isDrawingConnection && connectionStart && connectionStart.nodeId !== node.id) {
-        endConnection(node.id);
-      }
-    });
-  }
 }
 
 function buildNodeHTML(node) {
@@ -706,6 +694,7 @@ function getNodeVAPercent(node) {
 function startConnectionPointer(nodeId, e) {
   isDrawingConnection = true;
   connectionStart = { nodeId };
+  
   const portEl = document.getElementById(`port-out-${nodeId}`);
   const rect = portEl.getBoundingClientRect(), cr = canvas.getBoundingClientRect();
   connectionStart.x = (rect.left + rect.width/2 - cr.left) / scale;
@@ -729,7 +718,26 @@ function startConnectionPointer(nodeId, e) {
   function onUp(ev) {
     document.removeEventListener('pointermove', onMove);
     document.removeEventListener('pointerup', onUp);
-    if (isDrawingConnection) cancelConnection();
+    
+    if (!isDrawingConnection) return;
+
+    // Détection géométrique de la cible (force le navigateur à ignorer le SVG en cours de tracé)
+    drawingSvg.style.display = 'none';
+    const dropTarget = document.elementFromPoint(ev.clientX, ev.clientY);
+    drawingSvg.style.display = '';
+
+    if (dropTarget && dropTarget.classList.contains('port-in')) {
+      const match = dropTarget.id.match(/port-in-(\d+)/);
+      if (match) {
+        const targetId = parseInt(match[1]);
+        if (targetId !== connectionStart.nodeId) {
+          endConnection(targetId);
+          return;
+        }
+      }
+    }
+
+    cancelConnection();
   }
 
   document.addEventListener('pointermove', onMove);
