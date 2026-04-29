@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -7,7 +8,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/globals.css">
 <style>
-/* CSS Strictement spécifique à l'Éditeur */
+/* CSS Spécifique à l'Éditeur */
 html, body { height: 100%; overflow: hidden; display: flex; flex-direction: column; }
 
 /* TOPBAR */
@@ -133,11 +134,11 @@ html, body { height: 100%; overflow: hidden; display: flex; flex-direction: colu
 .delete-btn:hover { background: var(--warn-dim); border-color: var(--warn); }
 .open-mos-btn { width: 100%; margin-top: 0.5rem; padding: 0.55rem; background: var(--accent-dim); border: 1px solid rgba(0,229,255,0.3); border-radius: 7px; color: var(--accent); font-family: 'DM Sans', sans-serif; font-size: 0.8rem; font-weight: 500; cursor: pointer; transition: all 0.15s; }
 
-/* MOS MODAL */
+/* MODALS */
 .mos-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 300; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.25s; backdrop-filter: blur(6px); }
 .mos-overlay.open { opacity: 1; pointer-events: all; }
-.mos-modal { background: var(--surface); border: 1px solid var(--border2); border-radius: 18px; width: min(96vw, 820px); max-height: 92vh; display: flex; flex-direction: column; transform: translateY(24px); transition: transform 0.25s; box-shadow: 0 40px 100px rgba(0,0,0,0.6); }
-.mos-overlay.open .mos-modal { transform: translateY(0); }
+.modal { background: var(--surface); border: 1px solid var(--border2); border-radius: 18px; width: min(96vw, 820px); max-height: 92vh; display: flex; flex-direction: column; transform: translateY(24px); transition: transform 0.25s; box-shadow: 0 40px 100px rgba(0,0,0,0.6); }
+.mos-overlay.open .modal { transform: translateY(0); }
 .mos-header { padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 1rem; }
 .mos-title-group { flex: 1; }
 .mos-title { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 800; margin-bottom: 0.2rem; }
@@ -183,6 +184,10 @@ html, body { height: 100%; overflow: hidden; display: flex; flex-direction: colu
 .mos-save-btn { margin-left: auto; background: var(--accent); color: #000; border: none; border-radius: 8px; padding: 0.6rem 1.4rem; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: all 0.15s; }
 .vana-kpi { display: flex; flex-direction: column; align-items: center; }
 .vana-mini-bar { width: 60px; height: 5px; border-radius: 3px; overflow: hidden; display: flex; margin-top: 0.3rem; }
+.modal-btn-cancel { flex: 1; padding: 0.75rem; background: transparent; border: 1px solid var(--border); border-radius: 8px; color: var(--muted2); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; cursor: pointer; transition: border-color 0.15s; }
+.modal-btn-cancel:hover { border-color: var(--muted2); }
+.modal-btn-create { flex: 2; padding: 0.75rem; background: var(--accent); border: none; border-radius: 8px; color: #000; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: transform 0.15s; }
+.modal-btn-create:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(0,229,255,0.25); }
 @keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
 .flow-node { animation: fadeUp 0.3s ease both; }
 </style>
@@ -201,9 +206,8 @@ html, body { height: 100%; overflow: hidden; display: flex; flex-direction: colu
   <div class="topbar-actions">
     <div class="save-status" id="saveStatus">Sauvegardé</div>
     
-    <button class="tb-btn" style="color:var(--warn); border-color:var(--warn-dim);" onclick="deleteFlux()">🗑 Supprimer ce flux</button>
-    
-    <button class="tb-btn" onclick="exportPDF()">↗ Export PDF</button>
+    <button class="tb-btn" onclick="openGlobalSettings()">⚙ Paramètres Ligne</button>
+    <button class="tb-btn" style="color:var(--warn); border-color:var(--warn-dim);" onclick="deleteFlux()">🗑 Supprimer</button>
     <button class="tb-btn primary" onclick="saveFlux()">💾 Sauvegarder</button>
   </div>
 </header>
@@ -275,7 +279,7 @@ html, body { height: 100%; overflow: hidden; display: flex; flex-direction: colu
     </div>
 
     <div class="kpi-bar" id="kpiBar">
-      <div class="kpi-item"><div class="kpi-label">Takt Time</div><div class="kpi-value neutral" id="kpiTakt">—</div><div class="kpi-sub">demande saisie</div></div>
+      <div class="kpi-item"><div class="kpi-label">Takt Time Net</div><div class="kpi-value neutral" id="kpiTakt">—</div><div class="kpi-sub">Calculé globalement</div></div>
       <div class="kpi-item"><div class="kpi-label">Temps cycle max</div><div class="kpi-value neutral" id="kpiCycle">—</div><div class="kpi-sub" id="kpiCycleSub">poste le plus lent</div></div>
       <div class="kpi-item" title="Calculé via le chemin critique (algorithme PERT)"><div class="kpi-label">Lead Time</div><div class="kpi-value accent" id="kpiLead">—</div><div class="kpi-sub">traversée (chemin critique)</div></div>
       <div class="kpi-item"><div class="kpi-label">Goulot</div><div class="kpi-value neutral" id="kpiBottleneck" style="font-size:0.85rem;padding-top:0.2rem">—</div><div class="kpi-sub" id="kpiBottleneckSub"></div></div>
@@ -297,13 +301,7 @@ html, body { height: 100%; overflow: hidden; display: flex; flex-direction: colu
     
     <div class="props-form" id="propsForm">
       <div class="prop-field"><label class="prop-label">Nom</label><input class="prop-input" id="propName" type="text" placeholder="ex: Assemblage"></div>
-      
-      <div class="prop-field" id="pfTakt">
-        <label class="prop-label">Takt time cible</label>
-        <input class="prop-input" id="propTakt" type="number" placeholder="ex: 60">
-        <div class="prop-unit">secondes / pièce</div>
-      </div>
-      
+            
       <div class="prop-field" id="pfCycle"><label class="prop-label">Temps de cycle</label><input class="prop-input" id="propCycle" type="number" placeholder="ex: 45"><div class="prop-unit">sec (auto si MOS rempli)</div></div>
       <div class="prop-field" id="pfOps"><label class="prop-label">Nb. opérateurs</label><input class="prop-input" id="propOps" type="number" placeholder="1" min="1"></div>
       <div class="prop-field" id="pfCapacity"><label class="prop-label">Capacité dispo</label><input class="prop-input" id="propCapacity" type="number" placeholder="ex: 480"><div class="prop-unit">secondes / période</div></div>
@@ -328,7 +326,7 @@ html, body { height: 100%; overflow: hidden; display: flex; flex-direction: colu
 </div>
 
 <div class="mos-overlay" id="mosOverlay">
-  <div class="mos-modal">
+  <div class="modal">
     <div class="mos-header">
       <div class="mos-title-group">
         <div class="mos-title" id="mosModalTitle">Mode Opératoire Standard</div>
@@ -360,20 +358,13 @@ html, body { height: 100%; overflow: hidden; display: flex; flex-direction: colu
       <div class="mos-meta">
         <div class="field"><label>Nom du process</label><input id="mosProcessName" type="text" placeholder="ex: Finition"></div>
         <div class="field"><label>Auteur</label><input id="mosAuthor" type="text" placeholder="Nom"></div>
-        <div class="field"><label>Takt Time (s)</label><input id="mosTaktTime" type="number" placeholder="60" oninput="updateMOSCalcs()"></div>
+        <div class="field"><label>Temps Cible (s)</label><input id="mosTaktTime" type="number" placeholder="60" oninput="updateMOSCalcs()"></div>
         <div class="field"><label>Nb. pièces / MOS</label><input id="mosNbPieces" type="number" placeholder="1" value="1" oninput="updateMOSCalcs()"></div>
       </div>
 
       <div class="tasks-section-title">Décomposition des tâches</div>
       <div class="tasks-header">
-        <div class="th">#</div>
-        <div class="th left">Description de la tâche</div>
-        <div class="th manual-h">Manuel</div>
-        <div class="th machine-h">Machine</div>
-        <div class="th move-h">Dépl.</div>
-        <div class="th wait-h">Attente</div>
-        <div class="th" style="color:var(--accent)">Cumul</div>
-        <div class="th"></div>
+        <div class="th">#</div><div class="th left">Description de la tâche</div><div class="th manual-h">Manuel</div><div class="th machine-h">Machine</div><div class="th move-h">Dépl.</div><div class="th wait-h">Attente</div><div class="th" style="color:var(--accent)">Cumul</div><div class="th"></div>
       </div>
       <div id="tasksList"></div>
       <button class="add-task-btn" onclick="addTask()">✚ Ajouter une tâche</button>
@@ -395,6 +386,39 @@ html, body { height: 100%; overflow: hidden; display: flex; flex-direction: colu
   </div>
 </div>
 
+<div class="mos-overlay" id="globalSettingsOverlay">
+  <div class="modal" style="width: 450px;">
+    <div class="modal-title">Paramètres de la ligne</div>
+    <div class="modal-sub">Définissez la demande client et le temps d'ouverture pour calculer le Takt Time net.</div>
+
+    <div class="field">
+      <label>Demande client (pièces par poste/journée)</label>
+      <input type="number" id="gsDemand" placeholder="ex: 400" min="1">
+    </div>
+    
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap:1rem;">
+      <div class="field">
+        <label>Temps d'ouverture brut (min)</label>
+        <input type="number" id="gsOpening" placeholder="ex: 480" min="0">
+      </div>
+      <div class="field">
+        <label>Arrêts planifiés (min)</label>
+        <input type="number" id="gsBreaks" placeholder="ex: 30" min="0">
+      </div>
+    </div>
+
+    <div style="background:var(--bg); border:1px solid var(--border); border-radius:8px; padding:1rem; margin-top:0.5rem; display:flex; justify-content:space-between; align-items:center;">
+      <span style="font-size:0.8rem; color:var(--muted); font-weight:500; text-transform:uppercase; letter-spacing:0.05em;">Takt Time Net Calculé</span>
+      <span id="gsCalculatedTakt" style="font-family:'Syne', sans-serif; font-size:1.4rem; font-weight:800; color:var(--accent);">—</span>
+    </div>
+
+    <div class="modal-actions" style="margin-top:1.5rem; display:flex; gap:0.75rem;">
+      <button class="modal-btn-cancel" onclick="closeGlobalSettings()">Annuler</button>
+      <button class="modal-btn-create" onclick="saveGlobalSettings()">Valider</button>
+    </div>
+  </div>
+</div>
+
 <script type="module">
 // Import base de données
 import { supabaseClient, requireAuth } from '/js/supabase-client.js';
@@ -402,13 +426,11 @@ import { supabaseClient, requireAuth } from '/js/supabase-client.js';
 // ─── STATE ────────────────────────────────────────────────────────────────────
 let nodes = [], connections = [], selectedNodeId = null, nodeCounter = 0, scale = 1;
 let isDraggingNode = false, dragOffsetX = 0, dragOffsetY = 0;
-let currentMOSNodeId = null;
-let currentUser = null;
-let currentFluxId = null;
-let dirty = false;
-
-// Mode Liaison
+let currentMOSNodeId = null, currentUser = null, currentFluxId = null, dirty = false;
 let isLinkMode = false, linkSourceId = null, drawingPath = null;
+
+// État global de la ligne
+let globalSettings = { demand: 400, openingTime: 480, plannedBreaks: 30 };
 
 const canvas = document.getElementById('canvas');
 const svg = document.getElementById('connectionsSvg');
@@ -421,51 +443,61 @@ const BLOCK_CONFIG = {
   control: { icon: '✅', label: 'Contrôle qualité', color: 'control', hasTime: true, hasOps: true, hasMOS: true },
 };
 
-// ─── RACCROCHAGE DES FONCTIONS POUR LE HTML (GLOBAL SCOPE) ─────────────────────
-window.zoom = zoom;
-window.resetZoom = resetZoom;
-window.deleteSelected = deleteSelected;
-window.exportPDF = exportPDF;
-window.saveFlux = saveFlux;
-window.deleteFlux = deleteFlux;
-window.toggleLinkMode = toggleLinkMode;
-window.openMOS = openMOS;
-window.closeMOS = closeMOS;
-window.saveMOS = saveMOS;
-window.openMOSForNode = openMOSForNode;
-window.addTask = addTask;
-window.removeTask = removeTask;
-window.updateTask = updateTask;
-window.setTaskVSM = setTaskVSM;
-window.addNC = addNC;
-window.removeNC = removeNC;
-window.updateNC = updateNC;
-window.updateMOSCalcs = updateMOSCalcs;
+// ─── RACCROCHAGE DES FONCTIONS POUR LE HTML ──────────────────────────────────
+window.zoom = zoom; window.resetZoom = resetZoom; window.deleteSelected = deleteSelected;
+window.saveFlux = saveFlux; window.deleteFlux = deleteFlux; window.toggleLinkMode = toggleLinkMode;
+window.openMOS = openMOS; window.closeMOS = closeMOS; window.saveMOS = saveMOS; window.openMOSForNode = openMOSForNode;
+window.addTask = addTask; window.removeTask = removeTask; window.updateTask = updateTask; window.setTaskVSM = setTaskVSM;
+window.addNC = addNC; window.removeNC = removeNC; window.updateNC = updateNC; window.updateMOSCalcs = updateMOSCalcs;
+
+window.openGlobalSettings = openGlobalSettings;
+window.closeGlobalSettings = closeGlobalSettings;
+window.saveGlobalSettings = saveGlobalSettings;
+
+// ─── GESTION MODALE PARAMÈTRES GLOBAUX ────────────────────────────────────────
+function openGlobalSettings() {
+  document.getElementById('gsDemand').value = globalSettings.demand;
+  document.getElementById('gsOpening').value = globalSettings.openingTime;
+  document.getElementById('gsBreaks').value = globalSettings.plannedBreaks;
+  updateLiveTaktPreview();
+  document.getElementById('globalSettingsOverlay').classList.add('open');
+}
+function closeGlobalSettings() { document.getElementById('globalSettingsOverlay').classList.remove('open'); }
+function saveGlobalSettings() {
+  globalSettings.demand = parseInt(document.getElementById('gsDemand').value) || 1;
+  globalSettings.openingTime = parseInt(document.getElementById('gsOpening').value) || 480;
+  globalSettings.plannedBreaks = parseInt(document.getElementById('gsBreaks').value) || 0;
+  closeGlobalSettings(); updateKPIs(); markDirty();
+}
+['gsDemand', 'gsOpening', 'gsBreaks'].forEach(id => document.getElementById(id)?.addEventListener('input', updateLiveTaktPreview));
+function updateLiveTaktPreview() {
+  const d = parseInt(document.getElementById('gsDemand').value) || 1;
+  const netTimeSec = Math.max(0, (parseInt(document.getElementById('gsOpening').value) || 0) - (parseInt(document.getElementById('gsBreaks').value) || 0)) * 60;
+  document.getElementById('gsCalculatedTakt').textContent = Math.round(netTimeSec / d) + 's';
+}
+function getGlobalTaktTime() {
+  return Math.round((Math.max(0, globalSettings.openingTime - globalSettings.plannedBreaks) * 60) / globalSettings.demand);
+}
 
 // ─── DRAG FROM LIBRARY ────────────────────────────────────────────────────────
 const LIB_THRESHOLD = 6;
 function libCreateGhost(label, x, y) {
   const g = document.createElement('div');
   g.style.cssText = 'position:fixed;z-index:9999;pointer-events:none;background:#111620;border:1.5px solid #00e5ff;border-radius:10px;padding:0.5rem 0.9rem;font-size:0.82rem;color:#e2e8f5;white-space:nowrap;box-shadow:0 8px 30px rgba(0,0,0,0.5);opacity:0.92;';
-  g.textContent = label;
-  document.body.appendChild(g);
-  g.style.left = (x - 60) + 'px'; g.style.top = (y - 20) + 'px';
-  return g;
+  g.textContent = label; document.body.appendChild(g);
+  g.style.left = (x - 60) + 'px'; g.style.top = (y - 20) + 'px'; return g;
 }
 
 function libDropOnCanvas(clientX, clientY, type, label) {
   const r = canvas.getBoundingClientRect();
   if (clientX >= r.left && clientX <= r.right && clientY >= r.top && clientY <= r.bottom) {
-    addNode(type, label, (clientX - r.left) / scale - 75, (clientY - r.top) / scale - 45);
-    updateHint(); markDirty();
+    addNode(type, label, (clientX - r.left) / scale - 75, (clientY - r.top) / scale - 45); updateHint(); markDirty();
   }
 }
 
 function libDropAtCenter(type, label) {
-  const r = canvas.getBoundingClientRect();
-  const off = nodes.length * 30;
-  addNode(type, label, (r.width/2/scale)-75+(off%200), (r.height/2/scale)-45+Math.floor(off/200)*70);
-  updateHint(); markDirty();
+  const r = canvas.getBoundingClientRect(); const off = nodes.length * 30;
+  addNode(type, label, (r.width/2/scale)-75+(off%200), (r.height/2/scale)-45+Math.floor(off/200)*70); updateHint(); markDirty();
 }
 
 document.querySelectorAll('.block-template').forEach(el => {
@@ -487,12 +519,9 @@ document.querySelectorAll('.block-template').forEach(el => {
       }
     }
     function onUp(ev) {
-      el.removeEventListener('pointermove', onMove); el.removeEventListener('pointerup', onUp);
-      el.releasePointerCapture(e.pointerId);
-      if (ghost) { ghost.remove(); ghost = null; }
-      canvas.style.outline = '';
-      if (isDragging) libDropOnCanvas(ev.clientX, ev.clientY, type, label);
-      else libDropAtCenter(type, label);
+      el.removeEventListener('pointermove', onMove); el.removeEventListener('pointerup', onUp); el.releasePointerCapture(e.pointerId);
+      if (ghost) { ghost.remove(); ghost = null; } canvas.style.outline = '';
+      if (isDragging) libDropOnCanvas(ev.clientX, ev.clientY, type, label); else libDropAtCenter(type, label);
     }
     el.addEventListener('pointermove', onMove); el.addEventListener('pointerup', onUp);
   });
@@ -508,8 +537,7 @@ function toggleLinkMode() {
 
 canvas.addEventListener('pointermove', e => {
   if (!isLinkMode || !linkSourceId) return;
-  const portEl = document.getElementById(`port-out-${linkSourceId}`);
-  if (!portEl) return;
+  const portEl = document.getElementById(`port-out-${linkSourceId}`); if (!portEl) return;
   const rect = portEl.getBoundingClientRect(), cr = canvas.getBoundingClientRect();
   const startX = (rect.left + rect.width/2 - cr.left) / scale, startY = (rect.top + rect.height/2 - cr.top) / scale;
   const mx = (e.clientX - cr.left) / scale, my = (e.clientY - cr.top) / scale;
@@ -526,7 +554,7 @@ canvas.addEventListener('pointermove', e => {
 // ─── GESTION DES NOEUDS ───────────────────────────────────────────────────────
 function addNode(type, label, x, y) {
   const id = ++nodeCounter;
-  const node = { id, type, label, x, y, cycle: null, ops: 1, capacity: 480, qty: null, stockMax: null, dist: null, vsm: type==='stock'||type==='transport'?'nva':'va', takt: null, mos: { processName:'', author:'', taktTime:null, nbPieces:1, tasks:[], nc:[] } };
+  const node = { id, type, label, x, y, cycle: null, ops: 1, capacity: 480, qty: null, stockMax: null, dist: null, vsm: type==='stock'||type==='transport'?'nva':'va', mos: { processName:'', author:'', taktTime:null, nbPieces:1, tasks:[], nc:[] } };
   nodes.push(node); renderNode(node); updateKPIs(); return node;
 }
 
@@ -544,9 +572,7 @@ function bindNodeEvents(el, node) {
     if (isLinkMode) {
       if (!linkSourceId) { linkSourceId = node.id; el.classList.add('link-source'); }
       else if (linkSourceId !== node.id) {
-        if (!connections.find(c => c.from === linkSourceId && c.to === node.id)) {
-          connections.push({ from: linkSourceId, to: node.id }); renderConnections(); updateKPIs(); markDirty();
-        }
+        if (!connections.find(c => c.from === linkSourceId && c.to === node.id)) { connections.push({ from: linkSourceId, to: node.id }); renderConnections(); updateKPIs(); markDirty(); }
         toggleLinkMode();
       }
       return; 
@@ -554,13 +580,11 @@ function bindNodeEvents(el, node) {
 
     selectNode(node.id);
     isDraggingNode = true; el.setPointerCapture(e.pointerId);
-    const rect = el.getBoundingClientRect();
-    dragOffsetX = (e.clientX - rect.left) / scale; dragOffsetY = (e.clientY - rect.top) / scale;
+    const rect = el.getBoundingClientRect(); dragOffsetX = (e.clientX - rect.left) / scale; dragOffsetY = (e.clientY - rect.top) / scale;
 
     function onMove(ev) {
       if (!isDraggingNode) return;
-      const r = canvas.getBoundingClientRect();
-      node.x = (ev.clientX - r.left) / scale - dragOffsetX; node.y = (ev.clientY - r.top) / scale - dragOffsetY;
+      const r = canvas.getBoundingClientRect(); node.x = (ev.clientX - r.left) / scale - dragOffsetX; node.y = (ev.clientY - r.top) / scale - dragOffsetY;
       el.style.left = node.x + 'px'; el.style.top = node.y + 'px';
       renderConnections(); markDirty();
     }
@@ -589,8 +613,7 @@ function refreshNodeDisplay(nodeId) {
   const node = nodes.find(n=>n.id===nodeId); if (!node) return;
   const el = document.getElementById(`node-${nodeId}`); if (!el) return;
   el.innerHTML = buildNodeHTML(node); bindNodeEvents(el, node);
-  if (selectedNodeId === nodeId) el.classList.add('selected');
-  updateKPIs();
+  if (selectedNodeId === nodeId) el.classList.add('selected'); updateKPIs();
 }
 
 function getEffectiveCycle(node) {
@@ -615,15 +638,13 @@ function getNodeVAPercent(node) {
 // ─── SELECTION & SUPPRESSION ──────────────────────────────────────────────────
 function selectNode(id) {
   if (selectedNodeId) document.getElementById(`node-${selectedNodeId}`)?.classList.remove('selected');
-  selectedNodeId=id; document.getElementById(`node-${id}`)?.classList.add('selected');
-  showProps(id);
+  selectedNodeId=id; document.getElementById(`node-${id}`)?.classList.add('selected'); showProps(id);
 }
 
 canvas.addEventListener('pointerdown', e => {
   if (e.target === canvas || e.target === svg || e.target.tagName === 'svg') {
     if (selectedNodeId) document.getElementById(`node-${selectedNodeId}`)?.classList.remove('selected');
-    selectedNodeId=null;
-    document.getElementById('propsEmpty').style.display='flex'; document.getElementById('propsForm').classList.remove('visible');
+    selectedNodeId=null; document.getElementById('propsEmpty').style.display='flex'; document.getElementById('propsForm').classList.remove('visible');
     if (isLinkMode) toggleLinkMode();
   }
 });
@@ -642,7 +663,7 @@ function showProps(id) {
   const config=BLOCK_CONFIG[node.type];
   document.getElementById('propsEmpty').style.display='none'; document.getElementById('propsForm').classList.add('visible');
   document.getElementById('propsSubtitle').textContent=config.label;
-  ['Name','Cycle','Ops','Capacity','Takt','Qty','StockMax','Dist'].forEach(k => document.getElementById(`prop${k}`).value = node[k.toLowerCase()]||'');
+  ['Name','Cycle','Ops','Capacity','Qty','StockMax','Dist'].forEach(k => document.getElementById(`prop${k}`).value = node[k.toLowerCase()]||'');
   document.getElementById('propName').value = node.label; document.getElementById('propVSM').value = node.vsm||'va';
   document.getElementById('pfCycle').style.display=config.hasTime?'block':'none';
   document.getElementById('pfOps').style.display=config.hasOps?'block':'none';
@@ -650,19 +671,16 @@ function showProps(id) {
   document.getElementById('pfQty').style.display=config.hasQty?'block':'none';
   document.getElementById('pfStockMax').style.display=config.hasQty?'block':'none';
   document.getElementById('pfDist').style.display=config.hasDist?'block':'none';
-  document.getElementById('pfTakt').style.display=config.hasTime?'block':'none';
   document.getElementById('openMosBtn').style.display=config.hasMOS?'block':'none';
 }
 
-['propName','propCycle','propOps','propCapacity','propTakt','propVSM','propQty','propStockMax','propDist'].forEach(id => {
-  document.getElementById(id).addEventListener('input', () => {
-    if(!selectedNodeId) return;
-    const node=nodes.find(n=>n.id===selectedNodeId); if(!node) return;
+['propName','propCycle','propOps','propCapacity','propVSM','propQty','propStockMax','propDist'].forEach(id => {
+  document.getElementById(id)?.addEventListener('input', () => {
+    if(!selectedNodeId) return; const node=nodes.find(n=>n.id===selectedNodeId); if(!node) return;
     node.label = document.getElementById('propName').value||node.label;
     node.cycle = parseFloat(document.getElementById('propCycle').value)||null;
     node.ops = parseInt(document.getElementById('propOps').value)||1;
     node.capacity = parseFloat(document.getElementById('propCapacity').value)||480;
-    node.takt = parseFloat(document.getElementById('propTakt').value)||null;
     node.vsm = document.getElementById('propVSM').value;
     node.qty = parseFloat(document.getElementById('propQty').value)||null;
     node.stockMax = parseFloat(document.getElementById('propStockMax').value)||null;
@@ -675,8 +693,7 @@ function showProps(id) {
 function makeCurve(x1,y1,x2,y2) { const cx=(x1+x2)/2; return `M ${x1} ${y1} C ${cx} ${y1}, ${cx} ${y2}, ${x2} ${y2}`; }
 function getPortPos(nodeId, portType) {
   const portEl=document.getElementById(`port-${portType}-${nodeId}`); if(!portEl)return null;
-  const rect=portEl.getBoundingClientRect(), r=canvas.getBoundingClientRect();
-  return {x:(rect.left+rect.width/2-r.left)/scale, y:(rect.top+rect.height/2-r.top)/scale};
+  const rect=portEl.getBoundingClientRect(), r=canvas.getBoundingClientRect(); return {x:(rect.left+rect.width/2-r.left)/scale, y:(rect.top+rect.height/2-r.top)/scale};
 }
 function renderConnections() {
   svg.innerHTML='';
@@ -691,7 +708,7 @@ function renderConnections() {
   });
 }
 
-// ─── ALGORITHME PERT (CHEMIN CRITIQUE) ──────────────────────────────────────
+// ─── ALGORITHME PERT ET CALCULS GLOBAUX ─────────────────────────────────────
 function calculateCriticalPathLeadTime() {
   if (nodes.length === 0) return 0;
   const memo = {};
@@ -727,10 +744,7 @@ function updateKPIs() {
   nodes.forEach(n => {
     const c = getEffectiveCycle(n); if(c === 0 && n.type !== 'stock') return; 
     if (n.mos && n.mos.tasks.length > 0) {
-      n.mos.tasks.forEach(t=>{
-        const tt=(parseFloat(t.manual)||0)+(parseFloat(t.move)||0)+(parseFloat(t.wait)||0);
-        if(t.vsm==='va') totalVA+=tt; else totalNVA+=tt;
-      });
+      n.mos.tasks.forEach(t=>{ const tt=(parseFloat(t.manual)||0)+(parseFloat(t.move)||0)+(parseFloat(t.wait)||0); if(t.vsm==='va') totalVA+=tt; else totalNVA+=tt; });
     } else {
       let weight = c; if (n.type === 'stock') weight = (n.qty || 0) * 2;
       if (weight > 0) { if(n.vsm==='va') totalVA+=weight; else totalNVA+=weight; }
@@ -742,9 +756,7 @@ function updateKPIs() {
     const vaP=Math.round((totalVA/totalTime)*100);
     document.getElementById('kpiVA').textContent = vaP+'%'; document.getElementById('kpiVA').className = 'kpi-value '+(vaP>=60?'ok':'warn');
     const bar=document.getElementById('vanaBar'); bar.children[0].style.width=vaP+'%'; bar.children[1].style.width=(100-vaP)+'%';
-  } else {
-    document.getElementById('kpiVA').textContent='—'; document.getElementById('kpiVA').className='kpi-value neutral';
-  }
+  } else { document.getElementById('kpiVA').textContent='—'; document.getElementById('kpiVA').className='kpi-value neutral'; }
 
   if (cycles.length===0) {
     ['kpiTakt','kpiCycle','kpiBottleneck','kpiRendement','kpiCharge'].forEach(id=>{ document.getElementById(id).textContent='—'; document.getElementById(id).className='kpi-value neutral'; });
@@ -754,12 +766,15 @@ function updateKPIs() {
   
   const maxCycleObj = cycles.reduce((a,b)=>b.cycle>a.cycle?b:a);
   const maxCycle = maxCycleObj.cycle, bottleneck = maxCycleObj.node;
-  const taktSrc = nodes.find(n=>n.takt), takt = taktSrc ? taktSrc.takt : Math.round(cycles.reduce((s,c)=>s+c.cycle,0)/cycles.length*1.15);
+  
+  // Utilisation de la nouvelle fonction Takt Net
+  const takt = getGlobalTaktTime();
   const isOk = maxCycle<=takt, rendement = Math.round((takt/maxCycle)*100);
   
-  document.getElementById('kpiTakt').textContent = takt+'s'; document.getElementById('kpiCycle').textContent=maxCycle+'s'; document.getElementById('kpiCycle').className='kpi-value '+(isOk?'ok':'warn');
+  document.getElementById('kpiTakt').textContent = takt+'s'; 
+  document.getElementById('kpiCycle').textContent=maxCycle+'s'; document.getElementById('kpiCycle').className='kpi-value '+(isOk?'ok':'warn');
   document.getElementById('kpiBottleneck').textContent=bottleneck.label; document.getElementById('kpiBottleneck').className='kpi-value '+(isOk?'ok':'warn');
-  document.getElementById('kpiBottleneckSub').innerHTML=isOk?'<span style="color:var(--ok);font-size:0.6rem">✓ Dans les limites</span>':'<span class="kpi-alert-tag">⚠ Dépasse le takt</span>';
+  document.getElementById('kpiBottleneckSub').innerHTML=isOk?'<span style="color:var(--ok);font-size:0.6rem">✓ Dans les limites</span>':'<span class="kpi-alert-tag">⚠ Dépasse le takt net</span>';
   document.getElementById('kpiRendement').textContent=rendement+'%'; document.getElementById('kpiRendement').className='kpi-value '+(rendement>=85?'ok':'warn');
   
   const avgCharge = cycles.reduce((s,c)=> s+(c.cycle/(c.node.capacity||480)*100),0)/cycles.length;
@@ -778,12 +793,20 @@ function resetZoom() { scale=1; document.getElementById('zoomInfo').textContent=
 // ─── SUPABASE / SAUVEGARDE ──────────────────────────────────────────────────
 function updateHint() { document.getElementById('canvasHint').style.opacity=nodes.length===0?'1':'0'; }
 function markDirty() { dirty=true; document.getElementById('saveStatus').textContent='Non sauvegardé'; document.getElementById('saveStatus').style.color='var(--warn)'; }
-document.getElementById('fluxTitle').addEventListener('input', markDirty);
 
 async function saveFlux() {
   if (!currentUser) return;
   const title = document.getElementById('fluxTitle').value || 'Nouveau flux';
-  const payload = { user_id: currentUser.id, nom: title, nodes: nodes, connections: connections, updated_at: new Date().toISOString() };
+  // On pousse le takt time global net calculé dans la DB pour l'affichage du Dashboard
+  const payload = { 
+    user_id: currentUser.id, 
+    nom: title, 
+    nodes: nodes, 
+    connections: connections, 
+    takt_time_cible: getGlobalTaktTime(),
+    updated_at: new Date().toISOString() 
+  };
+  
   let error;
   if (currentFluxId) { ({ error } = await supabaseClient.from('flux').update(payload).eq('id', currentFluxId)); }
   else {
@@ -849,8 +872,6 @@ function updateMOSCalcs() {
   document.getElementById('mosTotal-va').textContent=vaP+'%'; document.getElementById('mosFooterCycle').textContent=cyc+'s'; document.getElementById('mosFooterVA').textContent=va+'s ('+vaP+'%)'; document.getElementById('mosFooterNVA').textContent=nva+'s ('+(100-vaP)+'%)';
   if(cyc+mc>0) { const tot=m+mc+mv+w||1; ['manual','machine','move','wait'].forEach((k,i) => document.getElementById(`gantt-${k}`).style.width=([m,mc,mv,w][i]/tot*100)+'%'); }
 }
-
-function exportPDF() { window.print(); }
 
 // ─── INITIALISATION ──────────────────────────────────────────────────────────
 async function initEditor() {
