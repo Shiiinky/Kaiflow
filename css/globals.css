@@ -1,0 +1,66 @@
+/* /css/globals.css */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #0b0e14; --surface: #111620; --surface2: #161c28;
+  --border: #1e2736; --border2: #253044;
+  --accent: #00e5ff; --accent-dim: rgba(0,229,255,0.1);
+  --warn: #ff6b35; --warn-dim: rgba(255,107,53,0.12);
+  --ok: #22d3a0; --ok-dim: rgba(34,211,160,0.1);
+  --manual: #3b82f6; --machine: #f59e0b; --move: #22d3a0; --wait: #f43f5e;
+  --text: #e2e8f5; --muted: #5a6a85; --muted2: #8899b4;
+  --card: #13192400;
+}
+
+html, body { height: 100%; }
+body {
+  background: var(--bg); color: var(--text);
+  font-family: 'DM Sans', sans-serif; font-weight: 300;
+}
+
+/* Typographie & Logo */
+.logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.4rem; letter-spacing: -0.02em; }
+.logo em { font-style: normal; color: var(--accent); }
+.logo-mark { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.3rem; letter-spacing: -0.02em; }
+.logo-mark em { font-style: normal; color: var(--accent); }
+
+/* Formulaires & Champs (Mutualisés) */
+.field { margin-bottom: 1.1rem; }
+.field label {
+  display: block; font-size: 0.72rem; text-transform: uppercase;
+  letter-spacing: 0.09em; color: var(--muted); font-weight: 500; margin-bottom: 0.4rem;
+}
+.field input, .field select {
+  width: 100%; background: var(--bg); border: 1px solid var(--border);
+  border-radius: 10px; padding: 0.75rem 1rem;
+  font-family: 'DM Sans', sans-serif; font-size: 0.95rem;
+  color: var(--text); outline: none; transition: border-color 0.2s;
+}
+.field input:focus, .field select:focus { border-color: var(--accent); }
+.field input::placeholder { color: var(--muted); }
+.field select option { background: var(--surface); }
+
+/* Boutons (Mutualisés) */
+.btn-primary {
+  width: 100%; padding: 0.85rem;
+  background: var(--accent); border: none; border-radius: 10px;
+  font-family: 'DM Sans', sans-serif; font-size: 1rem; font-weight: 500;
+  color: #000; cursor: pointer; margin-top: 0.5rem;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(0,229,255,0.25); }
+.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+
+/* Alertes (Mutualisées) */
+.alert { padding: 0.75rem 1rem; border-radius: 8px; font-size: 0.85rem; margin-bottom: 1rem; display: none; }
+.alert.error { background: rgba(255,107,53,0.1); border: 1px solid rgba(255,107,53,0.3); color: var(--warn); display: flex; align-items: center; gap: 0.5rem; }
+.alert.success { background: rgba(34,211,160,0.1); border: 1px solid rgba(34,211,160,0.3); color: var(--ok); display: flex; align-items: center; gap: 0.5rem; }
+
+/* Loader */
+.spinner {
+  width: 16px; height: 16px; border: 2px solid rgba(0,0,0,0.3);
+  border-top-color: #000; border-radius: 50%;
+  animation: spin 0.6s linear infinite; display: inline-block; margin-right: 0.5rem; vertical-align: middle;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes fadeUp { from { opacity:0; transform: translateY(20px); } to { opacity:1; transform:translateY(0); } }
