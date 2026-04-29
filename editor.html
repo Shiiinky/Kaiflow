@@ -3,29 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>Kaiflow — Éditeur v2</title>
+<title>Kaiflow — Éditeur</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<link rel="stylesheet" href="/css/globals.css">
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-:root {
-  --bg: #0b0e14; --surface: #111620; --surface2: #161c28;
-  --border: #1e2736; --border2: #253044;
-  --accent: #00e5ff; --accent-dim: rgba(0,229,255,0.1);
-  --warn: #ff6b35; --warn-dim: rgba(255,107,53,0.12);
-  --ok: #22d3a0; --ok-dim: rgba(34,211,160,0.1);
-  --manual: #3b82f6; --machine: #f59e0b; --move: #22d3a0; --wait: #f43f5e;
-  --text: #e2e8f5; --muted: #5a6a85; --muted2: #8899b4;
-}
-html, body { height: 100%; overflow: hidden; }
-body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; font-weight: 300; display: flex; flex-direction: column; }
+/* CSS Strictement spécifique à l'Éditeur */
+html, body { height: 100%; overflow: hidden; display: flex; flex-direction: column; }
+
 /* TOPBAR */
 .topbar { height: 54px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 1.2rem; gap: 1rem; flex-shrink: 0; z-index: 50; }
-.logo-mark { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.1rem; letter-spacing: -0.02em; }
-.logo-mark em { font-style: normal; color: var(--accent); }
 .topbar-sep { width: 1px; height: 20px; background: var(--border); }
 .breadcrumb { display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: var(--muted2); }
-.breadcrumb a { color: var(--muted); cursor: pointer; }
+.breadcrumb a { color: var(--muted); cursor: pointer; text-decoration: none; }
+.breadcrumb a:hover { color: var(--text); }
 .topbar-spacer { flex: 1; }
 .flux-title-input { background: transparent; border: none; border-bottom: 1px solid transparent; outline: none; font-family: 'Syne', sans-serif; font-size: 0.95rem; font-weight: 700; color: var(--text); text-align: center; padding: 0.2rem 0.5rem; transition: border-color 0.2s; min-width: 200px; }
 .flux-title-input:focus { border-bottom-color: var(--accent); }
@@ -57,6 +47,9 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-s
 .block-name { font-size: 0.8rem; font-weight: 500; color: var(--text); }
 .block-desc { font-size: 0.67rem; color: var(--muted); margin-top: 0.1rem; }
 
+#linkModeBtn { width: calc(100% - 1.6rem); margin: 0.5rem 0.8rem; justify-content: center; border-style: dashed; }
+#linkModeBtn.active { background: rgba(0,229,255,0.15); border-color: var(--accent); color: var(--accent); border-style: solid; }
+
 /* CANVAS AREA */
 .canvas-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
 .canvas-toolbar { height: 42px; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 1rem; gap: 0.5rem; background: var(--bg); flex-shrink: 0; }
@@ -71,8 +64,6 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-s
 .connection-path.active { stroke: var(--accent); opacity: 0.7; }
 .canvas-hint { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); text-align: center; color: var(--muted); pointer-events: none; transition: opacity 0.3s; }
 .canvas-hint-icon { font-size: 2.5rem; opacity: 0.2; margin-bottom: 0.75rem; }
-.canvas-hint-text { font-size: 0.88rem; line-height: 1.6; }
-.canvas-hint-text strong { color: var(--muted2); font-weight: 500; }
 
 /* FLOW NODES */
 .flow-node { position: absolute; min-width: 150px; background: var(--surface); border: 1.5px solid var(--border); border-radius: 10px; cursor: move; user-select: none; transition: box-shadow 0.15s, border-color 0.15s, transform 0.15s; z-index: 10; touch-action: none; }
@@ -80,7 +71,6 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-s
 .flow-node.selected { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,229,255,0.12), 0 8px 30px rgba(0,0,0,0.4); z-index: 20; }
 .flow-node.bottleneck { border-color: var(--warn); box-shadow: 0 0 0 3px rgba(255,107,53,0.12); }
 .flow-node.link-source { border-color: var(--accent); box-shadow: 0 0 0 4px rgba(0,229,255,0.25); transform: scale(1.02); z-index: 25; }
-
 .node-header { padding: 0.5rem 0.7rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 0.5rem; border-radius: 9px 9px 0 0; }
 .node-type-icon { width: 22px; height: 22px; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; flex-shrink: 0; }
 .node-type-icon.work { background: rgba(0,229,255,0.1); }
@@ -88,27 +78,18 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-s
 .node-type-icon.transport { background: rgba(255,200,80,0.1); }
 .node-type-icon.control { background: rgba(160,120,255,0.1); }
 .node-label { font-family: 'Syne', sans-serif; font-size: 0.78rem; font-weight: 700; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.node-alert { font-size: 0.7rem; }
 .node-body { padding: 0.5rem 0.7rem; }
 .node-field { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem; }
-.node-field:last-child { margin-bottom: 0; }
 .node-field-label { font-size: 0.63rem; color: var(--muted); }
 .node-field-val { font-family: 'Syne', sans-serif; font-size: 0.8rem; font-weight: 700; }
 .node-field-val.ok { color: var(--ok); }
 .node-field-val.warn { color: var(--warn); }
 .node-field-val.neutral { color: var(--text); }
 .node-field-val.accent { color: var(--accent); }
-
-/* VA/NVA bar on node */
 .node-vana-bar { height: 3px; display: flex; border-radius: 0 0 8px 8px; overflow: hidden; }
 .vna-va { background: var(--ok); transition: width 0.4s; }
 .vna-nva { background: var(--warn); transition: width 0.4s; }
-
-/* MOS button */
 .node-mos-btn { width: 100%; margin-top: 0.4rem; padding: 0.3rem; background: var(--accent-dim); border: 1px solid rgba(0,229,255,0.2); border-radius: 5px; color: var(--accent); font-family: 'DM Sans', sans-serif; font-size: 0.68rem; cursor: pointer; transition: all 0.15s; }
-.node-mos-btn:hover { background: rgba(0,229,255,0.15); }
-
-/* Ports (Visual only now) */
 .port { position: absolute; width: 10px; height: 10px; background: var(--border2); border: 2px solid var(--surface); border-radius: 50%; z-index: 30; }
 .port.port-out { right: -5px; top: 50%; transform: translateY(-50%); }
 .port.port-in { left: -5px; top: 50%; transform: translateY(-50%); }
@@ -145,26 +126,14 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-s
 .props-subtitle { font-size: 0.72rem; color: var(--muted); }
 .props-empty { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0.5rem; padding: 1.5rem; text-align: center; color: var(--muted); }
 .props-empty-icon { font-size: 1.8rem; opacity: 0.4; }
-.props-empty-text { font-size: 0.8rem; line-height: 1.5; }
 .props-form { padding: 0.9rem 1rem; flex: 1; display: none; }
 .props-form.visible { display: block; }
-.prop-field { margin-bottom: 0.85rem; }
-.prop-label { display: block; font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.09em; color: var(--muted); font-weight: 500; margin-bottom: 0.3rem; }
-.prop-input { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 7px; padding: 0.5rem 0.75rem; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; color: var(--text); outline: none; transition: border-color 0.2s; }
-.prop-input:focus { border-color: var(--accent); }
 .prop-unit { font-size: 0.68rem; color: var(--muted); margin-top: 0.2rem; }
-.prop-select { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 7px; padding: 0.5rem 0.75rem; font-family: 'DM Sans', sans-serif; font-size: 0.82rem; color: var(--text); outline: none; }
-.prop-select option { background: var(--surface); }
 .delete-btn { width: 100%; margin-top: 0.5rem; padding: 0.5rem; background: transparent; border: 1px solid rgba(255,107,53,0.3); border-radius: 7px; color: var(--warn); font-family: 'DM Sans', sans-serif; font-size: 0.8rem; cursor: pointer; transition: all 0.15s; }
 .delete-btn:hover { background: var(--warn-dim); border-color: var(--warn); }
 .open-mos-btn { width: 100%; margin-top: 0.5rem; padding: 0.55rem; background: var(--accent-dim); border: 1px solid rgba(0,229,255,0.3); border-radius: 7px; color: var(--accent); font-family: 'DM Sans', sans-serif; font-size: 0.8rem; font-weight: 500; cursor: pointer; transition: all 0.15s; }
-.open-mos-btn:hover { background: rgba(0,229,255,0.15); }
 
-/* LINK BUTTON */
-#linkModeBtn { width: calc(100% - 1.6rem); margin: 0.5rem 0.8rem; justify-content: center; border-style: dashed; }
-#linkModeBtn.active { background: rgba(0,229,255,0.15); border-color: var(--accent); color: var(--accent); border-style: solid; }
-
-/* ─── MOS MODAL ─────────────────────────────────────────────────────────── */
+/* MOS MODAL */
 .mos-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 300; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.25s; backdrop-filter: blur(6px); }
 .mos-overlay.open { opacity: 1; pointer-events: all; }
 .mos-modal { background: var(--surface); border: 1px solid var(--border2); border-radius: 18px; width: min(96vw, 820px); max-height: 92vh; display: flex; flex-direction: column; transform: translateY(24px); transition: transform 0.25s; box-shadow: 0 40px 100px rgba(0,0,0,0.6); }
@@ -173,90 +142,67 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-s
 .mos-title-group { flex: 1; }
 .mos-title { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 800; margin-bottom: 0.2rem; }
 .mos-subtitle { font-size: 0.75rem; color: var(--muted); }
-.mos-close { width: 32px; height: 32px; border-radius: 8px; background: transparent; border: 1px solid var(--border); color: var(--muted2); font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
-.mos-close:hover { background: var(--surface2); color: var(--text); }
+.mos-close { width: 32px; height: 32px; border-radius: 8px; background: transparent; border: 1px solid var(--border); color: var(--muted2); font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
 .mos-summary { display: flex; padding: 0.8rem 1.5rem; gap: 0; border-bottom: 1px solid var(--border); background: var(--bg); }
 .mos-kpi { flex: 1; text-align: center; border-right: 1px solid var(--border); }
 .mos-kpi:last-child { border-right: none; }
 .mos-kpi-label { font-size: 0.58rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 0.2rem; }
 .mos-kpi-val { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 800; }
-.mos-kpi-val.manual { color: var(--manual); }
-.mos-kpi-val.machine { color: var(--machine); }
-.mos-kpi-val.move { color: var(--move); }
-.mos-kpi-val.wait { color: var(--wait); }
-.mos-kpi-val.total { color: var(--accent); }
+.mos-kpi-val.manual { color: var(--manual); } .mos-kpi-val.machine { color: var(--machine); } .mos-kpi-val.move { color: var(--move); } .mos-kpi-val.wait { color: var(--wait); } .mos-kpi-val.total { color: var(--accent); }
 .mos-gantt { padding: 0.6rem 1.5rem; border-bottom: 1px solid var(--border); background: var(--bg); }
 .mos-gantt-label { font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); margin-bottom: 0.4rem; }
 .mos-gantt-bar { height: 12px; display: flex; border-radius: 4px; overflow: hidden; gap: 1px; background: var(--border); }
 .gantt-seg { height: 100%; transition: width 0.4s; position: relative; }
-.gantt-seg.manual { background: var(--manual); }
-.gantt-seg.machine { background: var(--machine); }
-.gantt-seg.move { background: var(--move); }
-.gantt-seg.wait { background: var(--wait); }
+.gantt-seg.manual { background: var(--manual); } .gantt-seg.machine { background: var(--machine); } .gantt-seg.move { background: var(--move); } .gantt-seg.wait { background: var(--wait); }
 .mos-body { flex: 1; overflow-y: auto; padding: 1rem 1.5rem; }
 .mos-body::-webkit-scrollbar { width: 4px; }
 .mos-body::-webkit-scrollbar-thumb { background: var(--border2); }
 .mos-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; margin-bottom: 1.2rem; }
-.meta-field label { display: block; font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.09em; color: var(--muted); margin-bottom: 0.3rem; }
-.meta-field input { width: 100%; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 0.45rem 0.7rem; font-family: 'DM Sans', sans-serif; font-size: 0.82rem; color: var(--text); outline: none; transition: border-color 0.2s; }
-.meta-field input:focus { border-color: var(--accent); }
 .tasks-section-title { font-family: 'Syne', sans-serif; font-size: 0.8rem; font-weight: 700; color: var(--muted2); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 0.6rem; margin-top: 0.5rem; }
 .tasks-header { display: grid; grid-template-columns: 28px 1fr 72px 72px 72px 72px 72px 30px; gap: 0.4rem; align-items: center; padding: 0.3rem 0.5rem; margin-bottom: 0.3rem; }
 .th { font-size: 0.58rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); font-weight: 500; text-align: center; }
 .th.left { text-align: left; }
-.th.manual-h { color: var(--manual); }
-.th.machine-h { color: var(--machine); }
-.th.move-h { color: var(--move); }
-.th.wait-h { color: var(--wait); }
-.task-row { display: grid; grid-template-columns: 28px 1fr 72px 72px 72px 72px 72px 30px; gap: 0.4rem; align-items: center; padding: 0.35rem 0.5rem; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 0.4rem; background: var(--bg); transition: border-color 0.15s; position: relative; }
-.task-row:hover { border-color: var(--border2); }
+.task-row { display: grid; grid-template-columns: 28px 1fr 72px 72px 72px 72px 72px 30px; gap: 0.4rem; align-items: center; padding: 0.35rem 0.5rem; border: 1px solid var(--border); border-radius: 8px; margin-bottom: 0.4rem; background: var(--bg); transition: border-color 0.15s; }
 .task-row.has-data { border-left: 3px solid; }
-.task-row.va { border-left-color: var(--ok); }
-.task-row.nva { border-left-color: var(--warn); }
+.task-row.va { border-left-color: var(--ok); } .task-row.nva { border-left-color: var(--warn); }
 .task-num { font-family: 'Syne', sans-serif; font-size: 0.75rem; font-weight: 700; color: var(--muted); text-align: center; }
 .task-input { background: transparent; border: none; outline: none; font-family: 'DM Sans', sans-serif; font-size: 0.82rem; color: var(--text); width: 100%; padding: 0.2rem 0; }
-.task-input::placeholder { color: var(--muted); font-size: 0.78rem; }
 .task-time-input { background: var(--surface); border: 1px solid var(--border); border-radius: 5px; outline: none; font-family: 'Syne', sans-serif; font-size: 0.8rem; font-weight: 600; color: var(--text); width: 100%; padding: 0.2rem 0.3rem; text-align: center; transition: border-color 0.15s; }
-.task-time-input:focus { border-color: var(--accent); }
 .task-cumul { font-family: 'Syne', sans-serif; font-size: 0.75rem; color: var(--accent); text-align: center; font-weight: 600; }
-.task-del { background: transparent; border: none; color: var(--muted); cursor: pointer; font-size: 0.85rem; transition: color 0.15s; padding: 0.2rem; }
-.task-del:hover { color: var(--warn); }
+.task-del { background: transparent; border: none; color: var(--muted); cursor: pointer; font-size: 0.85rem; padding: 0.2rem; }
 .task-type-tag { display: flex; gap: 0.3rem; margin-top: 0.15rem; }
 .type-badge { font-size: 0.58rem; padding: 0.1rem 0.4rem; border-radius: 100px; font-weight: 500; cursor: pointer; transition: all 0.15s; border: 1px solid transparent; }
 .type-badge.va-tag { background: var(--ok-dim); color: var(--ok); border-color: rgba(34,211,160,0.2); }
 .type-badge.nva-tag { background: var(--warn-dim); color: var(--warn); border-color: rgba(255,107,53,0.2); }
-.type-badge.active { opacity: 1; }
-.type-badge:not(.active) { opacity: 0.35; }
+.type-badge.active { opacity: 1; } .type-badge:not(.active) { opacity: 0.35; }
 .add-task-btn { width: 100%; margin-top: 0.5rem; padding: 0.55rem; background: transparent; border: 1px dashed var(--border2); border-radius: 8px; color: var(--muted); font-family: 'DM Sans', sans-serif; font-size: 0.82rem; cursor: pointer; transition: all 0.15s; }
-.add-task-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
 .noncycles-section { margin-top: 1.2rem; border-top: 1px solid var(--border); padding-top: 0.9rem; }
 .nc-row { display: grid; grid-template-columns: 1fr 60px 60px 60px 30px; gap: 0.4rem; align-items: center; padding: 0.3rem 0.5rem; border: 1px solid var(--border); border-radius: 6px; margin-bottom: 0.35rem; background: var(--bg); }
 .mos-footer { padding: 1rem 1.5rem; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 1rem; }
 .mos-footer-kpi { font-size: 0.78rem; color: var(--muted2); }
-.mos-footer-kpi strong { color: var(--text); font-weight: 500; }
 .mos-save-btn { margin-left: auto; background: var(--accent); color: #000; border: none; border-radius: 8px; padding: 0.6rem 1.4rem; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: all 0.15s; }
-.mos-save-btn:hover { box-shadow: 0 6px 20px rgba(0,229,255,0.25); }
 .vana-kpi { display: flex; flex-direction: column; align-items: center; }
 .vana-mini-bar { width: 60px; height: 5px; border-radius: 3px; overflow: hidden; display: flex; margin-top: 0.3rem; }
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(16px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+@keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
 .flow-node { animation: fadeUp 0.3s ease both; }
-.content::-webkit-scrollbar { width: 5px; }
 </style>
 </head>
 <body>
 
 <header class="topbar">
-  <div class="logo-mark">Kai<em>flow</em></div>
+  <a href="/dashboard" class="logo-mark" style="text-decoration:none; color:inherit;">Kai<em>flow</em></a>
   <div class="topbar-sep"></div>
-  <div class="breadcrumb"><a>Dashboard</a> › <a>Mes flux</a> › <span>Éditeur</span></div>
+  <div class="breadcrumb"><a href="/dashboard">Dashboard</a> › <span>Éditeur</span></div>
+  
   <div class="topbar-spacer"></div>
-  <input class="flux-title-input" value="Ligne A — Assemblage" id="fluxTitle">
+  <input class="flux-title-input" value="Nouveau flux" id="fluxTitle">
   <div class="topbar-spacer"></div>
+  
   <div class="topbar-actions">
     <div class="save-status" id="saveStatus">Sauvegardé</div>
+    
+    <button class="tb-btn" style="color:var(--warn); border-color:var(--warn-dim);" onclick="deleteFlux()">🗑 Supprimer ce flux</button>
+    
     <button class="tb-btn" onclick="exportPDF()">↗ Export PDF</button>
     <button class="tb-btn primary" onclick="saveFlux()">💾 Sauvegarder</button>
   </div>
@@ -297,10 +243,10 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-s
     <div class="panel-section">
       <div class="panel-section-title">Légende temps</div>
       <div style="display:flex;flex-direction:column;gap:0.35rem;padding:0 0.2rem;">
-        <div class="legend-dot manual" style="display:flex;align-items:center;gap:0.5rem;font-size:0.72rem;color:var(--muted2);"><span style="width:10px;height:10px;background:var(--manual);border-radius:2px;flex-shrink:0"></span>Travail manuel</div>
-        <div class="legend-dot machine" style="display:flex;align-items:center;gap:0.5rem;font-size:0.72rem;color:var(--muted2);"><span style="width:10px;height:10px;background:var(--machine);border-radius:2px;flex-shrink:0"></span>Machine</div>
-        <div class="legend-dot move" style="display:flex;align-items:center;gap:0.5rem;font-size:0.72rem;color:var(--muted2);"><span style="width:10px;height:10px;background:var(--move);border-radius:2px;flex-shrink:0"></span>Déplacement</div>
-        <div class="legend-dot wait" style="display:flex;align-items:center;gap:0.5rem;font-size:0.72rem;color:var(--muted2);"><span style="width:10px;height:10px;background:var(--wait);border-radius:2px;flex-shrink:0"></span>Attente</div>
+        <div class="legend-dot manual"><span style="width:10px;height:10px;background:var(--manual);border-radius:2px;flex-shrink:0"></span>Travail manuel</div>
+        <div class="legend-dot machine"><span style="width:10px;height:10px;background:var(--machine);border-radius:2px;flex-shrink:0"></span>Machine</div>
+        <div class="legend-dot move"><span style="width:10px;height:10px;background:var(--move);border-radius:2px;flex-shrink:0"></span>Déplacement</div>
+        <div class="legend-dot wait"><span style="width:10px;height:10px;background:var(--wait);border-radius:2px;flex-shrink:0"></span>Attente</div>
       </div>
       <div style="margin-top:1rem;font-size:0.72rem;color:var(--muted);line-height:1.6;padding:0 0.2rem;">
         <span style="color:var(--ok)">●</span> VA = Valeur Ajoutée<br>
@@ -375,7 +321,7 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-s
       <div class="prop-field" id="pfDist" style="display:none"><label class="prop-label">Distance</label><input class="prop-input" id="propDist" type="number" placeholder="30"><div class="prop-unit">mètres</div></div>
       
       <button class="open-mos-btn" id="openMosBtn" onclick="openMOS()" style="display:none">📋 Mode Opératoire Standard</button>
-      <button class="delete-btn" onclick="deleteSelected()">🗑 Supprimer</button>
+      <button class="delete-btn" onclick="deleteSelected()">🗑 Supprimer ce bloc</button>
     </div>
   </div>
 
@@ -412,10 +358,10 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-s
 
     <div class="mos-body">
       <div class="mos-meta">
-        <div class="meta-field"><label>Nom du process</label><input id="mosProcessName" type="text" placeholder="ex: Finition"></div>
-        <div class="meta-field"><label>Auteur</label><input id="mosAuthor" type="text" placeholder="Nom"></div>
-        <div class="meta-field"><label>Takt Time (s)</label><input id="mosTaktTime" type="number" placeholder="60" oninput="updateMOSCalcs()"></div>
-        <div class="meta-field"><label>Nb. pièces / MOS</label><input id="mosNbPieces" type="number" placeholder="1" value="1" oninput="updateMOSCalcs()"></div>
+        <div class="field"><label>Nom du process</label><input id="mosProcessName" type="text" placeholder="ex: Finition"></div>
+        <div class="field"><label>Auteur</label><input id="mosAuthor" type="text" placeholder="Nom"></div>
+        <div class="field"><label>Takt Time (s)</label><input id="mosTaktTime" type="number" placeholder="60" oninput="updateMOSCalcs()"></div>
+        <div class="field"><label>Nb. pièces / MOS</label><input id="mosNbPieces" type="number" placeholder="1" value="1" oninput="updateMOSCalcs()"></div>
       </div>
 
       <div class="tasks-section-title">Décomposition des tâches</div>
@@ -435,16 +381,11 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-s
       <div class="noncycles-section">
         <div class="tasks-section-title">Activités non cyclées</div>
         <div style="display:grid;grid-template-columns:1fr 60px 60px 60px 30px;gap:0.4rem;margin-bottom:0.4rem;padding:0 0.5rem;">
-          <div class="th left" style="font-size:0.58rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);">Activité</div>
-          <div class="th" style="font-size:0.58rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);">Temps</div>
-          <div class="th" style="font-size:0.58rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);">Pièces</div>
-          <div class="th" style="font-size:0.58rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);">Fréq.</div>
-          <div></div>
+          <div class="th left">Activité</div><div class="th">Temps</div><div class="th">Pièces</div><div class="th">Fréq.</div><div></div>
         </div>
         <div id="ncList"></div>
         <button class="add-task-btn" onclick="addNC()">✚ Ajouter une activité</button>
       </div>
-
     </div>
 
     <div class="mos-footer">
@@ -454,16 +395,20 @@ body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-s
   </div>
 </div>
 
-<script>
+<script type="module">
+// Import base de données
+import { supabaseClient, requireAuth } from '/js/supabase-client.js';
+
 // ─── STATE ────────────────────────────────────────────────────────────────────
 let nodes = [], connections = [], selectedNodeId = null, nodeCounter = 0, scale = 1;
 let isDraggingNode = false, dragOffsetX = 0, dragOffsetY = 0;
 let currentMOSNodeId = null;
+let currentUser = null;
+let currentFluxId = null;
+let dirty = false;
 
-// --- ETAT MODE LIAISON ---
-let isLinkMode = false;
-let linkSourceId = null;
-let drawingPath = null;
+// Mode Liaison
+let isLinkMode = false, linkSourceId = null, drawingPath = null;
 
 const canvas = document.getElementById('canvas');
 const svg = document.getElementById('connectionsSvg');
@@ -476,23 +421,35 @@ const BLOCK_CONFIG = {
   control: { icon: '✅', label: 'Contrôle qualité', color: 'control', hasTime: true, hasOps: true, hasMOS: true },
 };
 
-// ─── UNIFIED TOUCH/MOUSE HELPERS ─────────────────────────────────────────────
-function getClientXY(e) {
-  if (e.touches && e.touches.length > 0) return { x: e.touches[0].clientX, y: e.touches[0].clientY };
-  if (e.changedTouches && e.changedTouches.length > 0) return { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY };
-  return { x: e.clientX, y: e.clientY };
-}
+// ─── RACCROCHAGE DES FONCTIONS POUR LE HTML (GLOBAL SCOPE) ─────────────────────
+window.zoom = zoom;
+window.resetZoom = resetZoom;
+window.deleteSelected = deleteSelected;
+window.exportPDF = exportPDF;
+window.saveFlux = saveFlux;
+window.deleteFlux = deleteFlux;
+window.toggleLinkMode = toggleLinkMode;
+window.openMOS = openMOS;
+window.closeMOS = closeMOS;
+window.saveMOS = saveMOS;
+window.openMOSForNode = openMOSForNode;
+window.addTask = addTask;
+window.removeTask = removeTask;
+window.updateTask = updateTask;
+window.setTaskVSM = setTaskVSM;
+window.addNC = addNC;
+window.removeNC = removeNC;
+window.updateNC = updateNC;
+window.updateMOSCalcs = updateMOSCalcs;
 
 // ─── DRAG FROM LIBRARY ────────────────────────────────────────────────────────
 const LIB_THRESHOLD = 6;
-
 function libCreateGhost(label, x, y) {
   const g = document.createElement('div');
-  g.style.cssText = 'position:fixed;z-index:9999;pointer-events:none;background:#111620;border:1.5px solid #00e5ff;border-radius:10px;padding:0.5rem 0.9rem;font-size:0.82rem;color:#e2e8f5;white-space:nowrap;box-shadow:0 8px 30px rgba(0,0,0,0.5);opacity:0.92;transform:rotate(2deg);';
+  g.style.cssText = 'position:fixed;z-index:9999;pointer-events:none;background:#111620;border:1.5px solid #00e5ff;border-radius:10px;padding:0.5rem 0.9rem;font-size:0.82rem;color:#e2e8f5;white-space:nowrap;box-shadow:0 8px 30px rgba(0,0,0,0.5);opacity:0.92;';
   g.textContent = label;
   document.body.appendChild(g);
-  g.style.left = (x - 60) + 'px';
-  g.style.top = (y - 20) + 'px';
+  g.style.left = (x - 60) + 'px'; g.style.top = (y - 20) + 'px';
   return g;
 }
 
@@ -500,8 +457,7 @@ function libDropOnCanvas(clientX, clientY, type, label) {
   const r = canvas.getBoundingClientRect();
   if (clientX >= r.left && clientX <= r.right && clientY >= r.top && clientY <= r.bottom) {
     addNode(type, label, (clientX - r.left) / scale - 75, (clientY - r.top) / scale - 45);
-    updateHint();
-    markDirty();
+    updateHint(); markDirty();
   }
 }
 
@@ -509,219 +465,130 @@ function libDropAtCenter(type, label) {
   const r = canvas.getBoundingClientRect();
   const off = nodes.length * 30;
   addNode(type, label, (r.width/2/scale)-75+(off%200), (r.height/2/scale)-45+Math.floor(off/200)*70);
-  updateHint();
-  markDirty();
+  updateHint(); markDirty();
 }
 
 document.querySelectorAll('.block-template').forEach(el => {
   const type = el.dataset.type, label = el.dataset.label;
-  el.style.cursor = 'grab';
-  el.style.touchAction = 'none';
-  el.style.userSelect = 'none';
-
   el.addEventListener('pointerdown', e => {
     if (e.pointerType === 'mouse' && e.button !== 0) return;
-    
-    e.preventDefault();
-    el.setPointerCapture(e.pointerId);
-
-    let isDragging = false;
-    let ghost = null;
-    const startX = e.clientX;
-    const startY = e.clientY;
+    e.preventDefault(); el.setPointerCapture(e.pointerId);
+    let isDragging = false, ghost = null;
+    const startX = e.clientX, startY = e.clientY;
 
     function onMove(ev) {
       if (!isDragging && Math.hypot(ev.clientX - startX, ev.clientY - startY) > LIB_THRESHOLD) {
-        isDragging = true;
-        ghost = libCreateGhost(label, ev.clientX, ev.clientY);
+        isDragging = true; ghost = libCreateGhost(label, ev.clientX, ev.clientY);
       }
       if (ghost) {
-        ghost.style.left = (ev.clientX - 60) + 'px';
-        ghost.style.top = (ev.clientY - 20) + 'px';
+        ghost.style.left = (ev.clientX - 60) + 'px'; ghost.style.top = (ev.clientY - 20) + 'px';
         const r = canvas.getBoundingClientRect();
         canvas.style.outline = (ev.clientX >= r.left && ev.clientX <= r.right && ev.clientY >= r.top && ev.clientY <= r.bottom) ? '2px solid rgba(0,229,255,0.35)' : '';
       }
     }
-
     function onUp(ev) {
-      el.removeEventListener('pointermove', onMove);
-      el.removeEventListener('pointerup', onUp);
-      el.removeEventListener('pointercancel', onUp);
+      el.removeEventListener('pointermove', onMove); el.removeEventListener('pointerup', onUp);
       el.releasePointerCapture(e.pointerId);
-
-      if (ghost) {
-        ghost.remove();
-        ghost = null;
-      }
+      if (ghost) { ghost.remove(); ghost = null; }
       canvas.style.outline = '';
-
-      if (isDragging) {
-        libDropOnCanvas(ev.clientX, ev.clientY, type, label);
-      } else {
-        libDropAtCenter(type, label);
-      }
+      if (isDragging) libDropOnCanvas(ev.clientX, ev.clientY, type, label);
+      else libDropAtCenter(type, label);
     }
-
-    el.addEventListener('pointermove', onMove);
-    el.addEventListener('pointerup', onUp);
-    el.addEventListener('pointercancel', onUp);
+    el.addEventListener('pointermove', onMove); el.addEventListener('pointerup', onUp);
   });
 });
 
-// ─── GESTION DU MODE LIAISON (NOUVEAU) ────────────────────────────────────────
+// ─── LIAISONS (PERT) ────────────────────────────────────────────────────────
 function toggleLinkMode() {
-  isLinkMode = !isLinkMode;
-  linkSourceId = null;
+  isLinkMode = !isLinkMode; linkSourceId = null;
   document.getElementById('linkModeBtn').classList.toggle('active', isLinkMode);
-  
-  if (!isLinkMode && drawingPath) {
-    drawingPath.remove();
-    drawingPath = null;
-  }
-  
-  nodes.forEach(n => {
-    const el = document.getElementById(`node-${n.id}`);
-    if(el) el.classList.remove('link-source');
-  });
+  if (!isLinkMode && drawingPath) { drawingPath.remove(); drawingPath = null; }
+  nodes.forEach(n => document.getElementById(`node-${n.id}`)?.classList.remove('link-source'));
 }
 
-function onCanvasMoveForLink(e) {
+canvas.addEventListener('pointermove', e => {
   if (!isLinkMode || !linkSourceId) return;
   const portEl = document.getElementById(`port-out-${linkSourceId}`);
   if (!portEl) return;
-  
   const rect = portEl.getBoundingClientRect(), cr = canvas.getBoundingClientRect();
-  const startX = (rect.left + rect.width/2 - cr.left) / scale;
-  const startY = (rect.top + rect.height/2 - cr.top) / scale;
-  const mx = (e.clientX - cr.left) / scale;
-  const my = (e.clientY - cr.top) / scale;
+  const startX = (rect.left + rect.width/2 - cr.left) / scale, startY = (rect.top + rect.height/2 - cr.top) / scale;
+  const mx = (e.clientX - cr.left) / scale, my = (e.clientY - cr.top) / scale;
 
   if (!drawingPath) {
     drawingPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    drawingPath.setAttribute('fill', 'none');
-    drawingPath.setAttribute('stroke', 'rgba(0,229,255,0.5)');
-    drawingPath.setAttribute('stroke-width', '2');
-    drawingPath.setAttribute('stroke-dasharray', '6,3');
+    drawingPath.setAttribute('fill', 'none'); drawingPath.setAttribute('stroke', 'rgba(0,229,255,0.5)');
+    drawingPath.setAttribute('stroke-width', '2'); drawingPath.setAttribute('stroke-dasharray', '6,3');
     drawingSvg.appendChild(drawingPath);
   }
   drawingPath.setAttribute('d', makeCurve(startX, startY, mx, my));
-}
+});
 
-canvas.addEventListener('pointermove', onCanvasMoveForLink);
-
-// ─── ADD NODE ─────────────────────────────────────────────────────────────────
+// ─── GESTION DES NOEUDS ───────────────────────────────────────────────────────
 function addNode(type, label, x, y) {
   const id = ++nodeCounter;
   const node = { id, type, label, x, y, cycle: null, ops: 1, capacity: 480, qty: null, stockMax: null, dist: null, vsm: type==='stock'||type==='transport'?'nva':'va', takt: null, mos: { processName:'', author:'', taktTime:null, nbPieces:1, tasks:[], nc:[] } };
-  nodes.push(node);
-  renderNode(node);
-  updateKPIs();
-  return node;
+  nodes.push(node); renderNode(node); updateKPIs(); return node;
 }
 
-// ─── RENDER NODE ──────────────────────────────────────────────────────────────
 function renderNode(node) {
-  const config = BLOCK_CONFIG[node.type];
   const el = document.createElement('div');
-  el.className = 'flow-node';
-  el.id = `node-${node.id}`;
-  el.style.left = node.x+'px';
-  el.style.top = node.y+'px';
-  el.style.width = '155px';
-  el.innerHTML = buildNodeHTML(node);
-  bindNodeEvents(el, node);
-  canvas.appendChild(el);
+  el.className = 'flow-node'; el.id = `node-${node.id}`; el.style.left = node.x+'px'; el.style.top = node.y+'px'; el.style.width = '155px';
+  el.innerHTML = buildNodeHTML(node); bindNodeEvents(el, node); canvas.appendChild(el);
 }
 
 function bindNodeEvents(el, node) {
-  el.style.touchAction = 'none';
-  el.style.userSelect = 'none';
-
   el.addEventListener('pointerdown', e => {
     if (e.target.classList.contains('node-mos-btn')) return;
-    e.stopPropagation();
-    e.preventDefault();
+    e.stopPropagation(); e.preventDefault();
 
-    // Mode Connexion Explicite
     if (isLinkMode) {
-      if (!linkSourceId) {
-        linkSourceId = node.id;
-        el.classList.add('link-source');
-      } else if (linkSourceId !== node.id) {
+      if (!linkSourceId) { linkSourceId = node.id; el.classList.add('link-source'); }
+      else if (linkSourceId !== node.id) {
         if (!connections.find(c => c.from === linkSourceId && c.to === node.id)) {
-          connections.push({ from: linkSourceId, to: node.id });
-          renderConnections();
-          updateKPIs();
-          markDirty();
+          connections.push({ from: linkSourceId, to: node.id }); renderConnections(); updateKPIs(); markDirty();
         }
-        toggleLinkMode(); // Sortir du mode après liaison réussie
+        toggleLinkMode();
       }
       return; 
     }
 
     selectNode(node.id);
-    
-    isDraggingNode = true;
-    el.setPointerCapture(e.pointerId);
-    
+    isDraggingNode = true; el.setPointerCapture(e.pointerId);
     const rect = el.getBoundingClientRect();
-    dragOffsetX = (e.clientX - rect.left) / scale;
-    dragOffsetY = (e.clientY - rect.top) / scale;
+    dragOffsetX = (e.clientX - rect.left) / scale; dragOffsetY = (e.clientY - rect.top) / scale;
 
     function onMove(ev) {
       if (!isDraggingNode) return;
       const r = canvas.getBoundingClientRect();
-      node.x = (ev.clientX - r.left) / scale - dragOffsetX;
-      node.y = (ev.clientY - r.top) / scale - dragOffsetY;
-      el.style.left = node.x + 'px';
-      el.style.top = node.y + 'px';
-      renderConnections();
+      node.x = (ev.clientX - r.left) / scale - dragOffsetX; node.y = (ev.clientY - r.top) / scale - dragOffsetY;
+      el.style.left = node.x + 'px'; el.style.top = node.y + 'px';
+      renderConnections(); markDirty();
     }
-
-    function onUp() {
-      isDraggingNode = false;
-      el.removeEventListener('pointermove', onMove);
-      el.removeEventListener('pointerup', onUp);
-      el.removeEventListener('pointercancel', onUp);
-    }
-
-    el.addEventListener('pointermove', onMove);
-    el.addEventListener('pointerup', onUp);
-    el.addEventListener('pointercancel', onUp);
+    function onUp() { isDraggingNode = false; el.removeEventListener('pointermove', onMove); el.removeEventListener('pointerup', onUp); }
+    el.addEventListener('pointermove', onMove); el.addEventListener('pointerup', onUp);
   });
 }
 
 function buildNodeHTML(node) {
   const config = BLOCK_CONFIG[node.type];
-  const cycleVal = getEffectiveCycle(node);
-  const mosTaskCount = node.mos.tasks.filter(t=>t.desc).length;
-  const vaPercent = getNodeVAPercent(node);
-  
+  const cycleVal = getEffectiveCycle(node), mosTaskCount = node.mos.tasks.filter(t=>t.desc).length, vaPercent = getNodeVAPercent(node);
   return `
-    <div class="node-header">
-      <div class="node-type-icon ${config.color}">${config.icon}</div>
-      <div class="node-label">${node.label}</div>
-      <span class="node-alert" id="alert-${node.id}" style="display:none">⚠</span>
-    </div>
+    <div class="node-header"><div class="node-type-icon ${config.color}">${config.icon}</div><div class="node-label">${node.label}</div><span class="node-alert" id="alert-${node.id}" style="display:none">⚠</span></div>
     <div class="node-body">
-      ${cycleVal ? `<div class="node-field"><span class="node-field-label">Temps cycle</span><span class="node-field-val neutral" id="val-cycle-${node.id}">${cycleVal}s</span></div>` : `<div class="node-field"><span class="node-field-label">Temps cycle</span><span class="node-field-val neutral" id="val-cycle-${node.id}">—</span></div>`}
+      ${cycleVal ? `<div class="node-field"><span class="node-field-label">Temps cycle</span><span class="node-field-val neutral">${cycleVal}s</span></div>` : `<div class="node-field"><span class="node-field-label">Temps cycle</span><span class="node-field-val neutral">—</span></div>`}
       ${config.hasOps ? `<div class="node-field"><span class="node-field-label">Opérateurs</span><span class="node-field-val neutral">${node.ops}</span></div>` : ''}
       ${node.type==='stock'&&node.qty!==null ? `<div class="node-field"><span class="node-field-label">Stock</span><span class="node-field-val ${node.stockMax&&node.qty>node.stockMax?'warn':'ok'}">${node.qty} pcs</span></div>` : ''}
       ${config.hasMOS && mosTaskCount>0 ? `<div class="node-field"><span class="node-field-label">MOS</span><span class="node-field-val accent">${mosTaskCount} tâches</span></div>` : ''}
       ${config.hasMOS ? `<button class="node-mos-btn" onclick="openMOSForNode(${node.id})">📋 Mode Opératoire</button>` : ''}
     </div>
     ${vaPercent!==null ? `<div class="node-vana-bar"><div class="vna-va" style="width:${vaPercent}%"></div><div class="vna-nva" style="width:${100-vaPercent}%"></div></div>` : ''}
-    <div class="port port-in" id="port-in-${node.id}"></div>
-    <div class="port port-out" id="port-out-${node.id}"></div>`;
+    <div class="port port-in" id="port-in-${node.id}"></div><div class="port port-out" id="port-out-${node.id}"></div>`;
 }
 
 function refreshNodeDisplay(nodeId) {
-  const node = nodes.find(n=>n.id===nodeId);
-  if (!node) return;
-  const el = document.getElementById(`node-${nodeId}`);
-  if (!el) return;
-  el.innerHTML = buildNodeHTML(node);
-  bindNodeEvents(el, node);
+  const node = nodes.find(n=>n.id===nodeId); if (!node) return;
+  const el = document.getElementById(`node-${nodeId}`); if (!el) return;
+  el.innerHTML = buildNodeHTML(node); bindNodeEvents(el, node);
   if (selectedNodeId === nodeId) el.classList.add('selected');
   updateKPIs();
 }
@@ -729,9 +596,7 @@ function refreshNodeDisplay(nodeId) {
 function getEffectiveCycle(node) {
   if (!node) return 0;
   if (node.mos && node.mos.tasks.length > 0) {
-    const sum = node.mos.tasks.reduce((s,t)=>{
-      return s + (parseFloat(t.manual)||0) + (parseFloat(t.move)||0) + (parseFloat(t.wait)||0);
-    },0);
+    const sum = node.mos.tasks.reduce((s,t) => s + (parseFloat(t.manual)||0) + (parseFloat(t.move)||0) + (parseFloat(t.wait)||0),0);
     if (sum > 0) return Math.round(sum);
   }
   return node.cycle || 0;
@@ -741,66 +606,47 @@ function getNodeVAPercent(node) {
   if (!node.mos || node.mos.tasks.length===0) return null;
   let va=0, total=0;
   node.mos.tasks.forEach(t => {
-    const m=parseFloat(t.manual)||0, mc=parseFloat(t.machine)||0, mv=parseFloat(t.move)||0, w=parseFloat(t.wait)||0;
-    const rowTotal = m+mv+w;
-    total += rowTotal;
-    if (t.vsm==='va') va += rowTotal;
+    const rowTotal = (parseFloat(t.manual)||0) + (parseFloat(t.machine)||0) + (parseFloat(t.move)||0) + (parseFloat(t.wait)||0);
+    total += rowTotal; if (t.vsm==='va') va += rowTotal;
   });
   return total>0 ? Math.round((va/total)*100) : null;
 }
 
-// ─── SELECTION & CANCELLATION ──────────────────────────────────────────────────
+// ─── SELECTION & SUPPRESSION ──────────────────────────────────────────────────
 function selectNode(id) {
-  if (selectedNodeId) {
-    const p=document.getElementById(`node-${selectedNodeId}`);
-    if(p) p.classList.remove('selected');
-  }
-  selectedNodeId=id;
-  const el=document.getElementById(`node-${id}`);
-  if(el) el.classList.add('selected');
+  if (selectedNodeId) document.getElementById(`node-${selectedNodeId}`)?.classList.remove('selected');
+  selectedNodeId=id; document.getElementById(`node-${id}`)?.classList.add('selected');
   showProps(id);
 }
 
 canvas.addEventListener('pointerdown', e => {
   if (e.target === canvas || e.target === svg || e.target.tagName === 'svg') {
-    deselectAll();
+    if (selectedNodeId) document.getElementById(`node-${selectedNodeId}`)?.classList.remove('selected');
+    selectedNodeId=null;
+    document.getElementById('propsEmpty').style.display='flex'; document.getElementById('propsForm').classList.remove('visible');
     if (isLinkMode) toggleLinkMode();
   }
 });
 
-function deselectAll() {
-  if(selectedNodeId){
-    const el=document.getElementById(`node-${selectedNodeId}`);
-    if(el) el.classList.remove('selected');
-  }
-  selectedNodeId=null;
-  document.getElementById('propsEmpty').style.display='flex';
-  document.getElementById('propsForm').classList.remove('visible');
-  document.getElementById('propsSubtitle').textContent='Sélectionnez un bloc';
+function deleteSelected() {
+  if(!selectedNodeId) return;
+  document.getElementById(`node-${selectedNodeId}`)?.remove();
+  nodes=nodes.filter(n=>n.id!==selectedNodeId); connections=connections.filter(c=>c.from!==selectedNodeId&&c.to!==selectedNodeId);
+  selectedNodeId=null; document.getElementById('propsEmpty').style.display='flex'; document.getElementById('propsForm').classList.remove('visible');
+  renderConnections(); updateKPIs(); updateHint(); markDirty();
 }
 
 // ─── PROPS PANEL ──────────────────────────────────────────────────────────────
 function showProps(id) {
-  const node=nodes.find(n=>n.id===id);
-  if(!node) return;
+  const node=nodes.find(n=>n.id===id); if(!node) return;
   const config=BLOCK_CONFIG[node.type];
-  document.getElementById('propsEmpty').style.display='none';
-  document.getElementById('propsForm').classList.add('visible');
+  document.getElementById('propsEmpty').style.display='none'; document.getElementById('propsForm').classList.add('visible');
   document.getElementById('propsSubtitle').textContent=config.label;
-  document.getElementById('propName').value=node.label;
-  document.getElementById('propCycle').value=node.cycle||'';
-  document.getElementById('propOps').value=node.ops||1;
-  document.getElementById('propCapacity').value=node.capacity||480;
-  document.getElementById('propTakt').value=node.takt||'';
-  document.getElementById('propVSM').value=node.vsm||'va';
-  document.getElementById('propQty').value=node.qty||'';
-  document.getElementById('propStockMax').value=node.stockMax||'';
-  document.getElementById('propDist').value=node.dist||'';
-  
+  ['Name','Cycle','Ops','Capacity','Takt','Qty','StockMax','Dist'].forEach(k => document.getElementById(`prop${k}`).value = node[k.toLowerCase()]||'');
+  document.getElementById('propName').value = node.label; document.getElementById('propVSM').value = node.vsm||'va';
   document.getElementById('pfCycle').style.display=config.hasTime?'block':'none';
   document.getElementById('pfOps').style.display=config.hasOps?'block':'none';
   document.getElementById('pfCapacity').style.display=config.hasTime?'block':'none';
-  document.getElementById('pfType').style.display='block';
   document.getElementById('pfQty').style.display=config.hasQty?'block':'none';
   document.getElementById('pfStockMax').style.display=config.hasQty?'block':'none';
   document.getElementById('pfDist').style.display=config.hasDist?'block':'none';
@@ -811,108 +657,61 @@ function showProps(id) {
 ['propName','propCycle','propOps','propCapacity','propTakt','propVSM','propQty','propStockMax','propDist'].forEach(id => {
   document.getElementById(id).addEventListener('input', () => {
     if(!selectedNodeId) return;
-    const node=nodes.find(n=>n.id===selectedNodeId);
-    if(!node) return;
-    
-    node.label=document.getElementById('propName').value||node.label;
-    node.cycle=parseFloat(document.getElementById('propCycle').value)||null;
-    node.ops=parseInt(document.getElementById('propOps').value)||1;
-    node.capacity=parseFloat(document.getElementById('propCapacity').value)||480;
-    node.takt=parseFloat(document.getElementById('propTakt').value)||null;
-    node.vsm=document.getElementById('propVSM').value;
-    node.qty=parseFloat(document.getElementById('propQty').value)||null;
-    node.stockMax=parseFloat(document.getElementById('propStockMax').value)||null;
-    node.dist=parseFloat(document.getElementById('propDist').value)||null;
-    
-    refreshNodeDisplay(selectedNodeId);
-    updateKPIs();
-    markDirty();
+    const node=nodes.find(n=>n.id===selectedNodeId); if(!node) return;
+    node.label = document.getElementById('propName').value||node.label;
+    node.cycle = parseFloat(document.getElementById('propCycle').value)||null;
+    node.ops = parseInt(document.getElementById('propOps').value)||1;
+    node.capacity = parseFloat(document.getElementById('propCapacity').value)||480;
+    node.takt = parseFloat(document.getElementById('propTakt').value)||null;
+    node.vsm = document.getElementById('propVSM').value;
+    node.qty = parseFloat(document.getElementById('propQty').value)||null;
+    node.stockMax = parseFloat(document.getElementById('propStockMax').value)||null;
+    node.dist = parseFloat(document.getElementById('propDist').value)||null;
+    refreshNodeDisplay(selectedNodeId); markDirty();
   });
 });
 
-// ─── DELETE ───────────────────────────────────────────────────────────────────
-function deleteSelected() {
-  if(!selectedNodeId) return;
-  document.getElementById(`node-${selectedNodeId}`)?.remove();
-  nodes=nodes.filter(n=>n.id!==selectedNodeId);
-  connections=connections.filter(c=>c.from!==selectedNodeId&&c.to!==selectedNodeId);
-  selectedNodeId=null;
-  document.getElementById('propsEmpty').style.display='flex';
-  document.getElementById('propsForm').classList.remove('visible');
-  document.getElementById('propsSubtitle').textContent='Sélectionnez un bloc';
-  renderConnections();
-  updateKPIs();
-  updateHint();
-}
-
 // ─── CONNECTIONS RENDERING ────────────────────────────────────────────────────
-function makeCurve(x1,y1,x2,y2) {
-  const cx=(x1+x2)/2;
-  return `M ${x1} ${y1} C ${cx} ${y1}, ${cx} ${y2}, ${x2} ${y2}`;
-}
-
+function makeCurve(x1,y1,x2,y2) { const cx=(x1+x2)/2; return `M ${x1} ${y1} C ${cx} ${y1}, ${cx} ${y2}, ${x2} ${y2}`; }
 function getPortPos(nodeId, portType) {
-  const portEl=document.getElementById(`port-${portType}-${nodeId}`);
-  if(!portEl)return null;
+  const portEl=document.getElementById(`port-${portType}-${nodeId}`); if(!portEl)return null;
   const rect=portEl.getBoundingClientRect(), r=canvas.getBoundingClientRect();
   return {x:(rect.left+rect.width/2-r.left)/scale, y:(rect.top+rect.height/2-r.top)/scale};
 }
-
 function renderConnections() {
   svg.innerHTML='';
   connections.forEach(conn => {
-    const from=getPortPos(conn.from,'out'), to=getPortPos(conn.to,'in');
-    if(!from||!to)return;
+    const from=getPortPos(conn.from,'out'), to=getPortPos(conn.to,'in'); if(!from||!to)return;
     const path=document.createElementNS('http://www.w3.org/2000/svg','path');
-    path.setAttribute('d',makeCurve(from.x,from.y,to.x,to.y));
-    path.setAttribute('class','connection-path active');
-    svg.appendChild(path);
-    
+    path.setAttribute('d',makeCurve(from.x,from.y,to.x,to.y)); path.setAttribute('class','connection-path active'); svg.appendChild(path);
     const angle=Math.atan2(to.y-from.y,to.x-from.x), arr=document.createElementNS('http://www.w3.org/2000/svg','polygon');
     const ax=to.x-6*Math.cos(angle), ay=to.y-6*Math.sin(angle);
     arr.setAttribute('points',`${to.x},${to.y} ${ax-4*Math.sin(angle)},${ay+4*Math.cos(angle)} ${ax+4*Math.sin(angle)},${ay-4*Math.cos(angle)}`);
-    arr.setAttribute('fill','rgba(0,229,255,0.6)');
-    svg.appendChild(arr);
+    arr.setAttribute('fill','rgba(0,229,255,0.6)'); svg.appendChild(arr);
   });
 }
 
-// ─── ALGORITHME PERT (CHEMIN CRITIQUE) ET KPIS ──────────────────────────────
+// ─── ALGORITHME PERT (CHEMIN CRITIQUE) ──────────────────────────────────────
 function calculateCriticalPathLeadTime() {
   if (nodes.length === 0) return 0;
-
   const memo = {};
-
   function getNodeWeight(node) {
     if (!node) return 0;
-    // Approximations industrielles génériques
     if (node.type === 'stock') return (node.qty || 0) * 2; 
     return getEffectiveCycle(node) || 0;
   }
-
   function getLongestPath(nodeId, visited) {
-    if (visited.has(nodeId)) return 0; // Protection contre les boucles
+    if (visited.has(nodeId)) return 0;
     if (memo[nodeId] !== undefined) return memo[nodeId];
-
     visited.add(nodeId);
     const childrenIds = connections.filter(c => c.from === nodeId).map(c => c.to);
-
     let maxChildTime = 0;
-    for (const childId of childrenIds) {
-      maxChildTime = Math.max(maxChildTime, getLongestPath(childId, visited));
-    }
+    for (const childId of childrenIds) maxChildTime = Math.max(maxChildTime, getLongestPath(childId, visited));
     visited.delete(nodeId);
-
-    const node = nodes.find(n => n.id === nodeId);
-    const time = getNodeWeight(node) + maxChildTime;
-    memo[nodeId] = time;
-    return time;
+    const time = getNodeWeight(nodes.find(n => n.id === nodeId)) + maxChildTime;
+    memo[nodeId] = time; return time;
   }
-
-  let maxLeadTime = 0;
-  nodes.forEach(n => {
-    maxLeadTime = Math.max(maxLeadTime, getLongestPath(n.id, new Set()));
-  });
-
+  let maxLeadTime = 0; nodes.forEach(n => { maxLeadTime = Math.max(maxLeadTime, getLongestPath(n.id, new Set())); });
   return maxLeadTime;
 }
 
@@ -921,580 +720,151 @@ function updateKPIs() {
   const workNodes = nodes.filter(n=>n.type==='work'||n.type==='control');
   const cycles = workNodes.map(n=>({node:n, cycle:getEffectiveCycle(n)})).filter(c=>c.cycle > 0);
   
-  // Nouveau calcul du Lead Time basé sur le chemin critique (Graphe)
   const leadTime = calculateCriticalPathLeadTime();
-  document.getElementById('kpiLead').textContent = leadTime > 0 ? fmtTime(leadTime) : '—';
+  document.getElementById('kpiLead').textContent = leadTime > 0 ? (leadTime<60?leadTime+'s':Math.floor(leadTime/60)+'min'+(leadTime%60?leadTime%60+'s':'')) : '—';
   
-  // Calcul ratio VA / NVA
   let totalVA=0, totalNVA=0;
   nodes.forEach(n => {
-    const c = getEffectiveCycle(n);
-    if(c === 0 && n.type !== 'stock') return; // Ne compte pas les postes vides dans le ratio
-    
+    const c = getEffectiveCycle(n); if(c === 0 && n.type !== 'stock') return; 
     if (n.mos && n.mos.tasks.length > 0) {
       n.mos.tasks.forEach(t=>{
         const tt=(parseFloat(t.manual)||0)+(parseFloat(t.move)||0)+(parseFloat(t.wait)||0);
-        if(t.vsm==='va') totalVA+=tt;
-        else totalNVA+=tt;
+        if(t.vsm==='va') totalVA+=tt; else totalNVA+=tt;
       });
     } else {
-      let weight = c;
-      if (n.type === 'stock') weight = (n.qty || 0) * 2;
-      if (weight > 0) {
-        if(n.vsm==='va') totalVA+=weight;
-        else totalNVA+=weight;
-      }
+      let weight = c; if (n.type === 'stock') weight = (n.qty || 0) * 2;
+      if (weight > 0) { if(n.vsm==='va') totalVA+=weight; else totalNVA+=weight; }
     }
   });
   
   const totalTime=totalVA+totalNVA;
   if(totalTime>0) {
     const vaP=Math.round((totalVA/totalTime)*100);
-    document.getElementById('kpiVA').textContent = vaP+'%';
-    document.getElementById('kpiVA').className = 'kpi-value '+(vaP>=60?'ok':'warn');
-    const bar=document.getElementById('vanaBar');
-    bar.children[0].style.width=vaP+'%';
-    bar.children[1].style.width=(100-vaP)+'%';
+    document.getElementById('kpiVA').textContent = vaP+'%'; document.getElementById('kpiVA').className = 'kpi-value '+(vaP>=60?'ok':'warn');
+    const bar=document.getElementById('vanaBar'); bar.children[0].style.width=vaP+'%'; bar.children[1].style.width=(100-vaP)+'%';
   } else {
-    document.getElementById('kpiVA').textContent='—';
-    document.getElementById('kpiVA').className='kpi-value neutral';
+    document.getElementById('kpiVA').textContent='—'; document.getElementById('kpiVA').className='kpi-value neutral';
   }
 
   if (cycles.length===0) {
-    ['kpiTakt','kpiCycle','kpiBottleneck','kpiRendement','kpiCharge'].forEach(id=>{
-      const el=document.getElementById(id);
-      el.textContent='—'; el.className='kpi-value neutral';
-    });
-    document.getElementById('kpiBottleneckSub').innerHTML='';
-    nodes.forEach(n=>{
-      const el=document.getElementById(`node-${n.id}`);
-      if(el) el.classList.remove('bottleneck');
-      const a=document.getElementById(`alert-${n.id}`);
-      if(a) a.style.display='none';
-    });
+    ['kpiTakt','kpiCycle','kpiBottleneck','kpiRendement','kpiCharge'].forEach(id=>{ document.getElementById(id).textContent='—'; document.getElementById(id).className='kpi-value neutral'; });
+    document.getElementById('kpiBottleneckSub').innerHTML=''; nodes.forEach(n=>{ document.getElementById(`node-${n.id}`)?.classList.remove('bottleneck'); document.getElementById(`alert-${n.id}`).style.display='none'; });
     return;
   }
   
   const maxCycleObj = cycles.reduce((a,b)=>b.cycle>a.cycle?b:a);
-  const maxCycle = maxCycleObj.cycle;
-  const bottleneck = maxCycleObj.node;
+  const maxCycle = maxCycleObj.cycle, bottleneck = maxCycleObj.node;
+  const taktSrc = nodes.find(n=>n.takt), takt = taktSrc ? taktSrc.takt : Math.round(cycles.reduce((s,c)=>s+c.cycle,0)/cycles.length*1.15);
+  const isOk = maxCycle<=takt, rendement = Math.round((takt/maxCycle)*100);
   
-  const taktSrc = nodes.find(n=>n.takt);
-  const takt = taktSrc ? taktSrc.takt : Math.round(cycles.reduce((s,c)=>s+c.cycle,0)/cycles.length*1.15);
-  const isOk = maxCycle<=takt;
-  const rendement = Math.round((takt/maxCycle)*100);
-  
-  document.getElementById('kpiTakt').textContent = takt+'s';
-  document.getElementById('kpiTakt').className = 'kpi-value neutral';
-  
-  const cycleEl=document.getElementById('kpiCycle');
-  cycleEl.textContent=maxCycle+'s';
-  cycleEl.className='kpi-value '+(isOk?'ok':'warn');
-  
-  const bEl=document.getElementById('kpiBottleneck');
-  bEl.textContent=bottleneck.label;
-  bEl.className='kpi-value '+(isOk?'ok':'warn');
-  bEl.style.fontSize='0.82rem';
-  
+  document.getElementById('kpiTakt').textContent = takt+'s'; document.getElementById('kpiCycle').textContent=maxCycle+'s'; document.getElementById('kpiCycle').className='kpi-value '+(isOk?'ok':'warn');
+  document.getElementById('kpiBottleneck').textContent=bottleneck.label; document.getElementById('kpiBottleneck').className='kpi-value '+(isOk?'ok':'warn');
   document.getElementById('kpiBottleneckSub').innerHTML=isOk?'<span style="color:var(--ok);font-size:0.6rem">✓ Dans les limites</span>':'<span class="kpi-alert-tag">⚠ Dépasse le takt</span>';
+  document.getElementById('kpiRendement').textContent=rendement+'%'; document.getElementById('kpiRendement').className='kpi-value '+(rendement>=85?'ok':'warn');
   
-  const rEl=document.getElementById('kpiRendement');
-  rEl.textContent=rendement+'%';
-  rEl.className='kpi-value '+(rendement>=85?'ok':'warn');
-  
-  const avgCharge = cycles.reduce((s,c)=>{
-    const cap=c.node.capacity||480;
-    return s+(c.cycle/cap*100);
-  },0)/cycles.length;
-  
-  const chargeEl=document.getElementById('kpiCharge');
-  chargeEl.textContent=Math.round(avgCharge)+'%';
-  chargeEl.className='kpi-value '+(avgCharge>100?'warn':avgCharge>80?'ok':'neutral');
+  const avgCharge = cycles.reduce((s,c)=> s+(c.cycle/(c.node.capacity||480)*100),0)/cycles.length;
+  document.getElementById('kpiCharge').textContent=Math.round(avgCharge)+'%'; document.getElementById('kpiCharge').className='kpi-value '+(avgCharge>100?'warn':avgCharge>80?'ok':'neutral');
   
   nodes.forEach(n=>{
-    const el=document.getElementById(`node-${n.id}`);
-    const alertEl=document.getElementById(`alert-${n.id}`);
     const isBottleneck=n.id===bottleneck.id&&!isOk;
-    if(el){el.classList.toggle('bottleneck',isBottleneck);}
-    if(alertEl) alertEl.style.display=isBottleneck?'inline':'none';
+    document.getElementById(`node-${n.id}`)?.classList.toggle('bottleneck',isBottleneck);
+    const alertEl=document.getElementById(`alert-${n.id}`); if(alertEl) alertEl.style.display=isBottleneck?'inline':'none';
   });
 }
 
-function fmtTime(s) {
-  if(s<60) return s+'s';
-  if(s<3600) return Math.floor(s/60)+'min'+(s%60?s%60+'s':'');
-  return Math.floor(s/3600)+'h'+(Math.floor((s%3600)/60)?Math.floor((s%3600)/60)+'min':'');
-}
+function zoom(factor) { scale=Math.min(2,Math.max(0.4,scale*factor)); canvas.style.backgroundSize=`${32*scale}px ${32*scale}px`; document.getElementById('zoomInfo').textContent=Math.round(scale*100)+'%'; nodes.forEach(n=>{const el=document.getElementById(`node-${n.id}`); if(el){el.style.left=n.x*scale+'px';el.style.top=n.y*scale+'px';el.style.transform=`scale(${scale})`;el.style.transformOrigin='top left';}}); renderConnections(); }
+function resetZoom() { scale=1; document.getElementById('zoomInfo').textContent='100%'; canvas.style.backgroundSize='32px 32px'; nodes.forEach(n=>{const el=document.getElementById(`node-${n.id}`); if(el){el.style.left=n.x+'px';el.style.top=n.y+'px';el.style.transform='';}}); renderConnections(); }
 
-// ─── ZOOM ─────────────────────────────────────────────────────────────────────
-function zoom(factor) {
-  scale=Math.min(2,Math.max(0.4,scale*factor));
-  canvas.style.backgroundSize=`${32*scale}px ${32*scale}px`;
-  document.getElementById('zoomInfo').textContent=Math.round(scale*100)+'%';
-  nodes.forEach(n=>{const el=document.getElementById(`node-${n.id}`); if(el){el.style.left=n.x*scale+'px';el.style.top=n.y*scale+'px';el.style.transform=`scale(${scale})`;el.style.transformOrigin='top left';}});
-  renderConnections();
-}
-
-function resetZoom() {
-  scale=1;
-  document.getElementById('zoomInfo').textContent='100%';
-  canvas.style.backgroundSize='32px 32px';
-  nodes.forEach(n=>{const el=document.getElementById(`node-${n.id}`); if(el){el.style.left=n.x+'px';el.style.top=n.y+'px';el.style.transform='';}});
-  renderConnections();
-}
-
-// ─── SUPABASE ────────────────────────────────────────────────────────────────
-const SUPABASE_URL = 'https://tjgpmdsaorhoshkprecc.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRqZ3BtZHNhb3Job3Noa3ByZWNjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDI4MTMsImV4cCI6MjA5Mjk3ODgxM30.ZpLeIKRHx46kq41AzRKnydmz-3U61-5kdM1ZVj-29H8';
-const { createClient } = supabase;
-const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
-
-let currentUser = null;
-let currentFluxId = null;
-
-// ─── HINT / SAVE ─────────────────────────────────────────────────────────────
-function updateHint() {
-  document.getElementById('canvasHint').style.opacity=nodes.length===0?'1':'0';
-}
-
-let dirty=false;
-function markDirty() {
-  dirty=true;
-  document.getElementById('saveStatus').textContent='Non sauvegardé';
-  document.getElementById('saveStatus').style.color='var(--warn)';
-}
+// ─── SUPABASE / SAUVEGARDE ──────────────────────────────────────────────────
+function updateHint() { document.getElementById('canvasHint').style.opacity=nodes.length===0?'1':'0'; }
+function markDirty() { dirty=true; document.getElementById('saveStatus').textContent='Non sauvegardé'; document.getElementById('saveStatus').style.color='var(--warn)'; }
+document.getElementById('fluxTitle').addEventListener('input', markDirty);
 
 async function saveFlux() {
   if (!currentUser) return;
   const title = document.getElementById('fluxTitle').value || 'Nouveau flux';
   const payload = { user_id: currentUser.id, nom: title, nodes: nodes, connections: connections, updated_at: new Date().toISOString() };
   let error;
-  if (currentFluxId) {
-    ({ error } = await supabaseClient.from('flux').update(payload).eq('id', currentFluxId));
-  } else {
+  if (currentFluxId) { ({ error } = await supabaseClient.from('flux').update(payload).eq('id', currentFluxId)); }
+  else {
     const { data, error: err } = await supabaseClient.from('flux').insert(payload).select().single();
-    error = err;
-    if (data) currentFluxId = data.id;
+    error = err; if (data) currentFluxId = data.id;
   }
-  
-  if (error) {
-    document.getElementById('saveStatus').textContent = '⚠ Erreur sauvegarde';
-    document.getElementById('saveStatus').style.color = 'var(--warn)';
-    console.error(error);
-  } else {
-    dirty = false;
-    document.getElementById('saveStatus').textContent = 'Sauvegardé ✓';
-    document.getElementById('saveStatus').style.color = 'var(--ok)';
-    setTimeout(() => { if (!dirty) document.getElementById('saveStatus').textContent = 'Sauvegardé'; }, 3000);
+  if (error) { document.getElementById('saveStatus').textContent = '⚠ Erreur'; document.getElementById('saveStatus').style.color = 'var(--warn)'; }
+  else { dirty = false; document.getElementById('saveStatus').textContent = 'Sauvegardé ✓'; document.getElementById('saveStatus').style.color = 'var(--ok)'; setTimeout(() => { if (!dirty) document.getElementById('saveStatus').textContent = 'Sauvegardé'; }, 3000); }
+}
+setInterval(() => { if (dirty && currentUser) saveFlux(); }, 30000);
+
+async function deleteFlux() {
+  if (!currentFluxId) { window.location.href = '/dashboard'; return; }
+  if (confirm("Supprimer définitivement ce flux ? Cette action est irréversible.")) {
+    const { error } = await supabaseClient.from('flux').delete().eq('id', currentFluxId);
+    if (error) alert("Erreur lors de la suppression.");
+    else window.location.href = '/dashboard';
   }
 }
 
-setInterval(() => { if (dirty && currentUser) saveFlux(); }, 30000);
-document.getElementById('fluxTitle').addEventListener('input', markDirty);
-
-// ─── MOS MODAL ────────────────────────────────────────────────────────────────
+// ─── MOS MODAL ───────────────────────────────────────────────────────────────
 function openMOSForNode(id) { currentMOSNodeId=id; openMOS(); }
 function openMOS() {
-  if(!selectedNodeId&&!currentMOSNodeId) return;
-  const id=currentMOSNodeId||selectedNodeId;
-  currentMOSNodeId=id;
-  const node=nodes.find(n=>n.id===id);
-  if(!node) return;
-  
+  const id=currentMOSNodeId||selectedNodeId; currentMOSNodeId=id; const node=nodes.find(n=>n.id===id); if(!node) return;
   document.getElementById('mosModalTitle').textContent='MOS — '+node.label;
-  document.getElementById('mosProcessName').value=node.mos.processName||'';
-  document.getElementById('mosAuthor').value=node.mos.author||'';
-  document.getElementById('mosTaktTime').value=node.mos.taktTime||'';
-  document.getElementById('mosNbPieces').value=node.mos.nbPieces||1;
-  
-  renderTasksList(node.mos.tasks);
-  renderNCList(node.mos.nc);
-  updateMOSCalcs();
-  document.getElementById('mosOverlay').classList.add('open');
+  ['ProcessName','Author','TaktTime','NbPieces'].forEach(k => document.getElementById(`mos${k}`).value=node.mos[k.charAt(0).toLowerCase()+k.slice(1)]||'');
+  renderTasksList(node.mos.tasks); renderNCList(node.mos.nc); updateMOSCalcs(); document.getElementById('mosOverlay').classList.add('open');
 }
-
-function closeMOS() {
-  document.getElementById('mosOverlay').classList.remove('open');
-  currentMOSNodeId=null;
-}
-
+function closeMOS() { document.getElementById('mosOverlay').classList.remove('open'); currentMOSNodeId=null; }
 function saveMOS() {
-  const node=nodes.find(n=>n.id===currentMOSNodeId);
-  if(!node)return;
-  node.mos.processName=document.getElementById('mosProcessName').value;
-  node.mos.author=document.getElementById('mosAuthor').value;
-  node.mos.taktTime=parseFloat(document.getElementById('mosTaktTime').value)||null;
-  node.mos.nbPieces=parseInt(document.getElementById('mosNbPieces').value)||1;
-  
-  const totalManual=node.mos.tasks.reduce((s,t)=>s+(parseFloat(t.manual)||0),0);
-  const totalMove=node.mos.tasks.reduce((s,t)=>s+(parseFloat(t.move)||0),0);
-  const totalWait=node.mos.tasks.reduce((s,t)=>s+(parseFloat(t.wait)||0),0);
-  if(totalManual+totalMove+totalWait>0) node.cycle=null;
-  
-  refreshNodeDisplay(currentMOSNodeId);
-  updateKPIs();
-  markDirty();
-  closeMOS();
+  const node=nodes.find(n=>n.id===currentMOSNodeId); if(!node)return;
+  node.mos.processName=document.getElementById('mosProcessName').value; node.mos.author=document.getElementById('mosAuthor').value;
+  node.mos.taktTime=parseFloat(document.getElementById('mosTaktTime').value)||null; node.mos.nbPieces=parseInt(document.getElementById('mosNbPieces').value)||1;
+  if(node.mos.tasks.reduce((s,t)=>s+(parseFloat(t.manual)||0)+(parseFloat(t.move)||0)+(parseFloat(t.wait)||0),0)>0) node.cycle=null;
+  refreshNodeDisplay(currentMOSNodeId); markDirty(); closeMOS();
 }
 
-// ─── TASKS ────────────────────────────────────────────────────────────────────
 let taskIdCounter=0;
-function addTask(data={}) {
-  const node=nodes.find(n=>n.id===currentMOSNodeId);
-  if(!node)return;
-  const task={id:++taskIdCounter, desc:data.desc||'', manual:data.manual||'', machine:data.machine||'', move:data.move||'', wait:data.wait||'', vsm:data.vsm||'va'};
-  node.mos.tasks.push(task);
-  renderTasksList(node.mos.tasks);
-  updateMOSCalcs();
-}
-
-function removeTask(taskId) {
-  const node=nodes.find(n=>n.id===currentMOSNodeId);
-  if(!node)return;
-  node.mos.tasks=node.mos.tasks.filter(t=>t.id!==taskId);
-  renderTasksList(node.mos.tasks);
-  updateMOSCalcs();
-}
+function addTask() { nodes.find(n=>n.id===currentMOSNodeId)?.mos.tasks.push({id:++taskIdCounter, desc:'', manual:'', machine:'', move:'', wait:'', vsm:'va'}); renderTasksList(nodes.find(n=>n.id===currentMOSNodeId).mos.tasks); updateMOSCalcs(); }
+function removeTask(id) { const node=nodes.find(n=>n.id===currentMOSNodeId); node.mos.tasks=node.mos.tasks.filter(t=>t.id!==id); renderTasksList(node.mos.tasks); updateMOSCalcs(); }
+function updateTask(id, f, v) { nodes.find(n=>n.id===currentMOSNodeId)?.mos.tasks.find(t=>t.id===id) && (nodes.find(n=>n.id===currentMOSNodeId).mos.tasks.find(t=>t.id===id)[f]=v); updateMOSCalcs(); }
+function setTaskVSM(id, v) { updateTask(id,'vsm',v); renderTasksList(nodes.find(n=>n.id===currentMOSNodeId).mos.tasks); }
 
 function renderTasksList(tasks) {
-  const container=document.getElementById('tasksList');
-  container.innerHTML='';
   let cumul=0;
-  tasks.forEach((task,i)=>{
-    const m=parseFloat(task.manual)||0, mc=parseFloat(task.machine)||0, mv=parseFloat(task.move)||0, w=parseFloat(task.wait)||0;
-    cumul += m+mv+w;
-    const row=document.createElement('div');
-    row.className='task-row'+(task.desc?' has-data':'')+(task.vsm?' '+task.vsm:'');
-    row.innerHTML=`
-      <div class="task-num">${i+1}</div>
-      <div>
-        <input class="task-input" placeholder="Description de la tâche…" value="${task.desc}" oninput="updateTask(${task.id},'desc',this.value)">
-        <div class="task-type-tag">
-          <span class="type-badge va-tag ${task.vsm==='va'?'active':''}" onclick="setTaskVSM(${task.id},'va')">VA</span>
-          <span class="type-badge nva-tag ${task.vsm==='nva'?'active':''}" onclick="setTaskVSM(${task.id},'nva')">NVA</span>
-        </div>
-      </div>
-      <input type="number" class="task-time-input manual-input" placeholder="0" value="${task.manual}" oninput="updateTask(${task.id},'manual',this.value)" min="0">
-      <input type="number" class="task-time-input machine-input" placeholder="0" value="${task.machine}" oninput="updateTask(${task.id},'machine',this.value)" min="0">
-      <input type="number" class="task-time-input move-input" placeholder="0" value="${task.move}" oninput="updateTask(${task.id},'move',this.value)" min="0">
-      <input type="number" class="task-time-input wait-input" placeholder="0" value="${task.wait}" oninput="updateTask(${task.id},'wait',this.value)" min="0">
-      <div class="task-cumul">${cumul>0?cumul+'s':''}</div>
-      <button class="task-del" onclick="removeTask(${task.id})">✕</button>`;
-    container.appendChild(row);
-  });
+  document.getElementById('tasksList').innerHTML = tasks.map((t,i) => {
+    cumul += (parseFloat(t.manual)||0)+(parseFloat(t.move)||0)+(parseFloat(t.wait)||0);
+    return `<div class="task-row ${t.desc?'has-data':''} ${t.vsm}"><div class="task-num">${i+1}</div><div><input class="task-input" value="${t.desc}" oninput="updateTask(${t.id},'desc',this.value)"><div class="task-type-tag"><span class="type-badge va-tag ${t.vsm==='va'?'active':''}" onclick="setTaskVSM(${t.id},'va')">VA</span><span class="type-badge nva-tag ${t.vsm==='nva'?'active':''}" onclick="setTaskVSM(${t.id},'nva')">NVA</span></div></div><input type="number" class="task-time-input" value="${t.manual}" oninput="updateTask(${t.id},'manual',this.value)"><input type="number" class="task-time-input" value="${t.machine}" oninput="updateTask(${t.id},'machine',this.value)"><input type="number" class="task-time-input" value="${t.move}" oninput="updateTask(${t.id},'move',this.value)"><input type="number" class="task-time-input" value="${t.wait}" oninput="updateTask(${t.id},'wait',this.value)"><div class="task-cumul">${cumul>0?cumul+'s':''}</div><button class="task-del" onclick="removeTask(${t.id})">✕</button></div>`;
+  }).join('');
 }
 
-function updateTask(taskId, field, val) {
-  const node=nodes.find(n=>n.id===currentMOSNodeId);
-  if(!node)return;
-  const task=node.mos.tasks.find(t=>t.id===taskId);
-  if(!task)return;
-  task[field]=val;
-  renderTasksList(node.mos.tasks);
-  updateMOSCalcs();
-}
-
-function setTaskVSM(taskId, vsm) {
-  const node=nodes.find(n=>n.id===currentMOSNodeId);
-  if(!node)return;
-  const task=node.mos.tasks.find(t=>t.id===taskId);
-  if(!task)return;
-  task.vsm=vsm;
-  renderTasksList(node.mos.tasks);
-  updateMOSCalcs();
-}
-
-function addNC(data={}) {
-  const node=nodes.find(n=>n.id===currentMOSNodeId);
-  if(!node)return;
-  node.mos.nc.push({id:++taskIdCounter, desc:data.desc||'', temps:data.temps||'', pieces:data.pieces||'', freq:data.freq||''});
-  renderNCList(node.mos.nc);
-}
-
-function renderNCList(nc) {
-  const container=document.getElementById('ncList');
-  container.innerHTML='';
-  nc.forEach((item,i)=>{
-    const row=document.createElement('div');
-    row.className='nc-row';
-    row.innerHTML=`
-      <input class="task-input" placeholder="Activité…" value="${item.desc}" oninput="updateNC(${item.id},'desc',this.value)">
-      <input type="number" class="task-time-input" placeholder="0" value="${item.temps}" oninput="updateNC(${item.id},'temps',this.value)">
-      <input type="number" class="task-time-input" placeholder="0" value="${item.pieces}" oninput="updateNC(${item.id},'pieces',this.value)">
-      <input type="number" class="task-time-input" placeholder="1" value="${item.freq}" oninput="updateNC(${item.id},'freq',this.value)">
-      <button class="task-del" onclick="removeNC(${item.id})">✕</button>`;
-    container.appendChild(row);
-  });
-}
-
-function updateNC(id,field,val) {
-  const node=nodes.find(n=>n.id===currentMOSNodeId);
-  if(!node)return;
-  const item=node.mos.nc.find(n=>n.id===id);
-  if(item) item[field]=val;
-}
-
-function removeNC(id) {
-  const node=nodes.find(n=>n.id===currentMOSNodeId);
-  if(!node)return;
-  node.mos.nc=node.mos.nc.filter(n=>n.id!==id);
-  renderNCList(node.mos.nc);
-}
+function addNC() { nodes.find(n=>n.id===currentMOSNodeId)?.mos.nc.push({id:++taskIdCounter, desc:'', temps:'', pieces:'', freq:''}); renderNCList(nodes.find(n=>n.id===currentMOSNodeId).mos.nc); }
+function removeNC(id) { const node=nodes.find(n=>n.id===currentMOSNodeId); node.mos.nc=node.mos.nc.filter(n=>n.id!==id); renderNCList(node.mos.nc); }
+function updateNC(id, f, v) { nodes.find(n=>n.id===currentMOSNodeId)?.mos.nc.find(n=>n.id===id) && (nodes.find(n=>n.id===currentMOSNodeId).mos.nc.find(n=>n.id===id)[f]=v); }
+function renderNCList(nc) { document.getElementById('ncList').innerHTML = nc.map(item => `<div class="nc-row"><input class="task-input" value="${item.desc}" oninput="updateNC(${item.id},'desc',this.value)"><input type="number" class="task-time-input" value="${item.temps}" oninput="updateNC(${item.id},'temps',this.value)"><input type="number" class="task-time-input" value="${item.pieces}" oninput="updateNC(${item.id},'pieces',this.value)"><input type="number" class="task-time-input" value="${item.freq}" oninput="updateNC(${item.id},'freq',this.value)"><button class="task-del" onclick="removeNC(${item.id})">✕</button></div>`).join(''); }
 
 function updateMOSCalcs() {
-  const node=nodes.find(n=>n.id===currentMOSNodeId);
-  if(!node)return;
-  const tasks=node.mos.tasks;
-  let manual=0,machine=0,move=0,wait=0,va=0,nva=0;
-  
-  tasks.forEach(t=>{
-    const m=parseFloat(t.manual)||0, mc=parseFloat(t.machine)||0, mv=parseFloat(t.move)||0, w=parseFloat(t.wait)||0;
-    manual+=m; machine+=mc; move+=mv; wait+=w;
-    const tt=m+mv+w;
-    if(t.vsm==='va') va+=tt; else nva+=tt;
-  });
-  
-  const cycle=manual+move+wait;
-  const total=va+nva;
-  const vaP=total>0?Math.round(va/total*100):0;
-  
-  document.getElementById('mosTotal-manual').textContent=manual+'s';
-  document.getElementById('mosTotal-machine').textContent=machine+'s';
-  document.getElementById('mosTotal-move').textContent=move+'s';
-  document.getElementById('mosTotal-wait').textContent=wait+'s';
-  document.getElementById('mosTotal-cycle').textContent=cycle+'s';
-  document.getElementById('mosTotal-va').textContent=vaP+'%';
-  document.getElementById('mosFooterCycle').textContent=cycle+'s';
-  document.getElementById('mosFooterVA').textContent=va+'s ('+vaP+'%)';
-  document.getElementById('mosFooterNVA').textContent=nva+'s ('+(100-vaP)+'%)';
-
-  if(cycle+machine>0) {
-    const tot=manual+machine+move+wait||1;
-    document.getElementById('gantt-manual').style.width=(manual/tot*100)+'%';
-    document.getElementById('gantt-machine').style.width=(machine/tot*100)+'%';
-    document.getElementById('gantt-move').style.width=(move/tot*100)+'%';
-    document.getElementById('gantt-wait').style.width=(wait/tot*100)+'%';
-  }
-  renderTasksList(tasks);
+  const node=nodes.find(n=>n.id===currentMOSNodeId); if(!node)return;
+  let m=0,mc=0,mv=0,w=0,va=0,nva=0;
+  node.mos.tasks.forEach(t=>{ m+=parseFloat(t.manual)||0; mc+=parseFloat(t.machine)||0; mv+=parseFloat(t.move)||0; w+=parseFloat(t.wait)||0; const tt=(parseFloat(t.manual)||0)+(parseFloat(t.move)||0)+(parseFloat(t.wait)||0); if(t.vsm==='va') va+=tt; else nva+=tt; });
+  const cyc=m+mv+w, vaP=cyc>0?Math.round(va/cyc*100):0;
+  ['manual','machine','move','wait','cycle'].forEach((k,i) => document.getElementById(`mosTotal-${k}`).textContent=[m,mc,mv,w,cyc][i]+'s');
+  document.getElementById('mosTotal-va').textContent=vaP+'%'; document.getElementById('mosFooterCycle').textContent=cyc+'s'; document.getElementById('mosFooterVA').textContent=va+'s ('+vaP+'%)'; document.getElementById('mosFooterNVA').textContent=nva+'s ('+(100-vaP)+'%)';
+  if(cyc+mc>0) { const tot=m+mc+mv+w||1; ['manual','machine','move','wait'].forEach((k,i) => document.getElementById(`gantt-${k}`).style.width=([m,mc,mv,w][i]/tot*100)+'%'); }
 }
 
-// ─── DEMO ─────────────────────────────────────────────────────────────────────
-function loadDemo() {
-  const demo=[
-    {type:'work', label:'Approvisionnement', x:30, y:110, cycle:42, ops:1, vsm:'va', capacity:480, takt:60, mos:{processName:'Appro',author:'',taktTime:60,nbPieces:1,tasks:[
-      {id:++taskIdCounter,desc:'Récupérer les pièces en stock',manual:20,machine:0,move:15,wait:0,vsm:'nva'},
-      {id:++taskIdCounter,desc:'Préparer le poste',manual:7,machine:0,move:0,wait:0,vsm:'va'},
-    ],nc:[]}},
-    {type:'stock', label:'Stock entrant', x:220, y:110, qty:30, stockMax:50, vsm:'nva'},
-    {type:'work', label:'Assemblage principal', x:390, y:110, cycle:78, ops:2, vsm:'va', capacity:480, takt:60, mos:{processName:'Assemblage',author:'',taktTime:60,nbPieces:1,tasks:[
-      {id:++taskIdCounter,desc:'Démoulage 2 tubes proto',manual:240,machine:0,move:0,wait:0,vsm:'va'},
-      {id:++taskIdCounter,desc:'Chargement + gomme dans moule',manual:570,machine:2700,move:5,wait:0,vsm:'va'},
-    ],nc:[]}},
-    {type:'work', label:'Sous-ensemble', x:390, y:300, cycle:110, ops:1, vsm:'va', capacity:480, takt:60},
-    {type:'control', label:'Contrôle qualité', x:570, y:110, cycle:35, ops:1, vsm:'va', capacity:480},
-    {type:'transport', label:'Transfert sortie', x:750, y:110, dist:20, vsm:'nva', cycle:12},
-    {type:'work', label:'Expédition', x:920, y:110, cycle:28, ops:1, vsm:'va', capacity:480},
-  ];
-  demo.forEach(d=>{
-    const node=addNode(d.type,d.label,d.x,d.y);
-    Object.assign(node,d);
-    if(d.mos) node.mos=d.mos;
-    refreshNodeDisplay(node.id);
-  });
-  connections.push({from:1,to:2});
-  connections.push({from:2,to:3});
-  connections.push({from:4,to:5}); // Sous-ensemble vers CQ
-  connections.push({from:3,to:5}); // Assemblage vers CQ
-  connections.push({from:5,to:6});
-  connections.push({from:6,to:7});
-  setTimeout(()=>{renderConnections();updateKPIs();updateHint();},80);
-}
+function exportPDF() { window.print(); }
 
-// ─── EXPORT PDF ───────────────────────────────────────────────────────────────
-function exportPDF() {
-  const title = document.getElementById('fluxTitle').value || 'Kaiflow — Rapport';
-  
-  const kpiTakt = document.getElementById('kpiTakt').textContent;
-  const kpiCycle = document.getElementById('kpiCycle').textContent;
-  const kpiLead = document.getElementById('kpiLead').textContent;
-  const kpiBottleneck = document.getElementById('kpiBottleneck').textContent;
-  const kpiRendement = document.getElementById('kpiRendement').textContent;
-  const kpiVA = document.getElementById('kpiVA').textContent;
-  const kpiCharge = document.getElementById('kpiCharge').textContent;
-  const kpiPostes = document.getElementById('kpiPostes').textContent;
-  
-  const now = new Date().toLocaleDateString('fr-FR', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
-  const isOk = !kpiBottleneck.includes('—') && kpiRendement !== '—' && parseInt(kpiRendement) >= 85;
-
-  const nodeRows = nodes.map((n, i) => {
-    const cycle = getEffectiveCycle(n) || '—';
-    const vaP = getNodeVAPercent(n);
-    const config = BLOCK_CONFIG[n.type];
-    const isBottleneck = n.id === nodes.find(nd => getEffectiveCycle(nd) === Math.max(...nodes.map(x => getEffectiveCycle(x)||0)))?.id;
-    
-    return `<tr style="${isBottleneck && !isOk ? 'background:#fff3ee;' : i%2===0?'background:#f8fafb':''}">
-      <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;">${i+1}</td>
-      <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;">${config.icon} ${n.label}</td>
-      <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;text-align:center;">${config.label}</td>
-      <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;text-align:center;font-weight:600;color:${isBottleneck&&!isOk?'#ff6b35':'#111'}">${cycle !== '—' ? cycle+'s' : '—'}</td>
-      <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;text-align:center;">${n.ops || '—'}</td>
-      <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;text-align:center;">${vaP !== null ? vaP+'% VA' : n.vsm === 'va' ? 'VA' : 'NVA'}</td>
-      <td style="padding:8px 12px;border-bottom:1px solid #e5e7eb;text-align:center;">${isBottleneck && !isOk ? '⚠ Goulot' : '✓ OK'}</td>
-    </tr>`;
-  }).join('');
-
-  const mosRows = nodes.filter(n => n.mos && n.mos.tasks.length > 0).map(n => {
-    const taskRows = n.mos.tasks.map((t,i) => `
-    <tr style="${i%2===0?'background:#f8fafb':''}">
-      <td style="padding:6px 10px;border-bottom:1px solid #e5e7eb;">${i+1}</td>
-      <td style="padding:6px 10px;border-bottom:1px solid #e5e7eb;">${t.desc || '—'}</td>
-      <td style="padding:6px 10px;border-bottom:1px solid #e5e7eb;text-align:center;color:#3b82f6;">${t.manual||0}s</td>
-      <td style="padding:6px 10px;border-bottom:1px solid #e5e7eb;text-align:center;color:#f59e0b;">${t.machine||0}s</td>
-      <td style="padding:6px 10px;border-bottom:1px solid #e5e7eb;text-align:center;color:#22d3a0;">${t.move||0}s</td>
-      <td style="padding:6px 10px;border-bottom:1px solid #e5e7eb;text-align:center;color:#f43f5e;">${t.wait||0}s</td>
-      <td style="padding:6px 10px;border-bottom:1px solid #e5e7eb;text-align:center;"><span style="background:${t.vsm==='va'?'#d1fae5':'#fee2e2'};color:${t.vsm==='va'?'#065f46':'#991b1b'};padding:2px 8px;border-radius:99px;font-size:11px;">${t.vsm==='va'?'VA':'NVA'}</span></td>
-    </tr>`).join('');
-    
-    return `
-    <h3 style="font-size:14px;font-weight:700;margin:24px 0 8px;color:#111;">📋 MOS — ${n.label}</h3>
-    <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:16px;">
-      <thead><tr style="background:#f1f5f9;">
-        <th style="padding:8px 10px;text-align:left;font-weight:600;">#</th>
-        <th style="padding:8px 10px;text-align:left;font-weight:600;">Tâche</th>
-        <th style="padding:8px 10px;text-align:center;color:#3b82f6;">Manuel</th>
-        <th style="padding:8px 10px;text-align:center;color:#f59e0b;">Machine</th>
-        <th style="padding:8px 10px;text-align:center;color:#22d3a0;">Dépl.</th>
-        <th style="padding:8px 10px;text-align:center;color:#f43f5e;">Attente</th>
-        <th style="padding:8px 10px;text-align:center;">VA/NVA</th>
-      </tr></thead>
-      <tbody>${taskRows}</tbody>
-    </table>`;
-  }).join('');
-
-  const html = `<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8">
-  <title>${title}</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Helvetica Neue', Arial, sans-serif; color: #111; font-size: 13px; line-height: 1.5; padding: 40px; max-width: 900px; margin: 0 auto; }
-    @media print { body { padding: 20px; } .no-print { display: none !important; } }
-  </style>
-</head>
-<body>
-  <div style="display:flex;align-items:center;justify-content:space-between;padding-bottom:20px;border-bottom:3px solid #00e5ff;margin-bottom:28px;">
-    <div>
-      <div style="font-size:22px;font-weight:800;letter-spacing:-0.5px;">Kai<span style="color:#00e5ff;">flow</span></div>
-      <div style="font-size:11px;color:#6b7a96;margin-top:2px;text-transform:uppercase;letter-spacing:0.08em;">Rapport de flux de production</div>
-    </div>
-    <div style="text-align:right;">
-      <div style="font-size:16px;font-weight:700;">${title}</div>
-      <div style="font-size:11px;color:#6b7a96;margin-top:3px;">${now}</div>
-    </div>
-  </div>
-
-  <div style="background:${isOk?'#f0fdf4':'#fff7f5'};border:1px solid ${isOk?'#86efac':'#fca5a5'};border-radius:10px;padding:14px 20px;margin-bottom:24px;display:flex;align-items:center;gap:12px;">
-    <div style="font-size:24px;">${isOk?'✅':'⚠️'}</div>
-    <div>
-      <div style="font-weight:700;font-size:14px;color:${isOk?'#166534':'#991b1b'};">Statut : ${isOk?'Flux nominal — Aucun goulot détecté':"Attention — Goulot d'étranglement détecté"}</div>
-      <div style="font-size:12px;color:#6b7a96;margin-top:2px;">${isOk?'Tous les postes respectent le takt time cible.':'Le poste "'+kpiBottleneck+'" dépasse le takt time. Action corrective recommandée.'}</div>
-    </div>
-  </div>
-
-  <h2 style="font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#6b7a96;margin-bottom:12px;">Indicateurs clés de performance</h2>
-  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:28px;">
-    ${[
-      {label:'Takt Time', value:kpiTakt, color:'#111'},
-      {label:'Temps cycle max', value:kpiCycle, color: isOk?'#166534':'#991b1b'},
-      {label:'Lead Time (Chemin Critique)', value:kpiLead, color:'#0369a1'},
-      {label:'Rendement ligne', value:kpiRendement, color: parseInt(kpiRendement)>=85?'#166534':'#991b1b'},
-      {label:'VA / NVA', value:kpiVA, color:'#0369a1'},
-      {label:'Taux de charge', value:kpiCharge, color:'#111'},
-      {label:'Goulot', value:kpiBottleneck, color: isOk?'#166534':'#991b1b'},
-      {label:'Nb. blocs', value:kpiPostes, color:'#111'},
-    ].map(k => `<div style="background:#f8fafc;border:1px solid #e5e7eb;border-radius:8px;padding:12px;">
-      <div style="font-size:10px;text-transform:uppercase;letter-spacing:0.08em;color:#6b7a96;margin-bottom:6px;">${k.label}</div>
-      <div style="font-size:18px;font-weight:800;color:${k.color};">${k.value}</div>
-    </div>`).join('')}
-  </div>
-
-  <h2 style="font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#6b7a96;margin-bottom:12px;">Détail des postes</h2>
-  <table style="width:100%;border-collapse:collapse;font-size:12px;margin-bottom:28px;">
-    <thead>
-      <tr style="background:#f1f5f9;">
-        <th style="padding:10px 12px;text-align:left;font-weight:600;">#</th>
-        <th style="padding:10px 12px;text-align:left;font-weight:600;">Poste</th>
-        <th style="padding:10px 12px;text-align:center;font-weight:600;">Type</th>
-        <th style="padding:10px 12px;text-align:center;font-weight:600;">Temps cycle</th>
-        <th style="padding:10px 12px;text-align:center;font-weight:600;">Opérateurs</th>
-        <th style="padding:10px 12px;text-align:center;font-weight:600;">VA/NVA</th>
-        <th style="padding:10px 12px;text-align:center;font-weight:600;">Statut</th>
-      </tr>
-    </thead>
-    <tbody>${nodeRows}</tbody>
-  </table>
-
-  ${mosRows ? `<h2 style="font-size:14px;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;color:#6b7a96;margin-bottom:4px;">Modes Opératoires Standards</h2>${mosRows}` : ''}
-
-  <div style="margin-top:40px;padding-top:16px;border-top:1px solid #e5e7eb;display:flex;justify-content:space-between;font-size:11px;color:#6b7a96;">
-    <div>Généré par Kaiflow · kaiflow.fr</div>
-    <div>${now}</div>
-  </div>
-  
-  <div class="no-print" style="margin-top:30px;text-align:center;">
-    <button onclick="window.print()" style="background:#00e5ff;color:#000;border:none;border-radius:8px;padding:12px 28px;font-size:14px;font-weight:600;cursor:pointer;">🖨 Imprimer / Enregistrer en PDF</button>
-    <button onclick="window.close()" style="background:transparent;border:1px solid #e5e7eb;border-radius:8px;padding:12px 20px;font-size:14px;cursor:pointer;margin-left:10px;">Fermer</button>
-  </div>
-</body>
-</html>`;
-
-  const win = window.open('', '_blank');
-  win.document.write(html);
-  win.document.close();
-}
-
-// ─── AUTH + LOAD ─────────────────────────────────────────────────────────────
+// ─── INITIALISATION ──────────────────────────────────────────────────────────
 async function initEditor() {
-  const { data: { session } } = await supabaseClient.auth.getSession();
-  if (!session) {
-    window.location.href = '/login';
-    return;
-  }
-  currentUser = session.user;
-
-  const params = new URLSearchParams(window.location.search);
-  const fluxId = params.get('id');
+  currentUser = await requireAuth(); if (!currentUser) return;
+  const fluxId = new URLSearchParams(window.location.search).get('id');
   if (fluxId) {
-    const { data, error } = await supabaseClient
-      .from('flux')
-      .select('*')
-      .eq('id', fluxId)
-      .eq('user_id', currentUser.id)
-      .single();
-      
+    const { data, error } = await supabaseClient.from('flux').select('*').eq('id', fluxId).eq('user_id', currentUser.id).single();
     if (data && !error) {
-      currentFluxId = data.id;
-      document.getElementById('fluxTitle').value = data.nom;
-      
-      const savedNodes = Array.isArray(data.nodes) ? data.nodes : JSON.parse(data.nodes || '[]');
-      const savedConns = Array.isArray(data.connections) ? data.connections : JSON.parse(data.connections || '[]');
-      
-      savedNodes.forEach(n => {
-        const node = addNode(n.type, n.label, n.x, n.y);
-        Object.assign(node, n);
-        if (n.mos) node.mos = n.mos;
-        refreshNodeDisplay(node.id);
-      });
-      connections.push(...savedConns);
+      currentFluxId = data.id; document.getElementById('fluxTitle').value = data.nom;
+      (Array.isArray(data.nodes) ? data.nodes : JSON.parse(data.nodes||'[]')).forEach(n => { const node = addNode(n.type, n.label, n.x, n.y); Object.assign(node, n); if (n.mos) node.mos = n.mos; refreshNodeDisplay(node.id); });
+      connections.push(...(Array.isArray(data.connections) ? data.connections : JSON.parse(data.connections||'[]')));
       setTimeout(() => { renderConnections(); updateKPIs(); updateHint(); }, 80);
-      document.getElementById('saveStatus').textContent = 'Flux chargé';
-    } else {
-      loadDemo();
     }
-  } else {
-    updateHint();
-  }
+  } else updateHint();
 }
 
 initEditor();
