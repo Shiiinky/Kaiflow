@@ -33,7 +33,8 @@
   .topbar-title { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700; flex: 1; }
   .section-count { font-size: 0.8rem; color: var(--muted); font-weight: 400; margin-left: 0.6rem; }
   .topbar-date { font-size: 0.82rem; color: var(--muted); }
-  .topbar-btn { display: flex; align-items: center; gap: 0.5rem; background: var(--accent); color: #000; border: none; border-radius: 8px; padding: 0.5rem 1.1rem; font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 500; cursor: pointer; }
+  .topbar-btn { display: flex; align-items: center; gap: 0.5rem; background: var(--accent); color: #000; border: none; border-radius: 8px; padding: 0.5rem 1.1rem; font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 500; cursor: pointer; transition: transform 0.15s; }
+  .topbar-btn:hover { transform: translateY(-1px); }
   
   /* Layout Content */
   .content { flex: 1; overflow-y: auto; padding: 2rem; display: flex; flex-direction: column; gap: 2rem; }
@@ -46,19 +47,16 @@
   .summary-card::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; border-radius: 12px 12px 0 0; }
   .summary-card.c-accent::after { background: var(--accent); }
   .summary-card.c-ok::after { background: var(--ok); }
-  .summary-card.c-warn::after { background: var(--warn); }
-  .summary-card.c-muted::after { background: var(--muted); }
   .card-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); font-weight: 500; margin-bottom: 0.75rem; }
   .card-value { font-family: 'Syne', sans-serif; font-size: 2.2rem; font-weight: 800; line-height: 1; margin-bottom: 0.5rem; }
   .card-value.ok { color: var(--ok); }
-  .card-value.warn { color: var(--warn); }
   .card-value.accent { color: var(--accent); }
   
   /* Flux Grid */
   .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
   .section-title { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700; }
   .flux-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
-  .flux-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; cursor: pointer; transition: transform 0.2s; animation: fadeUp 0.5s ease both; }
+  .flux-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; cursor: pointer; transition: transform 0.2s, border-color 0.2s; animation: fadeUp 0.5s ease both; }
   .flux-card:hover { transform: translateY(-3px); border-color: var(--border2); }
   .flux-preview { background: var(--bg); padding: 1rem 1.2rem 0.8rem; border-bottom: 1px solid var(--border); min-height: 80px; display: flex; align-items: center; }
   .mini-flow { display: flex; align-items: center; gap: 0.4rem; overflow: hidden; }
@@ -66,7 +64,7 @@
   .mini-block.ok { border-color: rgba(34,211,160,0.3); color: var(--ok); }
   .flux-body { padding: 1rem 1.2rem; }
   .flux-name { font-family: 'Syne', sans-serif; font-size: 0.95rem; font-weight: 700; }
-  .flux-meta { font-size: 0.75rem; color: var(--muted); }
+  .flux-meta { font-size: 0.75rem; color: var(--muted); margin-top:0.2rem;}
 </style>
 </head>
 <body>
@@ -107,16 +105,14 @@
         <div class="card-value accent" id="summaryFlux">—</div>
       </div>
       <div class="summary-card c-ok">
-        <div class="card-label">Rendement moyen</div>
-        <div class="card-value ok" id="summaryRendement">—</div>
+        <div class="card-label">Modélisations</div>
+        <div class="card-value ok" id="summaryPostes">—</div>
       </div>
     </div>
 
     <div>
       <div class="section-header">
-        <div>
-          <span class="section-title">Mes flux de production</span>
-        </div>
+        <div><span class="section-title">Mes flux de production</span></div>
       </div>
       <div class="flux-grid" id="fluxGrid">
         </div>
@@ -127,10 +123,9 @@
 <script type="module">
   import { supabaseClient, requireAuth, logoutUser } from '/js/supabase-client.js';
 
-  // Bind logout
+  // Rend accessible au HTML
+  window.logout = logoutUser;
   document.getElementById('logoutBtn').addEventListener('click', logoutUser);
-
-  // Date
   document.getElementById('topbar-date').textContent = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
   async function init() {
@@ -148,21 +143,27 @@
     const { data } = await supabaseClient.from('flux').select('*').eq('user_id', user.id).order('updated_at', { ascending: false });
     
     if(!data || data.length === 0) {
-      document.getElementById('fluxGrid').innerHTML = `<div class="flux-card" style="border-style:dashed;display:flex;align-items:center;justify-content:center;min-height:190px;grid-column:1/-1;" onclick="window.location.href='/editor'"><div style="text-align:center;color:var(--muted2);"><div style="font-size:2.5rem;">〰</div><div style="font-weight:600;">Aucun flux pour le moment</div></div></div>`;
+      document.getElementById('fluxGrid').innerHTML = `<div class="flux-card" style="border-style:dashed;display:flex;align-items:center;justify-content:center;min-height:190px;grid-column:1/-1;" onclick="window.location.href='/editor'"><div style="text-align:center;color:var(--muted2);"><div style="font-size:2.5rem;">〰</div><div style="font-weight:600;">Aucun flux pour le moment</div><div style="font-size:0.8rem;margin-top:0.4rem;">Cliquez ici pour créer votre première cartographie</div></div></div>`;
       document.getElementById('summaryFlux').textContent = '0';
+      document.getElementById('summaryPostes').textContent = '0';
       return;
     }
 
     document.getElementById('summaryFlux').textContent = data.length;
     
-    // Render Grid
+    let totalNodes = 0;
     const grid = document.getElementById('fluxGrid');
+    
     grid.innerHTML = data.map(flux => {
-      const nodes = JSON.parse(flux.nodes || '[]');
-      const miniFlow = nodes.slice(0,3).map(n => `<div class="mini-block ok">${n.label.substring(0,8)}</div>`).join(' → ');
+      // FIX DU BUG JSON.PARSE : On vérifie si c'est déjà un Array
+      const nodes = Array.isArray(flux.nodes) ? flux.nodes : JSON.parse(flux.nodes || '[]');
+      totalNodes += nodes.length;
+
+      const miniFlow = nodes.slice(0,3).map(n => `<div class="mini-block ok">${n.label.substring(0,10)}</div>`).join(' <span style="color:var(--border2);font-size:0.8rem">→</span> ');
+      
       return `
         <div class="flux-card" onclick="window.location.href='/editor?id=${flux.id}'">
-          <div class="flux-preview"><div class="mini-flow">${miniFlow || 'Vide'}</div></div>
+          <div class="flux-preview"><div class="mini-flow">${miniFlow || '<span style="color:var(--muted2);font-size:0.8rem;">Flux vide</span>'}</div></div>
           <div class="flux-body">
             <div class="flux-name">${flux.nom}</div>
             <div class="flux-meta">${nodes.length} blocs modélisés</div>
@@ -170,6 +171,8 @@
         </div>
       `;
     }).join('');
+
+    document.getElementById('summaryPostes').textContent = totalNodes;
   }
 
   init();
