@@ -5,86 +5,20 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kaiflow — Créer un compte</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<link rel="stylesheet" href="/css/globals.css">
 <style>
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-:root {
-  --bg: #0b0e14; --surface: #111620; --border: #1e2736; --border2: #253044;
-  --accent: #00e5ff; --accent-dim: rgba(0,229,255,0.1);
-  --ok: #22d3a0; --warn: #ff6b35;
-  --text: #e2e8f5; --muted: #5a6a85; --muted2: #8899b4;
-}
-html, body { min-height: 100%; }
-body {
-  background: var(--bg); color: var(--text);
-  font-family: 'DM Sans', sans-serif; font-weight: 300;
-  display: flex; align-items: center; justify-content: center;
-  min-height: 100vh; padding: 2rem 1rem; position: relative;
-}
-body::before {
-  content: ''; position: fixed; inset: 0;
-  background-image: linear-gradient(rgba(30,39,54,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(30,39,54,0.6) 1px, transparent 1px);
-  background-size: 48px 48px; pointer-events: none;
-}
-.glow {
-  position: fixed; width: 600px; height: 600px;
-  background: radial-gradient(circle, rgba(0,229,255,0.07) 0%, transparent 70%);
-  top: 50%; left: 50%; transform: translate(-50%, -60%); pointer-events: none;
-}
-.card {
-  position: relative; z-index: 10; background: var(--surface);
-  border: 1px solid var(--border); border-radius: 20px; padding: 2.5rem;
-  width: min(92vw, 460px); box-shadow: 0 40px 80px rgba(0,0,0,0.5);
-  animation: fadeUp 0.5s ease both;
-}
-@keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
-.logo { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.4rem; letter-spacing: -0.02em; margin-bottom: 0.3rem; }
-.logo em { font-style: normal; color: var(--accent); }
+/* Specific CSS for Signup */
+body { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 2rem 1rem; position: relative; }
+body::before { content: ''; position: fixed; inset: 0; background-image: linear-gradient(rgba(30,39,54,0.6) 1px, transparent 1px), linear-gradient(90deg, rgba(30,39,54,0.6) 1px, transparent 1px); background-size: 48px 48px; pointer-events: none; }
+.glow { position: fixed; width: 600px; height: 600px; background: radial-gradient(circle, rgba(0,229,255,0.07) 0%, transparent 70%); top: 50%; left: 50%; transform: translate(-50%, -60%); pointer-events: none; }
+.card { position: relative; z-index: 10; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 2.5rem; width: min(92vw, 460px); box-shadow: 0 40px 80px rgba(0,0,0,0.5); animation: fadeUp 0.5s ease both; }
 .card-title { font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 700; margin-top: 1.5rem; margin-bottom: 0.3rem; }
 .card-sub { font-size: 0.87rem; color: var(--muted2); margin-bottom: 2rem; }
-
 .fields-row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
-
-.field { margin-bottom: 1rem; }
-.field label { display: block; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.09em; color: var(--muted); font-weight: 500; margin-bottom: 0.4rem; }
-.field input, .field select {
-  width: 100%; background: var(--bg); border: 1px solid var(--border);
-  border-radius: 10px; padding: 0.75rem 1rem;
-  font-family: 'DM Sans', sans-serif; font-size: 0.92rem;
-  color: var(--text); outline: none; transition: border-color 0.2s;
-}
-.field input:focus, .field select:focus { border-color: var(--accent); }
-.field input::placeholder { color: var(--muted); }
-.field select option { background: var(--surface); }
-
-.password-strength { height: 3px; border-radius: 2px; margin-top: 0.4rem; background: var(--border); overflow: hidden; }
-.strength-bar { height: 100%; border-radius: 2px; transition: width 0.3s, background 0.3s; width: 0%; }
-
-.strength-label { font-size: 0.68rem; color: var(--muted); margin-top: 0.2rem; }
-
-.btn-primary {
-  width: 100%; padding: 0.85rem; background: var(--accent); border: none;
-  border-radius: 10px; font-family: 'DM Sans', sans-serif; font-size: 1rem;
-  font-weight: 500; color: #000; cursor: pointer; margin-top: 0.5rem;
-  transition: transform 0.15s, box-shadow 0.15s;
-}
-.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(0,229,255,0.25); }
-.btn-primary:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
-
 .cgu { font-size: 0.78rem; color: var(--muted); margin-top: 0.75rem; text-align: center; line-height: 1.5; }
 .cgu a { color: var(--accent); text-decoration: none; }
-
-.alert { padding: 0.75rem 1rem; border-radius: 8px; font-size: 0.85rem; margin-bottom: 1rem; display: none; }
-.alert.error { background: rgba(255,107,53,0.1); border: 1px solid rgba(255,107,53,0.3); color: var(--warn); display: flex; align-items: center; gap: 0.5rem; }
-.alert.success { background: rgba(34,211,160,0.1); border: 1px solid rgba(34,211,160,0.3); color: var(--ok); display: flex; align-items: center; gap: 0.5rem; }
-
 .card-footer { text-align: center; margin-top: 1.5rem; font-size: 0.85rem; color: var(--muted2); }
 .card-footer a { color: var(--accent); text-decoration: none; font-weight: 500; }
-
-.spinner { width: 16px; height: 16px; border: 2px solid rgba(0,0,0,0.3); border-top-color: #000; border-radius: 50%; animation: spin 0.6s linear infinite; display: inline-block; margin-right: 0.5rem; vertical-align: middle; }
-@keyframes spin { to { transform: rotate(360deg); } }
-
-/* Plan selector */
 .plan-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.6rem; margin-bottom: 1rem; }
 .plan-option { border: 1.5px solid var(--border); border-radius: 10px; padding: 0.8rem; cursor: pointer; transition: all 0.15s; }
 .plan-option:hover { border-color: var(--border2); }
@@ -105,48 +39,13 @@ body::before {
   <div class="alert" id="alert"></div>
 
   <div class="fields-row">
-    <div class="field">
-      <label>Prénom</label>
-      <input type="text" id="firstName" placeholder="Jean">
-    </div>
-    <div class="field">
-      <label>Nom</label>
-      <input type="text" id="lastName" placeholder="Dupont">
-    </div>
+    <div class="field"><label>Prénom</label><input type="text" id="firstName" placeholder="Jean"></div>
+    <div class="field"><label>Nom</label><input type="text" id="lastName" placeholder="Dupont"></div>
   </div>
 
-  <div class="field">
-    <label>Entreprise</label>
-    <input type="text" id="company" placeholder="Nom de votre entreprise">
-  </div>
-
-  <div class="field">
-    <label>Secteur</label>
-    <select id="sector">
-      <option value="">Sélectionnez votre secteur</option>
-      <option value="automobile">Automobile</option>
-      <option value="aeronautique">Aéronautique</option>
-      <option value="agroalimentaire">Agroalimentaire</option>
-      <option value="electronique">Électronique</option>
-      <option value="metallurgie">Métallurgie / Mécanique</option>
-      <option value="plasturgie">Plasturgie</option>
-      <option value="chimie">Chimie / Pharmacie</option>
-      <option value="logistique">Logistique</option>
-      <option value="autre">Autre</option>
-    </select>
-  </div>
-
-  <div class="field">
-    <label>Email professionnel</label>
-    <input type="email" id="email" placeholder="vous@entreprise.fr" autocomplete="email">
-  </div>
-
-  <div class="field">
-    <label>Mot de passe</label>
-    <input type="password" id="password" placeholder="8 caractères minimum" autocomplete="new-password" oninput="checkStrength(this.value)">
-    <div class="password-strength"><div class="strength-bar" id="strengthBar"></div></div>
-    <div class="strength-label" id="strengthLabel"></div>
-  </div>
+  <div class="field"><label>Entreprise</label><input type="text" id="company" placeholder="Nom de votre entreprise"></div>
+  <div class="field"><label>Email professionnel</label><input type="email" id="email" placeholder="vous@entreprise.fr" autocomplete="email"></div>
+  <div class="field"><label>Mot de passe</label><input type="password" id="password" placeholder="8 caractères minimum" autocomplete="new-password"></div>
 
   <div style="margin-bottom:1rem;">
     <div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--muted);font-weight:500;margin-bottom:0.6rem;">Plan</div>
@@ -166,88 +65,53 @@ body::before {
 
   <button class="btn-primary" id="signupBtn" onclick="signup()">Créer mon compte</button>
 
-  <div class="cgu">En créant un compte, vous acceptez nos <a href="#">Conditions d'utilisation</a> et notre <a href="#">Politique de confidentialité</a>.</div>
-
-  <div class="card-footer">
-    Déjà un compte ? <a href="/login">Se connecter</a>
-  </div>
+  <div class="cgu">En créant un compte, vous acceptez nos <a href="#">Conditions d'utilisation</a>.</div>
+  <div class="card-footer">Déjà un compte ? <a href="/login">Se connecter</a></div>
 </div>
 
-<script>
-const SUPABASE_URL = 'https://tjgpmdsaorhoshkprecc.supabase.co';
-const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRqZ3BtZHNhb3Job3Noa3ByZWNjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc0MDI4MTMsImV4cCI6MjA5Mjk3ODgxM30.ZpLeIKRHx46kq41AzRKnydmz-3U61-5kdM1ZVj-29H8';
-const { createClient } = supabase;
-const supabaseClient = createClient(SUPABASE_URL, SUPABASE_KEY);
+<script type="module">
+  import { supabaseClient } from '/js/supabase-client.js';
 
-// Plan selection
-document.querySelectorAll('.plan-option').forEach(el => {
-  el.addEventListener('click', () => {
-    document.querySelectorAll('.plan-option').forEach(p => p.classList.remove('selected'));
-    el.classList.add('selected');
-  });
-});
-
-function checkStrength(pw) {
-  const bar = document.getElementById('strengthBar');
-  const label = document.getElementById('strengthLabel');
-  let score = 0;
-  if (pw.length >= 8) score++;
-  if (/[A-Z]/.test(pw)) score++;
-  if (/[0-9]/.test(pw)) score++;
-  if (/[^A-Za-z0-9]/.test(pw)) score++;
-  const colors = ['#ff6b35','#ff6b35','#f59e0b','#22d3a0'];
-  const labels = ['','Faible','Moyen','Fort','Très fort'];
-  bar.style.width = (score * 25) + '%';
-  bar.style.background = colors[score-1] || 'transparent';
-  label.textContent = labels[score] || '';
-}
-
-function showAlert(msg, type) {
-  const el = document.getElementById('alert');
-  el.textContent = (type==='error' ? '⚠ ' : '✓ ') + msg;
-  el.className = 'alert ' + type;
-}
-
-async function signup() {
-  const firstName = document.getElementById('firstName').value.trim();
-  const lastName = document.getElementById('lastName').value.trim();
-  const company = document.getElementById('company').value.trim();
-  const sector = document.getElementById('sector').value;
-  const email = document.getElementById('email').value.trim();
-  const password = document.getElementById('password').value;
-  const plan = document.querySelector('input[name="plan"]:checked').value;
-  const btn = document.getElementById('signupBtn');
-
-  if (!firstName || !lastName || !email || !password) { showAlert('Veuillez remplir tous les champs obligatoires.', 'error'); return; }
-  if (password.length < 8) { showAlert('Le mot de passe doit contenir au moins 8 caractères.', 'error'); return; }
-
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span>Création du compte…';
-
-  const { data, error } = await supabaseClient.auth.signUp({
-    email, password,
-    options: {
-      data: { first_name: firstName, last_name: lastName, company, sector, plan }
-    }
+  // UI Selection Plan
+  document.querySelectorAll('.plan-option').forEach(el => {
+    el.addEventListener('click', () => {
+      document.querySelectorAll('.plan-option').forEach(p => p.classList.remove('selected'));
+      el.classList.add('selected');
+    });
   });
 
-  if (error) {
-    let msg = error.message;
-    if (msg.includes('already registered') || msg.includes('already been registered') || msg.includes('email address is already')) {
-      msg = 'Un compte existe déjà avec cet email. <a href="/login" style="color:var(--accent)">Connectez-vous</a>';
+  window.signup = async function() {
+    const firstName = document.getElementById('firstName').value.trim();
+    const lastName = document.getElementById('lastName').value.trim();
+    const company = document.getElementById('company').value.trim();
+    const email = document.getElementById('email').value.trim();
+    const password = document.getElementById('password').value;
+    const plan = document.querySelector('input[name="plan"]:checked').value;
+    const btn = document.getElementById('signupBtn');
+    const alertEl = document.getElementById('alert');
+
+    if (!firstName || !lastName || !email || !password) { 
+      alertEl.textContent = '⚠ Remplissez tous les champs.'; alertEl.className = 'alert error'; alertEl.style.display = 'flex'; return; 
     }
-    const el = document.getElementById('alert');
-    el.innerHTML = '⚠ ' + msg;
-    el.className = 'alert error';
-    btn.disabled = false; btn.textContent = 'Créer mon compte';
-  } else {
-    showAlert('Compte créé ! Vérifiez votre email pour confirmer votre inscription.', 'success');
-    btn.textContent = '✓ Email de confirmation envoyé';
-    setTimeout(() => window.location.href = '/login', 3000);
+
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span>Création…';
+
+    const { error } = await supabaseClient.auth.signUp({
+      email, password,
+      options: { data: { first_name: firstName, last_name: lastName, company, plan } }
+    });
+
+    if (error) {
+      alertEl.innerHTML = '⚠ Erreur : ' + error.message; alertEl.className = 'alert error'; alertEl.style.display = 'flex';
+      btn.disabled = false; btn.textContent = 'Créer mon compte';
+    } else {
+      alertEl.textContent = '✓ Compte créé ! Redirection...'; alertEl.className = 'alert success'; alertEl.style.display = 'flex';
+      setTimeout(() => window.location.href = '/login', 2000);
+    }
   }
-}
 
-document.addEventListener('keydown', e => { if (e.key === 'Enter') signup(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Enter') signup(); });
 </script>
 </body>
 </html>
