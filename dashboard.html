@@ -105,7 +105,7 @@
     <a href="/editor" class="nav-item"><span class="nav-icon">〰</span> Éditeur</a>
     <div class="nav-section-label">Compte</div>
     <a href="/account" class="nav-item"><span class="nav-icon">⚙</span> Paramètres</a>
-    <a id="logoutBtn" class="nav-item" style="color:var(--warn)"><span class="nav-icon">↪</span> Déconnexion</a>
+    <a id="logoutBtn" class="nav-item" style="color:var(--warn); cursor:pointer;"><span class="nav-icon">↪</span> Déconnexion</a>
   </nav>
   <div class="sidebar-user" onclick="window.location.href='/account'">
     <div class="user-avatar" id="userAvatar">…</div>
@@ -202,8 +202,10 @@
     selectTemplate('blank'); // Reset
   }
 
-  window.closeModal = function(force = false) {
-    if (force || event.target === document.getElementById('modal')) {
+  window.closeModal = function(e) {
+    // Ferme si on clique explicitement sur le bouton Annuler (e === true)
+    // OU si l'élément cliqué est strictement l'overlay gris (e.target === modal)
+    if (e === true || (e && e.target === document.getElementById('modal'))) {
       document.getElementById('modal').classList.remove('open');
     }
   }
@@ -220,22 +222,22 @@
     pickpack: {
       takt_time_cible: 30, // 30s par colis
       nodes: [
-        { id: 1, type: "work", label: "Réception & Tri", x: 40, y: 150, cycle: 25, ops: 1, capacity: 480, vsm: "va", mos: { tasks: [], nc: [] } },
-        { id: 2, type: "stock", label: "Zone Tampon", x: 260, y: 150, qty: 150, vsm: "nva", mos: { tasks: [], nc: [] } },
-        { id: 3, type: "work", label: "Picking", x: 480, y: 150, cycle: 45, ops: 2, capacity: 480, vsm: "va", mos: { tasks: [], nc: [] } },
-        { id: 4, type: "work", label: "Packing (Emballage)", x: 700, y: 150, cycle: 38, ops: 2, capacity: 480, vsm: "va", mos: { tasks: [], nc: [] } },
-        { id: 5, type: "work", label: "Expédition", x: 920, y: 150, cycle: 15, ops: 1, capacity: 480, vsm: "va", mos: { tasks: [], nc: [] } }
+        { id: 1, type: "work", label: "Réception & Tri", x: 40, y: 150, cycle: 25, ops: 1, capacity: 480, vsm: "va", mos: { processName:'', author:'', taktTime:null, nbPieces:1, tasks: [], nc: [] } },
+        { id: 2, type: "stock", label: "Zone Tampon", x: 260, y: 150, qty: 150, vsm: "nva", mos: { processName:'', author:'', taktTime:null, nbPieces:1, tasks: [], nc: [] } },
+        { id: 3, type: "work", label: "Picking", x: 480, y: 150, cycle: 45, ops: 2, capacity: 480, vsm: "va", mos: { processName:'', author:'', taktTime:null, nbPieces:1, tasks: [], nc: [] } },
+        { id: 4, type: "work", label: "Packing (Emballage)", x: 700, y: 150, cycle: 38, ops: 2, capacity: 480, vsm: "va", mos: { processName:'', author:'', taktTime:null, nbPieces:1, tasks: [], nc: [] } },
+        { id: 5, type: "work", label: "Expédition", x: 920, y: 150, cycle: 15, ops: 1, capacity: 480, vsm: "va", mos: { processName:'', author:'', taktTime:null, nbPieces:1, tasks: [], nc: [] } }
       ],
       connections: [ { from: 1, to: 2 }, { from: 2, to: 3 }, { from: 3, to: 4 }, { from: 4, to: 5 } ]
     },
     usinage: {
       takt_time_cible: 120, // 2 minutes par pièce
       nodes: [
-        { id: 1, type: "work", label: "Scie (Débit)", x: 40, y: 150, cycle: 45, ops: 1, capacity: 480, vsm: "va", mos: { tasks: [], nc: [] } },
-        { id: 2, type: "stock", label: "Encours Brut", x: 260, y: 150, qty: 50, vsm: "nva", mos: { tasks: [], nc: [] } },
-        { id: 3, type: "work", label: "Tournage CNC", x: 480, y: 150, cycle: 180, ops: 1, capacity: 480, vsm: "va", mos: { tasks: [], nc: [] } },
-        { id: 4, type: "work", label: "Fraisage", x: 700, y: 150, cycle: 140, ops: 1, capacity: 480, vsm: "va", mos: { tasks: [], nc: [] } },
-        { id: 5, type: "control", label: "Contrôle Qualité", x: 920, y: 150, cycle: 60, ops: 1, capacity: 480, vsm: "nva", mos: { tasks: [], nc: [] } }
+        { id: 1, type: "work", label: "Scie (Débit)", x: 40, y: 150, cycle: 45, ops: 1, capacity: 480, vsm: "va", mos: { processName:'', author:'', taktTime:null, nbPieces:1, tasks: [], nc: [] } },
+        { id: 2, type: "stock", label: "Encours Brut", x: 260, y: 150, qty: 50, vsm: "nva", mos: { processName:'', author:'', taktTime:null, nbPieces:1, tasks: [], nc: [] } },
+        { id: 3, type: "work", label: "Tournage CNC", x: 480, y: 150, cycle: 180, ops: 1, capacity: 480, vsm: "va", mos: { processName:'', author:'', taktTime:null, nbPieces:1, tasks: [], nc: [] } },
+        { id: 4, type: "work", label: "Fraisage", x: 700, y: 150, cycle: 140, ops: 1, capacity: 480, vsm: "va", mos: { processName:'', author:'', taktTime:null, nbPieces:1, tasks: [], nc: [] } },
+        { id: 5, type: "control", label: "Contrôle Qualité", x: 920, y: 150, cycle: 60, ops: 1, capacity: 480, vsm: "nva", mos: { processName:'', author:'', taktTime:null, nbPieces:1, tasks: [], nc: [] } }
       ],
       connections: [ { from: 1, to: 2 }, { from: 2, to: 3 }, { from: 3, to: 4 }, { from: 4, to: 5 } ]
     }
