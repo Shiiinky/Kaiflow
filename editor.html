@@ -66,7 +66,7 @@ html, body { height: 100%; overflow: hidden; display: flex; flex-direction: colu
 .canvas-hint-icon { font-size: 2.5rem; opacity: 0.2; margin-bottom: 0.75rem; }
 
 /* FLOW NODES */
-.flow-node { position: absolute; min-width: 150px; background: var(--surface); border: 1.5px solid var(--border); border-radius: 10px; cursor: move; user-select: none; transition: box-shadow 0.15s, border-color 0.15s, transform 0.15s; z-index: 10; touch-action: none; }
+.flow-node { position: absolute; min-width: 160px; background: var(--surface); border: 1.5px solid var(--border); border-radius: 10px; cursor: move; user-select: none; transition: box-shadow 0.15s, border-color 0.15s, transform 0.15s; z-index: 10; touch-action: none; }
 .flow-node:hover { border-color: var(--border2); box-shadow: 0 8px 30px rgba(0,0,0,0.4); }
 .flow-node.selected { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,229,255,0.12), 0 8px 30px rgba(0,0,0,0.4); z-index: 20; }
 .flow-node.bottleneck { border-color: var(--warn); box-shadow: 0 0 0 3px rgba(255,107,53,0.12); }
@@ -241,6 +241,7 @@ html, body { height: 100%; overflow: hidden; display: flex; flex-direction: colu
 </head>
 <body>
 
+<!-- TOPBAR -->
 <header class="topbar">
   <a href="/dashboard" class="logo-mark" style="text-decoration:none; color:inherit;">Kai<em>flow</em></a>
   <div class="topbar-sep"></div>
@@ -261,6 +262,7 @@ html, body { height: 100%; overflow: hidden; display: flex; flex-direction: colu
 
 <div class="editor-layout">
 
+  <!-- LEFT PANEL -->
   <div class="blocks-panel">
     <div class="panel-section">
       <div class="panel-section-title">Blocs</div>
@@ -306,6 +308,7 @@ html, body { height: 100%; overflow: hidden; display: flex; flex-direction: colu
     </div>
   </div>
 
+  <!-- CANVAS -->
   <div class="canvas-area">
     <div class="canvas-toolbar">
       <button class="tool-btn" title="Zoom +" onclick="zoom(1.15)">＋</button>
@@ -325,6 +328,7 @@ html, body { height: 100%; overflow: hidden; display: flex; flex-direction: colu
       </div>
     </div>
 
+    <!-- YAMAZUMI PANEL (Équilibrage) -->
     <div class="yamazumi-panel" id="yamazumiPanel">
       <div class="yamazumi-header">
         <div>
@@ -337,9 +341,11 @@ html, body { height: 100%; overflow: hidden; display: flex; flex-direction: colu
         </div>
       </div>
       <div class="yamazumi-body" id="yChart">
-        </div>
+        <!-- Le graphique est rendu ici par JS -->
+      </div>
     </div>
 
+    <!-- KPI BAR -->
     <div class="kpi-bar" id="kpiBar">
       <div class="kpi-item"><div class="kpi-label">Takt Time Net</div><div class="kpi-value neutral" id="kpiTakt">—</div><div class="kpi-sub">Calculé globalement</div></div>
       <div class="kpi-item"><div class="kpi-label">Temps cycle max</div><div class="kpi-value neutral" id="kpiCycle">—</div><div class="kpi-sub" id="kpiCycleSub">poste le plus lent</div></div>
@@ -356,6 +362,7 @@ html, body { height: 100%; overflow: hidden; display: flex; flex-direction: colu
     </div>
   </div>
 
+  <!-- RIGHT PANEL -->
   <div class="props-panel">
     <div class="props-header"><div class="props-title">Propriétés</div><div class="props-subtitle" id="propsSubtitle">Sélectionnez un bloc</div></div>
     
@@ -364,8 +371,12 @@ html, body { height: 100%; overflow: hidden; display: flex; flex-direction: colu
     <div class="props-form" id="propsForm">
       <div class="prop-field"><label class="prop-label">Nom</label><input class="prop-input" id="propName" type="text" placeholder="ex: Assemblage"></div>
             
-      <div class="prop-field" id="pfCycle"><label class="prop-label">Temps de cycle (s)</label><input class="prop-input" id="propCycle" type="number" placeholder="ex: 45"></div>
-      <div class="prop-field" id="pfOps"><label class="prop-label">Nb. opérateurs</label><input class="prop-input" id="propOps" type="number" placeholder="1" min="1"></div>
+      <div class="prop-field" id="pfCycle"><label class="prop-label">Temps de cycle brut (s)</label><input class="prop-input" id="propCycle" type="number" placeholder="ex: 45"></div>
+      
+      <!-- NOUVEAU CHAMP : Nombre d'équipements en parallèle -->
+      <div class="prop-field" id="pfMachines"><label class="prop-label">Nb. équipements (en //)</label><input class="prop-input" id="propMachines" type="number" placeholder="1" min="1"></div>
+      
+      <div class="prop-field" id="pfOps"><label class="prop-label">Nb. opérateurs (main d'œuvre)</label><input class="prop-input" id="propOps" type="number" placeholder="1" min="1"></div>
       <div class="prop-field" id="pfCapacity"><label class="prop-label">Capacité dispo (s)</label><input class="prop-input" id="propCapacity" type="number" placeholder="ex: 480"></div>
       
       <div class="prop-field" id="pfType">
@@ -387,6 +398,7 @@ html, body { height: 100%; overflow: hidden; display: flex; flex-direction: colu
 
 </div>
 
+<!-- ─── MOS MODAL ──────────────────────────────────────────────────────────── -->
 <div class="mos-overlay" id="mosOverlay">
   <div class="modal">
     <div class="mos-header">
@@ -397,6 +409,7 @@ html, body { height: 100%; overflow: hidden; display: flex; flex-direction: colu
       <button class="mos-close" onclick="closeMOS()">✕</button>
     </div>
 
+    <!-- CHRONO PANEL -->
     <div class="mos-body" style="padding-bottom: 0;">
       <div class="chrono-panel">
         <div id="chronoDisplay">00:00.0</div>
@@ -456,6 +469,7 @@ html, body { height: 100%; overflow: hidden; display: flex; flex-direction: colu
   </div>
 </div>
 
+<!-- MODAL PARAMÈTRES GLOBAUX -->
 <div class="mos-overlay" id="globalSettingsOverlay">
   <div class="modal" style="width: 450px;">
     <div class="modal-title">Paramètres de la ligne</div>
@@ -506,10 +520,10 @@ const svg = document.getElementById('connectionsSvg');
 const drawingSvg = document.getElementById('drawingLine');
 
 const BLOCK_CONFIG = {
-  work: { icon: '🔧', label: 'Poste de travail', color: 'work', hasTime: true, hasOps: true, hasMOS: true },
-  stock: { icon: '📦', label: 'Stock', color: 'stock', hasTime: false, hasOps: false, hasMOS: false, hasQty: true },
-  transport: { icon: '🚚', label: 'Transport', color: 'transport', hasTime: true, hasOps: false, hasMOS: false, hasDist: true },
-  control: { icon: '✅', label: 'Contrôle qualité', color: 'control', hasTime: true, hasOps: true, hasMOS: true },
+  work: { icon: '🔧', label: 'Poste de travail', color: 'work', hasTime: true, hasOps: true, hasMachines: true, hasMOS: true },
+  stock: { icon: '📦', label: 'Stock', color: 'stock', hasTime: false, hasOps: false, hasMachines: false, hasMOS: false, hasQty: true },
+  transport: { icon: '🚚', label: 'Transport', color: 'transport', hasTime: true, hasOps: false, hasMachines: false, hasMOS: false, hasDist: true },
+  control: { icon: '✅', label: 'Contrôle qualité', color: 'control', hasTime: true, hasOps: true, hasMachines: true, hasMOS: true },
 };
 
 // ─── RACCROCHAGE GLOBAL ───────────────────────────────────────────────────────
@@ -566,19 +580,20 @@ function resetChrono() {
   document.getElementById('chronoLapBtn').disabled = true;
 }
 
-// ─── GESTION YAMAZUMI ET GROUPES PARALLÈLES ───────────────────────────────────
+// ─── GESTION YAMAZUMI (Rétablie sur les noeuds simples) ───────────────────────
 function toggleYamazumi() {
   const panel = document.getElementById('yamazumiPanel');
   isYamazumiOpen = !isYamazumiOpen;
-  if (isYamazumiOpen) { panel.classList.add('open'); updateKPIs(); } // updateKPIs force le rendu
+  if (isYamazumiOpen) { panel.classList.add('open'); updateKPIs(); }
   else { panel.classList.remove('open'); }
 }
 
-function renderYamazumi(groups) {
+function renderYamazumi() {
   if (!isYamazumiOpen) return;
+  const workNodes = nodes.filter(n => n.type === 'work' || n.type === 'control');
   const chartEl = document.getElementById('yChart');
   
-  if (!groups || Object.keys(groups).length === 0) {
+  if (workNodes.length === 0) {
     chartEl.innerHTML = '<div style="margin:auto;color:var(--muted)">Aucun poste de travail à équilibrer sur le flux.</div>';
     document.getElementById('yFTE').textContent = '— opérateurs';
     return;
@@ -588,30 +603,25 @@ function renderYamazumi(groups) {
   let sumCycle = 0;
   let maxCycle = takt;
 
-  const barsData = [];
-  for (const sig in groups) {
-    const g = groups[sig];
-    sumCycle += g.eqCycle;
-    if (g.eqCycle > maxCycle) maxCycle = g.eqCycle;
-    
-    const firstNode = nodes.find(n => n.id === g.ids[0]);
+  const barsData = workNodes.map(n => {
+    const c = getEffectiveCycle(n);
+    sumCycle += c;
+    if (c > maxCycle) maxCycle = c;
     let va = 0, nva = 0;
-    const origC = getEffectiveCycle(firstNode);
-    if (origC > 0) {
-      if (firstNode.mos && firstNode.mos.tasks.length > 0) {
-        let rVa = 0, rNva = 0;
-        firstNode.mos.tasks.forEach(t => {
-          const tt = (parseFloat(t.manual)||0) + (parseFloat(t.move)||0) + (parseFloat(t.wait)||0);
-          if (t.vsm === 'va') rVa += tt; else rNva += tt;
-        });
-        va = (rVa / origC) * g.eqCycle;
-        nva = (rNva / origC) * g.eqCycle;
-      } else {
-        if (firstNode.vsm === 'va') va = g.eqCycle; else nva = g.eqCycle;
-      }
+    
+    if (n.mos && n.mos.tasks.length > 0) {
+      let rVa = 0, rNva = 0;
+      const rawC = n.mos.tasks.reduce((s,t) => s + (parseFloat(t.manual)||0) + (parseFloat(t.move)||0) + (parseFloat(t.wait)||0),0);
+      n.mos.tasks.forEach(t => {
+        const tt = (parseFloat(t.manual)||0) + (parseFloat(t.move)||0) + (parseFloat(t.wait)||0);
+        if (t.vsm === 'va') rVa += tt; else rNva += tt;
+      });
+      if (rawC > 0) { va = (rVa / rawC) * c; nva = (rNva / rawC) * c; }
+    } else {
+      if (n.vsm === 'va') va = c; else nva = c;
     }
-    barsData.push({ label: g.label, cycle: g.eqCycle, va, nva });
-  }
+    return { label: n.label, cycle: c, va, nva };
+  });
 
   const fte = takt > 0 ? (sumCycle / takt).toFixed(1) : 0;
   document.getElementById('yFTE').innerHTML = `Effectif théorique cible : <strong style="color:var(--accent); font-size:1.1rem;">${fte} opérateurs</strong>`;
@@ -741,13 +751,13 @@ canvas.addEventListener('pointermove', e => {
 // ─── GESTION DES NOEUDS ───────────────────────────────────────────────────────
 function addNode(type, label, x, y) {
   const id = ++nodeCounter;
-  const node = { id, type, label, x, y, cycle: null, ops: 1, capacity: 480, qty: null, stockMax: null, dist: null, vsm: type==='stock'||type==='transport'?'nva':'va', mos: { processName:'', author:'', taktTime:null, nbPieces:1, tasks:[], nc:[] } };
+  const node = { id, type, label, x, y, cycle: null, ops: 1, machines: 1, capacity: 480, qty: null, stockMax: null, dist: null, vsm: type==='stock'||type==='transport'?'nva':'va', mos: { processName:'', author:'', taktTime:null, nbPieces:1, tasks:[], nc:[] } };
   nodes.push(node); renderNode(node); updateKPIs(); return node;
 }
 
 function renderNode(node) {
   const el = document.createElement('div');
-  el.className = 'flow-node'; el.id = `node-${node.id}`; el.style.left = node.x+'px'; el.style.top = node.y+'px'; el.style.width = '155px';
+  el.className = 'flow-node'; el.id = `node-${node.id}`; el.style.left = node.x+'px'; el.style.top = node.y+'px';
   el.innerHTML = buildNodeHTML(node); bindNodeEvents(el, node); canvas.appendChild(el);
 }
 
@@ -787,11 +797,15 @@ function bindNodeEvents(el, node) {
 
 function buildNodeHTML(node) {
   const config = BLOCK_CONFIG[node.type];
-  const cycleVal = getEffectiveCycle(node), mosTaskCount = node.mos.tasks.filter(t=>t.desc).length, vaPercent = getNodeVAPercent(node);
+  const cycleVal = getEffectiveCycle(node);
+  const mosTaskCount = node.mos.tasks.filter(t=>t.desc).length;
+  const vaPercent = getNodeVAPercent(node);
+  const machHtml = (node.machines && node.machines > 1) ? `<span style="color:var(--accent); font-size:0.65rem;"> (x${node.machines})</span>` : '';
+
   return `
-    <div class="node-header"><div class="node-type-icon ${config.color}">${config.icon}</div><div class="node-label">${node.label}</div><span class="node-alert" id="alert-${node.id}" style="display:none">⚠</span></div>
+    <div class="node-header"><div class="node-type-icon ${config.color}">${config.icon}</div><div class="node-label">${node.label}${machHtml}</div><span class="node-alert" id="alert-${node.id}" style="display:none">⚠</span></div>
     <div class="node-body">
-      ${cycleVal ? `<div class="node-field"><span class="node-field-label">Temps cycle</span><span class="node-field-val neutral">${cycleVal}s</span></div>` : `<div class="node-field"><span class="node-field-label">Temps cycle</span><span class="node-field-val neutral">—</span></div>`}
+      ${cycleVal ? `<div class="node-field"><span class="node-field-label">Temps eq.</span><span class="node-field-val neutral">${cycleVal}s</span></div>` : `<div class="node-field"><span class="node-field-label">Temps eq.</span><span class="node-field-val neutral">—</span></div>`}
       ${config.hasOps ? `<div class="node-field"><span class="node-field-label">Opérateurs</span><span class="node-field-val neutral">${node.ops}</span></div>` : ''}
       ${node.type==='stock'&&node.qty!==null ? `<div class="node-field"><span class="node-field-label">Stock</span><span class="node-field-val ${node.stockMax&&node.qty>node.stockMax?'warn':'ok'}">${node.qty} pcs</span></div>` : ''}
       ${config.hasMOS && mosTaskCount>0 ? `<div class="node-field"><span class="node-field-label">MOS</span><span class="node-field-val accent">${mosTaskCount} tâches</span></div>` : ''}
@@ -810,11 +824,15 @@ function refreshNodeDisplay(nodeId) {
 
 function getEffectiveCycle(node) {
   if (!node) return 0;
+  let rawCycle = node.cycle || 0;
+  
   if (node.mos && node.mos.tasks.length > 0) {
     const sum = node.mos.tasks.reduce((s,t) => s + (parseFloat(t.manual)||0) + (parseFloat(t.move)||0) + (parseFloat(t.wait)||0),0);
-    if (sum > 0) return Math.round(sum);
+    if (sum > 0) rawCycle = sum;
   }
-  return node.cycle || 0;
+  
+  const mach = parseInt(node.machines) || 1;
+  return Math.round(rawCycle / mach);
 }
 
 function getNodeVAPercent(node) {
@@ -855,9 +873,12 @@ function showProps(id) {
   const config=BLOCK_CONFIG[node.type];
   document.getElementById('propsEmpty').style.display='none'; document.getElementById('propsForm').classList.add('visible');
   document.getElementById('propsSubtitle').textContent=config.label;
-  ['Name','Cycle','Ops','Capacity','Qty','StockMax','Dist'].forEach(k => document.getElementById(`prop${k}`).value = node[k.toLowerCase()]||'');
+  ['Name','Cycle','Ops','Capacity','Qty','StockMax','Dist','Machines'].forEach(k => document.getElementById(`prop${k}`) ? document.getElementById(`prop${k}`).value = node[k.toLowerCase()]||'' : null);
   document.getElementById('propName').value = node.label; document.getElementById('propVSM').value = node.vsm||'va';
+  document.getElementById('propMachines').value = node.machines || 1;
+
   document.getElementById('pfCycle').style.display=config.hasTime?'block':'none';
+  document.getElementById('pfMachines').style.display=config.hasMachines?'block':'none';
   document.getElementById('pfOps').style.display=config.hasOps?'block':'none';
   document.getElementById('pfCapacity').style.display=config.hasTime?'block':'none';
   document.getElementById('pfQty').style.display=config.hasQty?'block':'none';
@@ -866,12 +887,13 @@ function showProps(id) {
   document.getElementById('openMosBtn').style.display=config.hasMOS?'block':'none';
 }
 
-['propName','propCycle','propOps','propCapacity','propVSM','propQty','propStockMax','propDist'].forEach(id => {
+['propName','propCycle','propOps','propMachines','propCapacity','propVSM','propQty','propStockMax','propDist'].forEach(id => {
   document.getElementById(id)?.addEventListener('input', () => {
     if(!selectedNodeId) return; const node=nodes.find(n=>n.id===selectedNodeId); if(!node) return;
     node.label = document.getElementById('propName').value||node.label;
     node.cycle = parseFloat(document.getElementById('propCycle').value)||null;
     node.ops = parseInt(document.getElementById('propOps').value)||1;
+    node.machines = parseInt(document.getElementById('propMachines').value)||1;
     node.capacity = parseFloat(document.getElementById('propCapacity').value)||480;
     node.vsm = document.getElementById('propVSM').value;
     node.qty = parseFloat(document.getElementById('propQty').value)||null;
@@ -933,45 +955,22 @@ function calculateCriticalPathLeadTime(cadence) {
   return maxLeadTime;
 }
 
-// ─── ANALYSE DES GLOULOTS ET GROUPES PARALLÈLES ───
+// ─── ANALYSE STANDARD (SOUS-ASSEMBLAGES) ───
 function updateKPIs() {
   document.getElementById('kpiPostes').textContent = nodes.length;
   
-  // 1. DÉTECTION DES GROUPES EN PARALLÈLE
   const workNodes = nodes.filter(n=>n.type==='work'||n.type==='control');
-  const groups = {};
-  
-  workNodes.forEach(n => {
-    const c = getEffectiveCycle(n);
-    if (c === 0) return;
-    
-    // Signature unique = [Entrées] | [Sorties]
-    const preds = connections.filter(conn => conn.to === n.id).map(conn => conn.from).sort().join(',');
-    const succs = connections.filter(conn => conn.from === n.id).map(conn => conn.to).sort().join(',');
-    const sig = `in:${preds}|out:${succs}`;
-    
-    if (!groups[sig]) groups[sig] = { ids: [], nodes: [], sumInverse: 0, label: n.label };
-    groups[sig].ids.push(n.id);
-    groups[sig].nodes.push(n);
-    groups[sig].sumInverse += (1 / c);
-  });
-
-  let maxCycle = 0;
-  let bottleneckGroup = null;
-
-  // Calcul du Cycle Équivalent pour chaque groupe
-  for (const sig in groups) {
-    const g = groups[sig];
-    g.eqCycle = Math.round(1 / g.sumInverse);
-    if (g.ids.length > 1) g.label = g.nodes[0].label + ' (+ ' + (g.ids.length - 1) + ' en //)';
-    
-    if (g.eqCycle > maxCycle) {
-      maxCycle = g.eqCycle;
-      bottleneckGroup = g;
-    }
-  }
+  const cycles = workNodes.map(n=>({node:n, cycle:getEffectiveCycle(n)})).filter(c=>c.cycle > 0);
   
   const takt = getGlobalTaktTime();
+  let maxCycle = 0, bottleneck = null;
+
+  if (cycles.length > 0) {
+    const maxCycleObj = cycles.reduce((a,b)=>b.cycle>a.cycle?b:a);
+    maxCycle = maxCycleObj.cycle;
+    bottleneck = maxCycleObj.node;
+  }
+  
   const cadenceReelle = Math.max(takt, maxCycle);
   const leadTime = calculateCriticalPathLeadTime(cadenceReelle);
   
@@ -1020,11 +1019,11 @@ function updateKPIs() {
     document.getElementById('kpiVA').className='kpi-value neutral'; 
   }
 
-  if (Object.keys(groups).length === 0) {
+  if (cycles.length === 0) {
     ['kpiTakt','kpiCycle','kpiBottleneck','kpiRendement','kpiCharge'].forEach(id=>{ document.getElementById(id).textContent='—'; document.getElementById(id).className='kpi-value neutral'; });
     document.getElementById('kpiBottleneckSub').innerHTML=''; 
     nodes.forEach(n=>{ document.getElementById(`node-${n.id}`)?.classList.remove('bottleneck'); document.getElementById(`alert-${n.id}`).style.display='none'; });
-    renderYamazumi(null);
+    renderYamazumi();
     return;
   }
   
@@ -1034,32 +1033,26 @@ function updateKPIs() {
   document.getElementById('kpiTakt').textContent = takt+'s'; 
   document.getElementById('kpiCycle').textContent = maxCycle+'s'; 
   document.getElementById('kpiCycle').className = 'kpi-value '+(isOk?'ok':'warn');
-  document.getElementById('kpiBottleneck').textContent = bottleneckGroup.label; 
+  document.getElementById('kpiBottleneck').textContent = bottleneck.label; 
   document.getElementById('kpiBottleneck').className = 'kpi-value '+(isOk?'ok':'warn');
   document.getElementById('kpiBottleneckSub').innerHTML = isOk?'<span style="color:var(--ok);font-size:0.6rem">✓ Dans les limites</span>':'<span class="kpi-alert-tag">⚠ Dépasse le takt net</span>';
   document.getElementById('kpiRendement').textContent = rendement+'%'; 
   document.getElementById('kpiRendement').className = 'kpi-value '+(rendement>=85?'ok':'warn');
   
-  // Taux de charge moyen basé sur le cycle équivalent des groupes
-  let sumCharge = 0, countCharge = 0;
-  for (const sig in groups) {
-    sumCharge += (groups[sig].eqCycle / takt) * 100;
-    countCharge++;
-  }
-  const avgCharge = sumCharge / countCharge;
-  
+  const avgCharge = cycles.reduce((s,c)=> s+(c.cycle/(c.node.capacity||480)*100),0)/cycles.length;
   document.getElementById('kpiCharge').textContent=Math.round(avgCharge)+'%'; 
   document.getElementById('kpiCharge').className='kpi-value '+(avgCharge>100?'warn':avgCharge>80?'ok':'neutral');
   
-  // Highlighting des blocs Goulots
+  // Highlighting du (ou des) bloc(s) Goulot(s)
   nodes.forEach(n=>{
-    const isBottleneck = bottleneckGroup.ids.includes(n.id) && !isOk;
+    const c = getEffectiveCycle(n);
+    const isBottleneck = (c === maxCycle && !isOk);
     document.getElementById(`node-${n.id}`)?.classList.toggle('bottleneck',isBottleneck);
     const alertEl=document.getElementById(`alert-${n.id}`); 
     if(alertEl) alertEl.style.display=isBottleneck?'inline':'none';
   });
 
-  renderYamazumi(groups);
+  renderYamazumi();
 }
 
 function zoom(factor) { scale=Math.min(2,Math.max(0.4,scale*factor)); canvas.style.backgroundSize=`${32*scale}px ${32*scale}px`; document.getElementById('zoomInfo').textContent=Math.round(scale*100)+'%'; nodes.forEach(n=>{const el=document.getElementById(`node-${n.id}`); if(el){el.style.left=n.x*scale+'px';el.style.top=n.y*scale+'px';el.style.transform=`scale(${scale})`;el.style.transformOrigin='top left';}}); renderConnections(); }
