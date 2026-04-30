@@ -16,12 +16,13 @@
   .logo-tag { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-top: 0.15rem; }
   .sidebar-nav { flex: 1; padding: 1.2rem 0.75rem; display: flex; flex-direction: column; gap: 0.2rem; }
   .nav-section-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); padding: 0.8rem 0.75rem 0.4rem; font-weight: 500; }
-  .nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.65rem 0.75rem; border-radius: 8px; cursor: pointer; color: var(--muted2); font-size: 0.88rem; text-decoration: none; position: relative; }
+  .nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.65rem 0.75rem; border-radius: 8px; cursor: pointer; color: var(--muted2); font-size: 0.88rem; text-decoration: none; position: relative; transition: all 0.15s;}
   .nav-item:hover { background: var(--surface2); color: var(--text); }
   .nav-item.active { background: rgba(0,229,255,0.08); color: var(--accent); font-weight: 500; }
   .nav-item.active::before { content: ''; position: absolute; left: 0; top: 20%; bottom: 20%; width: 2px; background: var(--accent); border-radius: 2px; }
   .nav-icon { font-size: 1rem; width: 20px; text-align: center; }
-  .sidebar-user { padding: 1rem 1.2rem; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 0.75rem; cursor: pointer; }
+  .sidebar-user { padding: 1rem 1.2rem; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 0.75rem; cursor: pointer; transition: background 0.15s;}
+  .sidebar-user:hover { background: var(--surface2); }
   .user-avatar { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), #0077aa); display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-weight: 700; color: #000; }
   .user-info { flex: 1; min-width: 0; }
   .user-name { font-size: 0.85rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -65,6 +66,30 @@
   .flux-body { padding: 1rem 1.2rem; }
   .flux-name { font-family: 'Syne', sans-serif; font-size: 0.95rem; font-weight: 700; }
   .flux-meta { font-size: 0.75rem; color: var(--muted); margin-top:0.2rem;}
+
+  /* MODAL STYLES (TEMPLATES) */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 200; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; backdrop-filter: blur(4px); }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal { background: var(--surface); border: 1px solid var(--border2); border-radius: 16px; padding: 2rem; width: 500px; transform: translateY(20px); transition: transform 0.2s; }
+  .modal-overlay.open .modal { transform: translateY(0); }
+  .modal-title { font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 700; margin-bottom: 0.4rem; }
+  .modal-sub { font-size: 0.88rem; color: var(--muted2); margin-bottom: 1.5rem; }
+  .modal-actions { display: flex; gap: 0.75rem; margin-top: 1.5rem; }
+  .modal-btn-cancel { flex: 1; padding: 0.75rem; background: transparent; border: 1px solid var(--border); border-radius: 8px; color: var(--muted2); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; cursor: pointer; transition: border-color 0.15s; }
+  .modal-btn-cancel:hover { border-color: var(--muted2); }
+  .modal-btn-create { flex: 2; padding: 0.75rem; background: var(--accent); border: none; border-radius: 8px; color: #000; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: transform 0.15s; }
+
+  /* Template Grid */
+  .template-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 0.5rem; }
+  .template-card { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; gap: 0.5rem; }
+  .template-card:hover { border-color: var(--border2); }
+  .template-card.selected { border-color: var(--accent); background: var(--accent-dim); box-shadow: 0 0 0 1px var(--accent); }
+  .template-icon { font-size: 1.5rem; }
+  .template-name { font-family: 'Syne', sans-serif; font-size: 0.85rem; font-weight: 700; }
+  .template-desc { font-size: 0.7rem; color: var(--muted); line-height: 1.4; }
+
+  .full-width-card { grid-column: 1 / -1; display: flex; flex-direction: row; align-items: center; }
+  .full-width-card .template-icon { margin-right: 1rem; margin-bottom: 0; }
 </style>
 </head>
 <body>
@@ -95,7 +120,7 @@
   <header class="topbar">
     <div class="topbar-title">Dashboard <span class="section-count" id="companyTitle">— vue d'ensemble</span></div>
     <div class="topbar-date" id="topbar-date"></div>
-    <button class="topbar-btn" onclick="window.location.href='/editor'">✚ Nouveau flux</button>
+    <button class="topbar-btn" onclick="openModal()">✚ Nouveau flux</button>
   </header>
 
   <div class="content">
@@ -120,30 +145,143 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="modal" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-title">Nouveau flux</div>
+    <div class="modal-sub">Démarrez de zéro ou gagnez du temps avec un modèle.</div>
+
+    <div class="field">
+      <label>Nom du flux</label>
+      <input type="text" id="newFluxName" placeholder="ex: Ligne Assemblage A">
+    </div>
+
+    <div class="field">
+      <label>Point de départ</label>
+      <div class="template-grid">
+        <div class="template-card full-width-card selected" data-template="blank" onclick="selectTemplate('blank')">
+          <div class="template-icon">📄</div>
+          <div>
+            <div class="template-name">Flux vierge</div>
+            <div class="template-desc">Démarrez avec une toile blanche.</div>
+          </div>
+        </div>
+        <div class="template-card" data-template="pickpack" onclick="selectTemplate('pickpack')">
+          <div class="template-icon">📦</div>
+          <div class="template-name">Pick & Pack</div>
+          <div class="template-desc">Logistique et expédition e-commerce.</div>
+        </div>
+        <div class="template-card" data-template="usinage" onclick="selectTemplate('usinage')">
+          <div class="template-icon">⚙️</div>
+          <div class="template-name">Usinage (Série)</div>
+          <div class="template-desc">Découpe, Tournage CNC et Fraisage.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="modal-btn-cancel" onclick="closeModal(true)">Annuler</button>
+      <button class="modal-btn-create" id="btnCreateFlux" onclick="createFlux()">Créer et modéliser →</button>
+    </div>
+  </div>
+</div>
+
 <script type="module">
   import { supabaseClient, requireAuth, logoutUser } from '/js/supabase-client.js';
 
-  // Rend accessible au HTML
   window.logout = logoutUser;
   document.getElementById('logoutBtn').addEventListener('click', logoutUser);
   document.getElementById('topbar-date').textContent = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
+  let currentUser = null;
+  let currentTemplate = 'blank';
+
+  // ─── GESTION MODALE & TEMPLATES ──────────────────────────────────────────────
+  window.openModal = function() {
+    document.getElementById('modal').classList.add('open');
+    document.getElementById('newFluxName').value = '';
+    selectTemplate('blank'); // Reset
+  }
+
+  window.closeModal = function(force = false) {
+    if (force || event.target === document.getElementById('modal')) {
+      document.getElementById('modal').classList.remove('open');
+    }
+  }
+
+  window.selectTemplate = function(templateId) {
+    currentTemplate = templateId;
+    document.querySelectorAll('.template-card').forEach(el => el.classList.remove('selected'));
+    document.querySelector(`.template-card[data-template="${templateId}"]`).classList.add('selected');
+  }
+
+  // Définition des bibliothèques de données pour les templates
+  const TEMPLATES_DATA = {
+    blank: { nodes: [], connections: [], takt_time_cible: null },
+    pickpack: {
+      takt_time_cible: 30, // 30s par colis
+      nodes: [
+        { id: 1, type: "work", label: "Réception & Tri", x: 40, y: 150, cycle: 25, ops: 1, capacity: 480, vsm: "va", mos: { tasks: [], nc: [] } },
+        { id: 2, type: "stock", label: "Zone Tampon", x: 260, y: 150, qty: 150, vsm: "nva", mos: { tasks: [], nc: [] } },
+        { id: 3, type: "work", label: "Picking", x: 480, y: 150, cycle: 45, ops: 2, capacity: 480, vsm: "va", mos: { tasks: [], nc: [] } },
+        { id: 4, type: "work", label: "Packing (Emballage)", x: 700, y: 150, cycle: 38, ops: 2, capacity: 480, vsm: "va", mos: { tasks: [], nc: [] } },
+        { id: 5, type: "work", label: "Expédition", x: 920, y: 150, cycle: 15, ops: 1, capacity: 480, vsm: "va", mos: { tasks: [], nc: [] } }
+      ],
+      connections: [ { from: 1, to: 2 }, { from: 2, to: 3 }, { from: 3, to: 4 }, { from: 4, to: 5 } ]
+    },
+    usinage: {
+      takt_time_cible: 120, // 2 minutes par pièce
+      nodes: [
+        { id: 1, type: "work", label: "Scie (Débit)", x: 40, y: 150, cycle: 45, ops: 1, capacity: 480, vsm: "va", mos: { tasks: [], nc: [] } },
+        { id: 2, type: "stock", label: "Encours Brut", x: 260, y: 150, qty: 50, vsm: "nva", mos: { tasks: [], nc: [] } },
+        { id: 3, type: "work", label: "Tournage CNC", x: 480, y: 150, cycle: 180, ops: 1, capacity: 480, vsm: "va", mos: { tasks: [], nc: [] } },
+        { id: 4, type: "work", label: "Fraisage", x: 700, y: 150, cycle: 140, ops: 1, capacity: 480, vsm: "va", mos: { tasks: [], nc: [] } },
+        { id: 5, type: "control", label: "Contrôle Qualité", x: 920, y: 150, cycle: 60, ops: 1, capacity: 480, vsm: "nva", mos: { tasks: [], nc: [] } }
+      ],
+      connections: [ { from: 1, to: 2 }, { from: 2, to: 3 }, { from: 3, to: 4 }, { from: 4, to: 5 } ]
+    }
+  };
+
+  window.createFlux = async function() {
+    if (!currentUser) return;
+    const btn = document.getElementById('btnCreateFlux');
+    btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Création…';
+
+    const nom = document.getElementById('newFluxName').value.trim() || 'Nouveau flux';
+    const templateData = TEMPLATES_DATA[currentTemplate];
+
+    const { data, error } = await supabaseClient.from('flux').insert({
+      user_id: currentUser.id,
+      nom: nom,
+      nodes: templateData.nodes,
+      connections: templateData.connections,
+      takt_time_cible: templateData.takt_time_cible
+    }).select('id').single();
+
+    if (error) {
+      alert("Erreur lors de la création : " + error.message);
+      btn.disabled = false; btn.textContent = 'Créer et modéliser →';
+    } else {
+      window.location.href = '/editor?id=' + data.id;
+    }
+  }
+
+  // ─── INITIALISATION DU DASHBOARD ─────────────────────────────────────────────
   async function init() {
-    const user = await requireAuth();
-    if(!user) return;
+    currentUser = await requireAuth();
+    if(!currentUser) return;
 
     // UI Setup
-    const meta = user.user_metadata || {};
-    document.getElementById('userName').textContent = (meta.first_name + ' ' + meta.last_name).trim() || user.email;
+    const meta = currentUser.user_metadata || {};
+    document.getElementById('userName').textContent = (meta.first_name + ' ' + meta.last_name).trim() || currentUser.email;
     document.getElementById('userAvatar').textContent = ((meta.first_name?.[0]||'') + (meta.last_name?.[0]||'')).toUpperCase() || 'U';
     document.getElementById('userRole').textContent = meta.company || 'Mon entreprise';
     document.getElementById('companyTitle').textContent = `— ${meta.company || 'Mon entreprise'}`;
 
     // Load Data
-    const { data } = await supabaseClient.from('flux').select('*').eq('user_id', user.id).order('updated_at', { ascending: false });
+    const { data } = await supabaseClient.from('flux').select('*').eq('user_id', currentUser.id).order('updated_at', { ascending: false });
     
     if(!data || data.length === 0) {
-      document.getElementById('fluxGrid').innerHTML = `<div class="flux-card" style="border-style:dashed;display:flex;align-items:center;justify-content:center;min-height:190px;grid-column:1/-1;" onclick="window.location.href='/editor'"><div style="text-align:center;color:var(--muted2);"><div style="font-size:2.5rem;">〰</div><div style="font-weight:600;">Aucun flux pour le moment</div><div style="font-size:0.8rem;margin-top:0.4rem;">Cliquez ici pour créer votre première cartographie</div></div></div>`;
+      document.getElementById('fluxGrid').innerHTML = `<div class="flux-card" style="border-style:dashed;display:flex;align-items:center;justify-content:center;min-height:190px;grid-column:1/-1;" onclick="openModal()"><div style="text-align:center;color:var(--muted2);"><div style="font-size:2.5rem;">✚</div><div style="font-weight:600;">Aucun flux pour le moment</div><div style="font-size:0.8rem;margin-top:0.4rem;">Cliquez ici pour créer votre première cartographie</div></div></div>`;
       document.getElementById('summaryFlux').textContent = '0';
       document.getElementById('summaryPostes').textContent = '0';
       return;
@@ -155,7 +293,6 @@
     const grid = document.getElementById('fluxGrid');
     
     grid.innerHTML = data.map(flux => {
-      // FIX DU BUG JSON.PARSE : On vérifie si c'est déjà un Array
       const nodes = Array.isArray(flux.nodes) ? flux.nodes : JSON.parse(flux.nodes || '[]');
       totalNodes += nodes.length;
 
@@ -171,6 +308,9 @@
         </div>
       `;
     }).join('');
+
+    // Nouvelle carte d'ajout rapide à la fin de la grille
+    grid.innerHTML += `<div class="flux-card" style="border-style:dashed;display:flex;align-items:center;justify-content:center;min-height:160px;opacity:0.5;transition:opacity 0.2s;" onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='0.5'" onclick="openModal()"><div style="text-align:center;color:var(--muted2);"><div style="font-size:2rem;margin-bottom:0.5rem">✚</div><div style="font-size:0.88rem;font-weight:500">Nouveau flux</div></div></div>`;
 
     document.getElementById('summaryPostes').textContent = totalNodes;
   }
