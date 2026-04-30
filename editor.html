@@ -499,21 +499,34 @@ function toggleChrono() {
 function lapChrono() {
   if (!isChronoRunning) return;
   const lapTimeMs = chronoElapsedTime - chronoLastLapTime; chronoLastLapTime = chronoElapsedTime;
-  const lapSecs = Math.round(lapTimeMs / 1000), node = nodes.find(n=>n.id===currentMOSNodeId);
+  const lapSecs = Math.round(lapTimeMs / 1000);
+  const node = nodes.find(n=>n.id===currentMOSNodeId);
   if(node) { node.mos.tasks.push({id: ++taskIdCounter, desc: `Tâche chrono #${node.mos.tasks.length + 1}`, manual: lapSecs, machine: '', move: '', wait: '', vsm: 'va'}); renderTasksList(node.mos.tasks); updateMOSCalcs(); markDirty(); }
 }
 function resetChrono() { clearInterval(chronoInterval); isChronoRunning = false; chronoElapsedTime = 0; chronoLastLapTime = 0; updateChronoDisplay(0); const btn = document.getElementById('chronoToggleBtn'); btn.innerHTML = '▶ Démarrer'; document.getElementById('chronoLapBtn').disabled = true; btn.style.color='var(--ok)'; btn.style.borderColor='var(--ok)'; btn.style.background='var(--ok-dim)';}
 
 // ─── EXPORT PDF ───
 async function exportPDF() {
-  const { jsPDF } = window.jspdf; const btn = document.getElementById('pdfBtn'); btn.disabled = true; btn.textContent = "Génération...";
-  const oldScale = scale; resetZoom(); 
-  const wasYOpen = isYamazumiOpen; if(wasYOpen) toggleYamazumi();
+  const { jsPDF } = window.jspdf; 
+  const btn = document.getElementById('pdfBtn'); 
+  btn.disabled = true; 
+  btn.textContent = "Génération...";
+  
+  const oldScale = scale; 
+  resetZoom(); 
+  
+  const wasYOpen = isYamazumiOpen; 
+  if(wasYOpen) toggleYamazumi();
 
   try {
+    // Petit délai pour laisser le temps à l'UI de respirer et de retirer le Yamazumi si ouvert
+    await new Promise(r => setTimeout(r, 300));
+
     const canvasScreenshot = await html2canvas(document.getElementById('canvas'), { backgroundColor: '#0a0d12', scale: 2 });
     const kpiScreenshot = await html2canvas(document.getElementById('kpiBar'), { backgroundColor: '#111620' });
-    const doc = new jsPDF('l', 'mm', 'a4'); const pageWidth = doc.internal.pageSize.getWidth();
+    
+    const doc = new jsPDF('l', 'mm', 'a4'); 
+    const pageWidth = doc.internal.pageSize.getWidth();
     
     doc.setFillColor(10, 13, 18); doc.rect(0, 0, pageWidth, 40, 'F');
     doc.setTextColor(0, 229, 255); doc.setFont("Helvetica", "bold"); doc.setFontSize(22);
@@ -524,7 +537,15 @@ async function exportPDF() {
     const fluxImg = canvasScreenshot.toDataURL("image/png"); doc.addImage(fluxImg, 'PNG', 10, 45, pageWidth - 20, 100);
     const kpiImg = kpiScreenshot.toDataURL("image/png"); doc.addImage(kpiImg, 'PNG', 10, 150, pageWidth - 20, 25);
     doc.save(`Kaiflow_Rapport_${document.getElementById('fluxTitle').value.replace(/\s+/g, '_')}.pdf`);
-  } catch (err) { console.error(err); alert("Erreur lors de la génération du PDF."); } finally { if(wasYOpen) toggleYamazumi(); zoom(oldScale); btn.disabled = false; btn.textContent = "📄 Rapport PDF"; }
+  } catch (err) { 
+    console.error(err); 
+    alert("Erreur lors de la génération du PDF."); 
+  } finally { 
+    if(wasYOpen) toggleYamazumi(); 
+    zoom(oldScale); 
+    btn.disabled = false; 
+    btn.textContent = "📄 Rapport PDF"; 
+  }
 }
 
 // ─── GESTION YAMAZUMI ───
@@ -623,7 +644,7 @@ function buildNodeHTML(node) {
   const machHtml = (node.machines && node.machines > 1) ? `<span style="color:var(--accent); font-size:0.65rem;"> (x${node.machines})</span>` : '';
   const trs = Math.round(( (node.dispo!==undefined?node.dispo:100) / 100) * (1 - (node.rebut!==undefined?node.rebut:0) / 100) * 100);
   const trsHtml = (trs < 100 && config.hasMachines) ? `<div style="font-size:0.65rem; color:var(--warn); margin-top:2px; font-weight:600; text-align:right;">TRS: ${trs}%</div>` : '';
-  return `<div class="node-header"><div class="node-type-icon ${config.color}">${config.icon}</div><div class="node-label">${node.label}${machHtml}</div><span class="node-alert" id="alert-${node.id}" style="display:none">⚠</span></div><div class="node-body">${cycleVal !== Infinity && cycleVal ? `<div class="node-field"><span class="node-field-label">T. utile</span><span class="node-field-val neutral">${cycleVal}s</span></div>` : `<div class="node-field"><span class="node-field-label">T. utile</span><span class="node-field-val neutral">—</span></div>`}${trsHtml}${config.hasOps ? `<div class="node-field" style="margin-top:4px;"><span class="node-field-label">Opérateurs</span><span class="node-field-val neutral">${node.ops}</span></div>` : ''}${node.type==='stock'&&node.qty!==null ? `<div class="node-field" style="margin-top:4px;"><span class="node-field-label">Stock</span><span class="node-field-val ${node.stockMax&&node.qty>node.stockMax?'warn':'ok'}">${node.qty} pcs</span></div>` : ''}${config.hasMOS && mosTaskCount>0 ? `<div class="node-field" style="margin-top:4px;"><span class="node-field-label">MOS</span><span class="node-field-val accent">${mosTaskCount} tâches</span></div>` : ''}${config.hasMOS ? `<button class="node-mos-btn" onclick="openMOSForNode(${node.id})">📋 MOS</button>` : ''}</div>${vaPercent!==null ? `<div class="node-vana-bar"><div class="vna-va" style="width:${vaPercent}%"></div><div class="vna-nva" style="width:${100-vaPercent}%"></div></div>` : ''}<div class="port port-in" id="port-in-${node.id}"></div><div class="port port-out" id="port-out-${node.id}"></div>`;
+  return `<div class="node-header"><div class="node-type-icon ${config.color}">${node.type==='work'?'🔧':node.type==='stock'?'📦':node.type==='transport'?'🚚':'✅'}</div><div class="node-label">${node.label}${machHtml}</div><span class="node-alert" id="alert-${node.id}" style="display:none">⚠</span></div><div class="node-body">${cycleVal !== Infinity && cycleVal ? `<div class="node-field"><span class="node-field-label">T. utile</span><span class="node-field-val neutral">${cycleVal}s</span></div>` : `<div class="node-field"><span class="node-field-label">T. utile</span><span class="node-field-val neutral">—</span></div>`}${trsHtml}${config.hasOps ? `<div class="node-field" style="margin-top:4px;"><span class="node-field-label">Opérateurs</span><span class="node-field-val neutral">${node.ops}</span></div>` : ''}${node.type==='stock'&&node.qty!==null ? `<div class="node-field" style="margin-top:4px;"><span class="node-field-label">Stock</span><span class="node-field-val ${node.stockMax&&node.qty>node.stockMax?'warn':'ok'}">${node.qty} pcs</span></div>` : ''}${config.hasMOS && mosTaskCount>0 ? `<div class="node-field" style="margin-top:4px;"><span class="node-field-label">MOS</span><span class="node-field-val accent">${mosTaskCount} tâches</span></div>` : ''}${config.hasMOS ? `<button class="node-mos-btn" onclick="openMOSForNode(${node.id})">📋 MOS</button>` : ''}</div>${vaPercent!==null ? `<div class="node-vana-bar"><div class="vna-va" style="width:${vaPercent}%"></div><div class="vna-nva" style="width:${100-vaPercent}%"></div></div>` : ''}<div class="port port-in" id="port-in-${node.id}"></div><div class="port port-out" id="port-out-${node.id}"></div>`;
 }
 function bindNodeEvents(el, node) {
   el.addEventListener('pointerdown', e => {
@@ -711,6 +732,7 @@ async function initEditor() {
       (Array.isArray(data.nodes) ? data.nodes : JSON.parse(data.nodes||'[]')).forEach(n => {
         const node = addNode(n.type, n.label, n.x, n.y);
         Object.assign(node, n);
+        if (n.id > nodeCounter) nodeCounter = n.id;
         if (n.mos) node.mos = n.mos;
         refreshNodeDisplay(node.id);
       });
