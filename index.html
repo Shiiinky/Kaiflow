@@ -68,6 +68,7 @@
   nav ul {
     display: flex; gap: 2.5rem;
     list-style: none;
+    align-items: center;
   }
   nav ul a {
     color: var(--muted);
@@ -77,6 +78,13 @@
     transition: color 0.2s;
   }
   nav ul a:hover { color: var(--text); }
+
+  /* Login Link Specific Style */
+  .nav-login {
+    color: var(--text);
+    font-weight: 500;
+    margin-left: 1rem;
+  }
 
   .nav-cta {
     background: var(--accent);
@@ -771,7 +779,7 @@
   /* RESPONSIVE */
   @media (max-width: 900px) {
     nav { padding: 1rem 1.5rem; }
-    nav ul { display: none; }
+    nav ul { display: none; } /* Les liens de nav disparaissent sur petit écran avec ce template */
     .hero { padding: 7rem 1.5rem 3rem; }
     .hero-visual { display: none; }
     h1 { font-size: 2.5rem; }
@@ -784,7 +792,6 @@
 </head>
 <body>
 
-<!-- NAV -->
 <nav>
   <div class="logo">Kai<span>flow</span></div>
   <ul>
@@ -792,11 +799,11 @@
     <li><a href="#how">Comment ça marche</a></li>
     <li><a href="#features">Fonctionnalités</a></li>
     <li><a href="#pricing">Tarifs</a></li>
+    <li><a href="/login" class="nav-login">Se connecter</a></li>
     <li><a href="/signup" class="nav-cta">Accès bêta</a></li>
   </ul>
 </nav>
 
-<!-- HERO -->
 <section class="hero">
   <div class="hero-grid"></div>
   <div class="hero-glow"></div>
@@ -830,7 +837,6 @@
     </div>
   </div>
 
-  <!-- MOCKUP -->
   <div class="hero-visual">
     <div class="mockup-card">
       <div class="mockup-bar">
@@ -888,7 +894,6 @@
   </div>
 </section>
 
-<!-- PROBLEMS -->
 <section class="problems" id="problems">
   <div class="section-tag reveal">Le problème</div>
   <h2 class="reveal">L'industrie mérite mieux qu'Excel</h2>
@@ -913,7 +918,6 @@
   </div>
 </section>
 
-<!-- HOW IT WORKS -->
 <section id="how">
   <div class="section-tag reveal">Comment ça marche</div>
   <h2 class="reveal">Modélisez en 3 étapes, pilotez en temps réel</h2>
@@ -943,7 +947,6 @@
   </div>
 </section>
 
-<!-- FEATURES -->
 <section class="features-bg" id="features">
   <div class="section-tag reveal">Fonctionnalités</div>
   <h2 class="reveal">Tout ce dont votre atelier a besoin</h2>
@@ -994,7 +997,6 @@
   </div>
 </section>
 
-<!-- PRICING -->
 <section id="pricing">
   <div class="section-tag reveal">Tarifs</div>
   <h2 class="reveal">Simple. Transparent. Sans surprise.</h2>
@@ -1045,7 +1047,6 @@
   </div>
 </section>
 
-<!-- CTA -->
 <section class="cta-section" id="cta">
   <div class="section-tag" style="text-align:center">Accès bêta</div>
   <h2 class="reveal">Rejoignez les premiers utilisateurs</h2>
@@ -1069,7 +1070,6 @@
   </script>
 </section>
 
-<!-- FOOTER -->
 <footer>
   <div class="logo">Kai<span style="color:var(--accent)">flow</span></div>
   <div>© 2025 Kaiflow — Tous droits réservés</div>
