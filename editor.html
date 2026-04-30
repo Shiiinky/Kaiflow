@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -6,8 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>Kaiflow — Éditeur</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <link rel="stylesheet" href="/css/globals.css">
 <style>
 /* CSS Spécifique à l'Éditeur */
@@ -110,6 +107,15 @@ html, body { height: 100%; overflow: hidden; display: flex; flex-direction: colu
 .kpi-value.accent { color: var(--accent); }
 .kpi-sub { font-size: 0.6rem; color: var(--muted); margin-top: 0.15rem; }
 .kpi-alert-tag { display: inline-flex; align-items: center; gap: 0.3rem; background: var(--warn-dim); color: var(--warn); font-size: 0.58rem; font-weight: 600; padding: 0.15rem 0.5rem; border-radius: 100px; margin-top: 0.15rem; border: 1px solid rgba(255,107,53,0.25); }
+
+/* TIME TYPE LEGEND */
+.time-legend { display: flex; align-items: center; gap: 0.8rem; padding: 0 1rem; border-right: 1px solid var(--border); }
+.legend-dot { display: flex; align-items: center; gap: 0.3rem; font-size: 0.6rem; color: var(--muted2); }
+.legend-dot::before { content: ''; width: 8px; height: 8px; border-radius: 2px; }
+.legend-dot.manual::before { background: var(--manual); }
+.legend-dot.machine::before { background: var(--machine); }
+.legend-dot.move::before { background: var(--move); }
+.legend-dot.wait::before { background: var(--wait); }
 
 /* RIGHT PANEL */
 .props-panel { width: 230px; background: var(--surface); border-left: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; overflow-y: auto; z-index: 55;}
@@ -248,7 +254,6 @@ html, body { height: 100%; overflow: hidden; display: flex; flex-direction: colu
   <div class="topbar-actions">
     <div class="save-status" id="saveStatus">Sauvegardé</div>
     <button class="tb-btn" onclick="toggleYamazumi()">📊 Équilibrage</button>
-    <button class="tb-btn" onclick="exportPDF()" id="pdfBtn">📄 Rapport PDF</button>
     <button class="tb-btn" onclick="openGlobalSettings()">⚙ Paramètres</button>
     <button class="tb-btn" style="color:var(--warn); border-color:var(--warn-dim);" onclick="deleteFlux()">🗑 Supprimer</button>
     <button class="tb-btn primary" onclick="saveFlux()">💾 Sauvegarder</button>
@@ -281,20 +286,32 @@ html, body { height: 100%; overflow: hidden; display: flex; flex-direction: colu
         <div><div class="block-name">Contrôle qualité</div><div class="block-desc">Inspection</div></div>
       </div>
       
-      <button id="linkModeBtn" class="tb-btn" onclick="toggleLinkMode()">🔗 Connecter des blocs</button>
+      <button id="linkModeBtn" class="tb-btn" onclick="toggleLinkMode()">
+        🔗 Connecter des blocs
+      </button>
+
     </div>
     
     <div class="panel-section">
       <div class="panel-section-title">Légende Canvas</div>
       <div style="display:flex;flex-direction:column;gap:0.6rem;padding:0 0.2rem;font-size:0.72rem;color:var(--muted);line-height:1.4;">
-        <div style="display:flex;align-items:center;gap:0.5rem;"><span style="width:14px;height:14px;border:2px solid var(--warn);border-radius:4px;box-shadow: 0 0 0 2px rgba(255,107,53,0.15);flex-shrink:0;"></span> <span><strong>Goulot</strong><br>Dépasse le Takt Time</span></div>
-        <div style="display:flex;align-items:center;gap:0.5rem;"><span style="width:14px;height:5px;background:var(--ok);border-radius:2px;flex-shrink:0;"></span> <span><strong>VA</strong><br>Valeur Ajoutée</span></div>
-        <div style="display:flex;align-items:center;gap:0.5rem;"><span style="width:14px;height:5px;background:var(--warn);border-radius:2px;flex-shrink:0;"></span> <span><strong>NVA</strong><br>Non Valeur Ajoutée</span></div>
+        <div style="display:flex;align-items:center;gap:0.5rem;">
+          <span style="width:14px;height:14px;border:2px solid var(--warn);border-radius:4px;box-shadow: 0 0 0 2px rgba(255,107,53,0.15);flex-shrink:0;"></span> 
+          <span><strong>Goulot</strong><br>Dépasse le Takt Time</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:0.5rem;">
+          <span style="width:14px;height:5px;background:var(--ok);border-radius:2px;flex-shrink:0;"></span> 
+          <span><strong>VA</strong><br>Valeur Ajoutée</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:0.5rem;">
+          <span style="width:14px;height:5px;background:var(--warn);border-radius:2px;flex-shrink:0;"></span> 
+          <span><strong>NVA</strong><br>Non Valeur Ajoutée</span>
+        </div>
       </div>
     </div>
   </div>
 
-  <div class="canvas-area" id="pdfCaptureArea">
+  <div class="canvas-area">
     <div class="canvas-toolbar">
       <button class="tool-btn" title="Zoom +" onclick="zoom(1.15)">＋</button>
       <button class="tool-btn" title="Zoom -" onclick="zoom(0.87)">－</button>
@@ -345,14 +362,17 @@ html, body { height: 100%; overflow: hidden; display: flex; flex-direction: colu
 
   <div class="props-panel">
     <div class="props-header"><div class="props-title">Propriétés</div><div class="props-subtitle" id="propsSubtitle">Sélectionnez un bloc</div></div>
+    
     <div class="props-empty" id="propsEmpty"><div class="props-empty-icon">↖</div><div class="props-empty-text">Cliquez sur un bloc pour modifier ses propriétés</div></div>
     
     <div class="props-form" id="propsForm">
       <div class="prop-field"><label class="prop-label">Nom</label><input class="prop-input" id="propName" type="text" placeholder="ex: Assemblage"></div>
             
       <div class="prop-field" id="pfCycle"><label class="prop-label">Temps de cycle brut (s)</label><input class="prop-input" id="propCycle" type="number" placeholder="ex: 45"></div>
+      
       <div class="prop-field" id="pfDispo"><label class="prop-label">Disponibilité (%)</label><input class="prop-input" id="propDispo" type="number" placeholder="100" min="1" max="100"></div>
       <div class="prop-field" id="pfRebut"><label class="prop-label">Taux de rebut (%)</label><input class="prop-input" id="propRebut" type="number" placeholder="0" min="0" max="99"></div>
+
       <div class="prop-field" id="pfMachines"><label class="prop-label">Nb. équipements (en //)</label><input class="prop-input" id="propMachines" type="number" placeholder="1" min="1"></div>
       <div class="prop-field" id="pfOps"><label class="prop-label">Nb. opérateurs (M.O.)</label><input class="prop-input" id="propOps" type="number" placeholder="1" min="1"></div>
       <div class="prop-field" id="pfCapacity"><label class="prop-label">Capacité dispo (s)</label><input class="prop-input" id="propCapacity" type="number" placeholder="ex: 480"></div>
@@ -373,12 +393,16 @@ html, body { height: 100%; overflow: hidden; display: flex; flex-direction: colu
       <button class="delete-btn" onclick="deleteSelected()">🗑 Supprimer ce bloc</button>
     </div>
   </div>
+
 </div>
 
 <div class="mos-overlay" id="mosOverlay">
   <div class="modal">
     <div class="mos-header">
-      <div class="mos-title-group"><div class="mos-title" id="mosModalTitle">Mode Opératoire Standard</div><div class="mos-subtitle">Décomposition des tâches · Calcul automatique VA/NVA</div></div>
+      <div class="mos-title-group">
+        <div class="mos-title" id="mosModalTitle">Mode Opératoire Standard</div>
+        <div class="mos-subtitle">Décomposition des tâches · Calcul automatique VA/NVA</div>
+      </div>
       <button class="mos-close" onclick="closeMOS()">✕</button>
     </div>
     <div class="mos-body" style="padding-bottom: 0;">
@@ -460,8 +484,11 @@ import { supabaseClient, requireAuth } from '/js/supabase-client.js';
 
 // ─── STATE ────────────────────────────────────────────────────────────────────
 let nodes = [], connections = [], selectedNodeId = null, nodeCounter = 0, scale = 1;
-let isDraggingNode = false, dragOffsetX = 0, dragOffsetY = 0, currentMOSNodeId = null, currentUser = null, currentFluxId = null, dirty = false;
-let isLinkMode = false, linkSourceId = null, drawingPath = null, isYamazumiOpen = false;
+let isDraggingNode = false, dragOffsetX = 0, dragOffsetY = 0;
+let currentMOSNodeId = null, currentUser = null, currentFluxId = null, dirty = false;
+let isLinkMode = false, linkSourceId = null, drawingPath = null;
+let isYamazumiOpen = false;
+
 let globalSettings = { demand: 400, openingTime: 480, plannedBreaks: 30 };
 
 const canvas = document.getElementById('canvas');
@@ -469,10 +496,10 @@ const svg = document.getElementById('connectionsSvg');
 const drawingSvg = document.getElementById('drawingLine');
 
 const BLOCK_CONFIG = {
-  work: { icon: '🔧', color: 'work', hasTime: true, hasOps: true, hasMachines: true, hasMOS: true },
-  stock: { icon: '📦', color: 'stock', hasTime: false, hasOps: false, hasMachines: false, hasMOS: false, hasQty: true },
-  transport: { icon: '🚚', color: 'transport', hasTime: true, hasOps: false, hasMachines: false, hasMOS: false, hasDist: true },
-  control: { icon: '✅', color: 'control', hasTime: true, hasOps: true, hasMachines: true, hasMOS: true },
+  work: { icon: '🔧', label: 'Poste de travail', color: 'work', hasTime: true, hasOps: true, hasMachines: true, hasMOS: true },
+  stock: { icon: '📦', label: 'Stock', color: 'stock', hasTime: false, hasOps: false, hasMachines: false, hasMOS: false, hasQty: true },
+  transport: { icon: '🚚', label: 'Transport', color: 'transport', hasTime: true, hasOps: false, hasMachines: false, hasMOS: false, hasDist: true },
+  control: { icon: '✅', label: 'Contrôle qualité', color: 'control', hasTime: true, hasOps: true, hasMachines: true, hasMOS: true },
 };
 
 // ─── RACCROCHAGE GLOBAL ───────────────────────────────────────────────────────
@@ -483,234 +510,673 @@ window.addTask = addTask; window.removeTask = removeTask; window.updateTask = up
 window.addNC = addNC; window.removeNC = removeNC; window.updateNC = updateNC; window.updateMOSCalcs = updateMOSCalcs;
 window.openGlobalSettings = openGlobalSettings; window.closeGlobalSettings = closeGlobalSettings; window.saveGlobalSettings = saveGlobalSettings;
 window.toggleChrono = toggleChrono; window.lapChrono = lapChrono; window.resetChrono = resetChrono;
-window.toggleYamazumi = toggleYamazumi; window.exportPDF = exportPDF;
+window.toggleYamazumi = toggleYamazumi;
 
-// ─── CHRONOMÈTRE ───
+// ─── CHRONOMÈTRE INTEGRE ──────────────────────────────────────────────────────
 let chronoInterval = null, chronoStartTime = 0, chronoElapsedTime = 0, chronoLastLapTime = 0, isChronoRunning = false;
+
 function updateChronoDisplay(ms) {
-  const totalSeconds = Math.floor(ms / 1000), mins = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
-  const secs = (totalSeconds % 60).toString().padStart(2, '0'), tenths = Math.floor((ms % 1000) / 100);
+  const totalSeconds = Math.floor(ms / 1000);
+  const mins = Math.floor(totalSeconds / 60).toString().padStart(2, '0');
+  const secs = (totalSeconds % 60).toString().padStart(2, '0');
+  const tenths = Math.floor((ms % 1000) / 100);
   document.getElementById('chronoDisplay').textContent = `${mins}:${secs}.${tenths}`;
 }
+
 function toggleChrono() {
   const btn = document.getElementById('chronoToggleBtn');
-  if (isChronoRunning) { clearInterval(chronoInterval); isChronoRunning = false; btn.innerHTML = '▶ Reprendre'; document.getElementById('chronoLapBtn').disabled = true; btn.style.color='var(--ok)'; btn.style.borderColor='var(--ok)'; btn.style.background='var(--ok-dim)';}
-  else { chronoStartTime = Date.now() - chronoElapsedTime; chronoInterval = setInterval(() => { chronoElapsedTime = Date.now() - chronoStartTime; updateChronoDisplay(chronoElapsedTime); }, 100); isChronoRunning = true; btn.innerHTML = '⏸ Pause'; document.getElementById('chronoLapBtn').disabled = false; btn.style.color='var(--warn)'; btn.style.borderColor='var(--warn)'; btn.style.background='var(--warn-dim)';}
+  if (isChronoRunning) {
+    clearInterval(chronoInterval); isChronoRunning = false;
+    btn.innerHTML = '▶ Reprendre'; btn.style.color = 'var(--ok)'; btn.style.borderColor = 'var(--ok)'; btn.style.background = 'var(--ok-dim)';
+    document.getElementById('chronoLapBtn').disabled = true;
+  } else {
+    chronoStartTime = Date.now() - chronoElapsedTime;
+    chronoInterval = setInterval(() => { chronoElapsedTime = Date.now() - chronoStartTime; updateChronoDisplay(chronoElapsedTime); }, 100);
+    isChronoRunning = true;
+    btn.innerHTML = '⏸ Pause'; btn.style.color = 'var(--warn)'; btn.style.borderColor = 'var(--warn)'; btn.style.background = 'var(--warn-dim)';
+    document.getElementById('chronoLapBtn').disabled = false;
+  }
 }
+
 function lapChrono() {
   if (!isChronoRunning) return;
   const lapTimeMs = chronoElapsedTime - chronoLastLapTime; chronoLastLapTime = chronoElapsedTime;
   const lapSecs = Math.round(lapTimeMs / 1000);
   const node = nodes.find(n=>n.id===currentMOSNodeId);
-  if(node) { node.mos.tasks.push({id: ++taskIdCounter, desc: `Tâche chrono #${node.mos.tasks.length + 1}`, manual: lapSecs, machine: '', move: '', wait: '', vsm: 'va'}); renderTasksList(node.mos.tasks); updateMOSCalcs(); markDirty(); }
-}
-function resetChrono() { clearInterval(chronoInterval); isChronoRunning = false; chronoElapsedTime = 0; chronoLastLapTime = 0; updateChronoDisplay(0); const btn = document.getElementById('chronoToggleBtn'); btn.innerHTML = '▶ Démarrer'; document.getElementById('chronoLapBtn').disabled = true; btn.style.color='var(--ok)'; btn.style.borderColor='var(--ok)'; btn.style.background='var(--ok-dim)';}
-
-// ─── EXPORT PDF ───
-async function exportPDF() {
-  const { jsPDF } = window.jspdf; 
-  const btn = document.getElementById('pdfBtn'); 
-  btn.disabled = true; 
-  btn.textContent = "Génération...";
-  
-  const oldScale = scale; 
-  resetZoom(); 
-  
-  const wasYOpen = isYamazumiOpen; 
-  if(wasYOpen) toggleYamazumi();
-
-  try {
-    // Petit délai pour laisser le temps à l'UI de respirer et de retirer le Yamazumi si ouvert
-    await new Promise(r => setTimeout(r, 300));
-
-    const canvasScreenshot = await html2canvas(document.getElementById('canvas'), { backgroundColor: '#0a0d12', scale: 2 });
-    const kpiScreenshot = await html2canvas(document.getElementById('kpiBar'), { backgroundColor: '#111620' });
-    
-    const doc = new jsPDF('l', 'mm', 'a4'); 
-    const pageWidth = doc.internal.pageSize.getWidth();
-    
-    doc.setFillColor(10, 13, 18); doc.rect(0, 0, pageWidth, 40, 'F');
-    doc.setTextColor(0, 229, 255); doc.setFont("Helvetica", "bold"); doc.setFontSize(22);
-    doc.text("Kaiflow - Rapport de Performance", 15, 18);
-    doc.setTextColor(255, 255, 255); doc.setFontSize(14); doc.text(document.getElementById('fluxTitle').value, 15, 28);
-    doc.setFontSize(10); doc.setTextColor(107, 122, 150); doc.text(`Genere le ${new Date().toLocaleDateString('fr-FR')} - ${document.getElementById('yFTE').textContent.replace(/<[^>]*>?/gm, '')}`, 15, 35);
-
-    const fluxImg = canvasScreenshot.toDataURL("image/png"); doc.addImage(fluxImg, 'PNG', 10, 45, pageWidth - 20, 100);
-    const kpiImg = kpiScreenshot.toDataURL("image/png"); doc.addImage(kpiImg, 'PNG', 10, 150, pageWidth - 20, 25);
-    doc.save(`Kaiflow_Rapport_${document.getElementById('fluxTitle').value.replace(/\s+/g, '_')}.pdf`);
-  } catch (err) { 
-    console.error(err); 
-    alert("Erreur lors de la génération du PDF."); 
-  } finally { 
-    if(wasYOpen) toggleYamazumi(); 
-    zoom(oldScale); 
-    btn.disabled = false; 
-    btn.textContent = "📄 Rapport PDF"; 
+  if(node) {
+    node.mos.tasks.push({id: ++taskIdCounter, desc: `Tâche chrono #${node.mos.tasks.length + 1}`, manual: lapSecs, machine: '', move: '', wait: '', vsm: 'va'});
+    renderTasksList(node.mos.tasks); updateMOSCalcs(); markDirty();
   }
 }
 
-// ─── GESTION YAMAZUMI ───
-function toggleYamazumi() { const panel = document.getElementById('yamazumiPanel'); isYamazumiOpen = !isYamazumiOpen; if (isYamazumiOpen) { panel.classList.add('open'); updateKPIs(); } else { panel.classList.remove('open'); } }
+function resetChrono() {
+  clearInterval(chronoInterval); isChronoRunning = false; chronoElapsedTime = 0; chronoLastLapTime = 0; updateChronoDisplay(0);
+  const btn = document.getElementById('chronoToggleBtn');
+  btn.innerHTML = '▶ Démarrer'; btn.style.color = 'var(--ok)'; btn.style.borderColor = 'var(--ok)'; btn.style.background = 'var(--ok-dim)';
+  document.getElementById('chronoLapBtn').disabled = true;
+}
+
+// ─── GESTION YAMAZUMI ─────────────────────────────────────────────────────────
+function toggleYamazumi() {
+  const panel = document.getElementById('yamazumiPanel');
+  isYamazumiOpen = !isYamazumiOpen;
+  if (isYamazumiOpen) { panel.classList.add('open'); updateKPIs(); }
+  else { panel.classList.remove('open'); }
+}
+
 function renderYamazumi(groups) {
-  if (!isYamazumiOpen) return; const chartEl = document.getElementById('yChart');
-  if (!groups || Object.keys(groups).length === 0) { chartEl.innerHTML = '<div style="margin:auto;color:var(--muted)">Aucun poste à équilibrer.</div>'; document.getElementById('yFTE').innerHTML = `<strong style="color:var(--accent)">— ETP</strong>`; return; }
-  const takt = getGlobalTaktTime(); let sumCycle = 0, maxCycle = takt; const barsData = [];
+  if (!isYamazumiOpen) return;
+  const chartEl = document.getElementById('yChart');
+  
+  if (!groups || Object.keys(groups).length === 0) {
+    chartEl.innerHTML = '<div style="margin:auto;color:var(--muted)">Aucun poste de travail à équilibrer sur le flux.</div>';
+    document.getElementById('yFTE').innerHTML = `Équivalent Temps Plein cible : <strong style="color:var(--accent)">— ETP</strong>`;
+    return;
+  }
+
+  const takt = getGlobalTaktTime();
+  let sumCycle = 0;
+  let maxCycle = takt;
+
+  const barsData = [];
   for (const sig in groups) {
-    const g = groups[sig]; sumCycle += g.eqCycle; if (g.eqCycle > maxCycle) maxCycle = g.eqCycle;
-    const firstNode = nodes.find(n => n.id === g.ids[0]); let va = 0, nva = 0; const origC = getEffectiveCycle(firstNode);
+    const g = groups[sig];
+    sumCycle += g.eqCycle;
+    if (g.eqCycle > maxCycle) maxCycle = g.eqCycle;
+    
+    const firstNode = nodes.find(n => n.id === g.ids[0]);
+    let va = 0, nva = 0;
+    const origC = getEffectiveCycle(firstNode);
     if (origC > 0) {
       if (firstNode.mos && firstNode.mos.tasks.length > 0) {
-        let rVa = 0, rNva = 0; const rawC = firstNode.mos.tasks.reduce((s,t) => s + (parseFloat(t.manual)||0) + (parseFloat(t.move)||0) + (parseFloat(t.wait)||0),0);
-        firstNode.mos.tasks.forEach(t => { const tt = (parseFloat(t.manual)||0) + (parseFloat(t.move)||0) + (parseFloat(t.wait)||0); if (t.vsm === 'va') rVa += tt; else rNva += tt; });
+        let rVa = 0, rNva = 0;
+        const rawC = firstNode.mos.tasks.reduce((s,t) => s + (parseFloat(t.manual)||0) + (parseFloat(t.move)||0) + (parseFloat(t.wait)||0),0);
+        firstNode.mos.tasks.forEach(t => {
+          const tt = (parseFloat(t.manual)||0) + (parseFloat(t.move)||0) + (parseFloat(t.wait)||0);
+          if (t.vsm === 'va') rVa += tt; else rNva += tt;
+        });
         if (rawC > 0) { va = (rVa / rawC) * g.eqCycle; nva = (rNva / rawC) * g.eqCycle; }
-      } else { if (firstNode.vsm === 'va') va = g.eqCycle; else nva = g.eqCycle; }
+      } else {
+        if (firstNode.vsm === 'va') va = g.eqCycle; else nva = g.eqCycle;
+      }
     }
     barsData.push({ label: g.label, cycle: g.eqCycle, va, nva });
   }
-  const fte = takt > 0 ? (sumCycle / takt).toFixed(1) : 0; document.getElementById('yFTE').innerHTML = `Équivalent Temps Plein cible : <strong style="color:var(--accent); font-size:1.1rem;">${fte} ETP</strong>`;
-  const absoluteMax = maxCycle * 1.15, taktBottomPercent = absoluteMax > 0 ? (takt / absoluteMax) * 100 : 0;
-  let html = `<div class="y-chart-area"><div class="takt-line" style="bottom: ${taktBottomPercent}%;"><span>Takt Time : ${takt}s</span></div>`;
+
+  const fte = takt > 0 ? (sumCycle / takt).toFixed(1) : 0;
+  document.getElementById('yFTE').innerHTML = `Équivalent Temps Plein cible : <strong style="color:var(--accent); font-size:1.1rem;">${fte} ETP</strong>`;
+
+  const absoluteMax = maxCycle * 1.15; 
+  const taktBottomPercent = absoluteMax > 0 ? (takt / absoluteMax) * 100 : 0;
+
+  let html = `<div class="y-chart-area">
+    <div class="takt-line" style="bottom: ${taktBottomPercent}%;"><span>Takt Time : ${takt}s</span></div>`;
+
   barsData.forEach(b => {
-    const hPercent = absoluteMax > 0 ? (b.cycle / absoluteMax) * 100 : 0, isGoulot = b.cycle > takt;
-    const vaH = b.cycle > 0 ? (b.va / b.cycle) * 100 : 0, nvaH = b.cycle > 0 ? (b.nva / b.cycle) * 100 : 0;
-    html += `<div class="y-col"><div class="y-val ${isGoulot ? 'warn' : ''}" style="bottom: calc(${hPercent}% + 5px);">${b.cycle}s</div><div class="y-bar ${isGoulot ? 'goulot' : ''}" style="height:${hPercent}%">${b.cycle > 0 && (b.va>0 || b.nva>0) ? `<div style="height:${nvaH}%; background:rgba(255,107,53,0.9);"></div><div style="height:${vaH}%; background:rgba(34,211,160,0.9);"></div>` : ''}</div><div class="y-label" title="${b.label}">${b.label}</div></div>`;
+    const hPercent = absoluteMax > 0 ? (b.cycle / absoluteMax) * 100 : 0;
+    const isGoulot = b.cycle > takt;
+    const vaH = b.cycle > 0 ? (b.va / b.cycle) * 100 : 0;
+    const nvaH = b.cycle > 0 ? (b.nva / b.cycle) * 100 : 0;
+
+    html += `
+    <div class="y-col">
+      <div class="y-val ${isGoulot ? 'warn' : ''}" style="bottom: calc(${hPercent}% + 5px);">${b.cycle}s</div>
+      <div class="y-bar ${isGoulot ? 'goulot' : ''}" style="height:${hPercent}%">
+        ${b.cycle > 0 && (b.va>0 || b.nva>0) ? `<div style="height:${nvaH}%; background:rgba(255,107,53,0.9);"></div><div style="height:${vaH}%; background:rgba(34,211,160,0.9);"></div>` : ''}
+      </div>
+      <div class="y-label" title="${b.label}">${b.label}</div>
+    </div>`;
   });
-  html += `</div>`; chartEl.innerHTML = html;
+
+  html += `</div>`;
+  chartEl.innerHTML = html;
 }
 
-// ─── MOTEUR PHYSIQUE ───
-function getEffectiveCycle(node) {
-  if (!node) return 0; let rawCycle = node.cycle || 0;
-  if (node.mos && node.mos.tasks.length > 0) { const sum = node.mos.tasks.reduce((s,t) => s + (parseFloat(t.manual)||0) + (parseFloat(t.move)||0) + (parseFloat(t.wait)||0),0); if (sum > 0) rawCycle = sum; }
-  const mach = parseInt(node.machines) || 1, dispo = (node.dispo !== undefined ? parseFloat(node.dispo) : 100) / 100, rebut = (node.rebut !== undefined ? parseFloat(node.rebut) : 0) / 100;
-  const den = mach * dispo * (1 - rebut); return den <= 0 ? Infinity : Math.round(rawCycle / den);
+// ─── GESTION MODALE PARAMÈTRES GLOBAUX ────────────────────────────────────────
+function openGlobalSettings() {
+  document.getElementById('gsDemand').value = globalSettings.demand;
+  document.getElementById('gsOpening').value = globalSettings.openingTime;
+  document.getElementById('gsBreaks').value = globalSettings.plannedBreaks;
+  updateLiveTaktPreview();
+  document.getElementById('globalSettingsOverlay').classList.add('open');
+}
+function closeGlobalSettings() { document.getElementById('globalSettingsOverlay').classList.remove('open'); }
+function saveGlobalSettings() {
+  globalSettings.demand = parseInt(document.getElementById('gsDemand').value) || 1;
+  globalSettings.openingTime = parseInt(document.getElementById('gsOpening').value) || 480;
+  globalSettings.plannedBreaks = parseInt(document.getElementById('gsBreaks').value) || 0;
+  closeGlobalSettings(); updateKPIs(); markDirty();
+}
+['gsDemand', 'gsOpening', 'gsBreaks'].forEach(id => document.getElementById(id)?.addEventListener('input', updateLiveTaktPreview));
+function updateLiveTaktPreview() {
+  const d = parseInt(document.getElementById('gsDemand').value) || 1;
+  const netTimeSec = Math.max(0, (parseInt(document.getElementById('gsOpening').value) || 0) - (parseInt(document.getElementById('gsBreaks').value) || 0)) * 60;
+  document.getElementById('gsCalculatedTakt').textContent = Math.round(netTimeSec / d) + 's';
+}
+function getGlobalTaktTime() {
+  return Math.round((Math.max(0, globalSettings.openingTime - globalSettings.plannedBreaks) * 60) / globalSettings.demand);
 }
 
-function updateKPIs() {
-  document.getElementById('kpiPostes').textContent = nodes.length;
-  const workNodes = nodes.filter(n=>n.type==='work'||n.type==='control'), groups = {};
-  workNodes.forEach(n => {
-    const c = getEffectiveCycle(n); if (c === 0 || c === Infinity) return;
-    const preds = connections.filter(conn => conn.to === n.id).map(conn => conn.from).sort().join(','), succs = connections.filter(conn => conn.from === n.id).map(conn => conn.to).sort().join(','), sig = `in:${preds}|out:${succs}`;
-    if (!groups[sig]) groups[sig] = { ids: [], nodes: [], sumInverse: 0, label: n.label };
-    groups[sig].ids.push(n.id); groups[sig].nodes.push(n); groups[sig].sumInverse += (1 / c);
-  });
-  let maxCycle = 0, bottleneckGroup = null;
-  for (const sig in groups) { const g = groups[sig]; g.eqCycle = Math.round(1 / g.sumInverse); if (g.ids.length > 1) g.label = g.nodes[0].label + ' (+ ' + (g.ids.length - 1) + ' en //)'; if (g.eqCycle > maxCycle) { maxCycle = g.eqCycle; bottleneckGroup = g; } }
-  const takt = getGlobalTaktTime(), cadenceReelle = Math.max(takt, maxCycle), leadTime = calculateCriticalPathLeadTime(cadenceReelle);
-  
-  if (leadTime > 0 && leadTime !== Infinity) { let ltText = leadTime > 86400 ? Math.floor(leadTime/86400) + 'j ' + Math.floor((leadTime%86400)/3600) + 'h' : leadTime > 3600 ? Math.floor(leadTime/3600) + 'h ' + Math.floor((leadTime%3600)/60) + 'min' : leadTime > 60 ? Math.floor(leadTime/60) + 'min ' + (leadTime%60) + 's' : leadTime + 's'; document.getElementById('kpiLead').textContent = ltText; } else { document.getElementById('kpiLead').textContent = '—'; }
-  
-  let totalVA=0, totalNVA=0;
-  nodes.forEach(n => { const c = getEffectiveCycle(n); if(c === 0 && n.type !== 'stock') return; if (n.mos && n.mos.tasks.length > 0) { n.mos.tasks.forEach(t=>{ const tt=(parseFloat(t.manual)||0)+(parseFloat(t.move)||0)+(parseFloat(t.wait)||0); if(t.vsm==='va') totalVA+=tt; else totalNVA+=tt; }); } else { let weight = c; if (n.type === 'stock') weight = (n.qty || 0) * cadenceReelle; if (weight > 0 && weight !== Infinity) { if(n.vsm==='va') totalVA+=weight; else totalNVA+=weight; } } });
-  const totalTime=totalVA+totalNVA; if(totalTime>0) { const vaP=Math.round((totalVA/totalTime)*100); document.getElementById('kpiVA').textContent = vaP+'%'; document.getElementById('kpiVA').className = 'kpi-value '+(vaP>=60?'ok':'warn'); const bar=document.getElementById('vanaBar'); bar.children[0].style.width=vaP+'%'; bar.children[1].style.width=(100-vaP)+'%'; } else { document.getElementById('kpiVA').textContent='—'; document.getElementById('kpiVA').className='kpi-value neutral'; }
-
-  if (Object.keys(groups).length === 0) { ['kpiTakt','kpiCycle','kpiBottleneck','kpiRendement','kpiCharge'].forEach(id=>{ document.getElementById(id).textContent='—'; document.getElementById(id).className='kpi-value neutral'; }); document.getElementById('kpiBottleneckSub').innerHTML=''; nodes.forEach(n=>{ document.getElementById(`node-${n.id}`)?.classList.remove('bottleneck'); document.getElementById(`alert-${n.id}`).style.display='none'; }); renderYamazumi(null); return; }
-  
-  const isOk = maxCycle<=takt, rendement = Math.round((takt/maxCycle)*100);
-  document.getElementById('kpiTakt').textContent = takt+'s'; document.getElementById('kpiCycle').textContent = maxCycle+'s'; document.getElementById('kpiCycle').className = 'kpi-value '+(isOk?'ok':'warn'); document.getElementById('kpiBottleneck').textContent = bottleneckGroup.label; document.getElementById('kpiBottleneck').className = 'kpi-value '+(isOk?'ok':'warn'); document.getElementById('kpiBottleneckSub').innerHTML = isOk?'<span style="color:var(--ok);font-size:0.6rem">✓ Dans les limites</span>':'<span class="kpi-alert-tag">⚠ Dépasse le takt net</span>'; document.getElementById('kpiRendement').textContent = rendement+'%'; document.getElementById('kpiRendement').className = 'kpi-value '+(rendement>=85?'ok':'warn');
-  
-  let sumCharge = 0, countCharge = 0; for (const sig in groups) { sumCharge += (groups[sig].eqCycle / takt) * 100; countCharge++; } const avgCharge = sumCharge / countCharge;
-  document.getElementById('kpiCharge').textContent=Math.round(avgCharge)+'%'; document.getElementById('kpiCharge').className='kpi-value '+(avgCharge>100?'warn':avgCharge>80?'ok':'neutral');
-  
-  nodes.forEach(n=>{ const isBottleneck = bottleneckGroup.ids.includes(n.id) && !isOk; document.getElementById(`node-${n.id}`)?.classList.toggle('bottleneck',isBottleneck); const alertEl=document.getElementById(`alert-${n.id}`); if(alertEl) alertEl.style.display=isBottleneck?'inline':'none'; });
-  renderYamazumi(groups);
+// ─── DRAG FROM LIBRARY ────────────────────────────────────────────────────────
+const LIB_THRESHOLD = 6;
+function libCreateGhost(label, x, y) {
+  const g = document.createElement('div');
+  g.style.cssText = 'position:fixed;z-index:9999;pointer-events:none;background:#111620;border:1.5px solid #00e5ff;border-radius:10px;padding:0.5rem 0.9rem;font-size:0.82rem;color:#e2e8f5;white-space:nowrap;box-shadow:0 8px 30px rgba(0,0,0,0.5);opacity:0.92;';
+  g.textContent = label; document.body.appendChild(g);
+  g.style.left = (x - 60) + 'px'; g.style.top = (y - 20) + 'px'; return g;
 }
 
-// ─── LIAISONS & UI ───
-function getGlobalTaktTime() { return Math.round((Math.max(0, globalSettings.openingTime - globalSettings.plannedBreaks) * 60) / globalSettings.demand); }
-function calculateCriticalPathLeadTime(cadence) {
-  if (nodes.length === 0) return 0; const memo = {};
-  function getLongestPath(nodeId, visited) {
-    if (visited.has(nodeId)) return 0; if (memo[nodeId] !== undefined) return memo[nodeId]; visited.add(nodeId);
-    const n = nodes.find(x=>x.id===nodeId); let weight = n.type==='stock' ? (n.qty||0)*cadence : getEffectiveCycle(n);
-    const succs = connections.filter(c => c.from === nodeId).map(c => c.to);
-    let maxChild = 0; succs.forEach(s => { maxChild = Math.max(maxChild, getLongestPath(s, visited)); });
-    visited.delete(nodeId); return memo[nodeId] = weight + maxChild;
+function libDropOnCanvas(clientX, clientY, type, label) {
+  const r = canvas.getBoundingClientRect();
+  if (clientX >= r.left && clientX <= r.right && clientY >= r.top && clientY <= r.bottom) {
+    addNode(type, label, (clientX - r.left) / scale - 75, (clientY - r.top) / scale - 45); updateHint(); markDirty();
   }
-  let maxLT = 0; nodes.forEach(n => { maxLT = Math.max(maxLT, getLongestPath(n.id, new Set())); }); return maxLT;
 }
 
+function libDropAtCenter(type, label) {
+  const r = canvas.getBoundingClientRect(); const off = nodes.length * 30;
+  addNode(type, label, (r.width/2/scale)-75+(off%200), (r.height/2/scale)-45+Math.floor(off/200)*70); updateHint(); markDirty();
+}
+
+document.querySelectorAll('.block-template').forEach(el => {
+  const type = el.dataset.type, label = el.dataset.label;
+  el.addEventListener('pointerdown', e => {
+    if (e.pointerType === 'mouse' && e.button !== 0) return;
+    e.preventDefault(); el.setPointerCapture(e.pointerId);
+    let isDragging = false, ghost = null;
+    const startX = e.clientX, startY = e.clientY;
+
+    function onMove(ev) {
+      if (!isDragging && Math.hypot(ev.clientX - startX, ev.clientY - startY) > LIB_THRESHOLD) {
+        isDragging = true; ghost = libCreateGhost(label, ev.clientX, ev.clientY);
+      }
+      if (ghost) {
+        ghost.style.left = (ev.clientX - 60) + 'px'; ghost.style.top = (ev.clientY - 20) + 'px';
+        const r = canvas.getBoundingClientRect();
+        canvas.style.outline = (ev.clientX >= r.left && ev.clientX <= r.right && ev.clientY >= r.top && ev.clientY <= r.bottom) ? '2px solid rgba(0,229,255,0.35)' : '';
+      }
+    }
+    function onUp(ev) {
+      el.removeEventListener('pointermove', onMove); el.removeEventListener('pointerup', onUp); el.releasePointerCapture(e.pointerId);
+      if (ghost) { ghost.remove(); ghost = null; } canvas.style.outline = '';
+      if (isDragging) libDropOnCanvas(ev.clientX, ev.clientY, type, label); else libDropAtCenter(type, label);
+    }
+    el.addEventListener('pointermove', onMove); el.addEventListener('pointerup', onUp);
+  });
+});
+
+// ─── LIAISONS (TOGGLE) ────────────────────────────────────────────────────────
+function toggleLinkMode() {
+  isLinkMode = !isLinkMode; linkSourceId = null;
+  document.getElementById('linkModeBtn').classList.toggle('active', isLinkMode);
+  if (!isLinkMode && drawingPath) { drawingPath.remove(); drawingPath = null; }
+  nodes.forEach(n => document.getElementById(`node-${n.id}`)?.classList.remove('link-source'));
+}
+
+canvas.addEventListener('pointermove', e => {
+  if (!isLinkMode || !linkSourceId) return;
+  const portEl = document.getElementById(`port-out-${linkSourceId}`); if (!portEl) return;
+  const rect = portEl.getBoundingClientRect(), cr = canvas.getBoundingClientRect();
+  const startX = (rect.left + rect.width/2 - cr.left) / scale, startY = (rect.top + rect.height/2 - cr.top) / scale;
+  const mx = (e.clientX - cr.left) / scale, my = (e.clientY - cr.top) / scale;
+
+  if (!drawingPath) {
+    drawingPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    drawingPath.setAttribute('fill', 'none'); drawingPath.setAttribute('stroke', 'rgba(0,229,255,0.5)');
+    drawingPath.setAttribute('stroke-width', '2'); drawingPath.setAttribute('stroke-dasharray', '6,3');
+    drawingSvg.appendChild(drawingPath);
+  }
+  drawingPath.setAttribute('d', makeCurve(startX, startY, mx, my));
+});
+
+// ─── GESTION DES NOEUDS ───────────────────────────────────────────────────────
 function addNode(type, label, x, y) {
-  const id = ++nodeCounter; const node = { id, type, label, x, y, cycle: null, ops: 1, machines: 1, dispo: 100, rebut: 0, capacity: 480, qty: null, vsm: type==='stock'||type==='transport'?'nva':'va', mos: { tasks:[], nc:[] } };
+  const id = ++nodeCounter;
+  const node = { id, type, label, x, y, cycle: null, ops: 1, machines: 1, dispo: 100, rebut: 0, capacity: 480, qty: null, stockMax: null, dist: null, vsm: type==='stock'||type==='transport'?'nva':'va', mos: { processName:'', author:'', taktTime:null, nbPieces:1, tasks:[], nc:[] } };
   nodes.push(node); renderNode(node); updateKPIs(); return node;
 }
+
 function renderNode(node) {
-  const el = document.createElement('div'); el.className = 'flow-node'; el.id = `node-${node.id}`; el.style.left = node.x+'px'; el.style.top = node.y+'px';
+  const el = document.createElement('div');
+  el.className = 'flow-node'; el.id = `node-${node.id}`; el.style.left = node.x+'px'; el.style.top = node.y+'px';
   el.innerHTML = buildNodeHTML(node); bindNodeEvents(el, node); canvas.appendChild(el);
 }
-function buildNodeHTML(node) {
-  const config = BLOCK_CONFIG[node.type]; const cycleVal = getEffectiveCycle(node);
-  const mosTaskCount = node.mos.tasks.filter(t=>t.desc).length; const vaPercent = getNodeVAPercent(node);
-  const machHtml = (node.machines && node.machines > 1) ? `<span style="color:var(--accent); font-size:0.65rem;"> (x${node.machines})</span>` : '';
-  const trs = Math.round(( (node.dispo!==undefined?node.dispo:100) / 100) * (1 - (node.rebut!==undefined?node.rebut:0) / 100) * 100);
-  const trsHtml = (trs < 100 && config.hasMachines) ? `<div style="font-size:0.65rem; color:var(--warn); margin-top:2px; font-weight:600; text-align:right;">TRS: ${trs}%</div>` : '';
-  return `<div class="node-header"><div class="node-type-icon ${config.color}">${node.type==='work'?'🔧':node.type==='stock'?'📦':node.type==='transport'?'🚚':'✅'}</div><div class="node-label">${node.label}${machHtml}</div><span class="node-alert" id="alert-${node.id}" style="display:none">⚠</span></div><div class="node-body">${cycleVal !== Infinity && cycleVal ? `<div class="node-field"><span class="node-field-label">T. utile</span><span class="node-field-val neutral">${cycleVal}s</span></div>` : `<div class="node-field"><span class="node-field-label">T. utile</span><span class="node-field-val neutral">—</span></div>`}${trsHtml}${config.hasOps ? `<div class="node-field" style="margin-top:4px;"><span class="node-field-label">Opérateurs</span><span class="node-field-val neutral">${node.ops}</span></div>` : ''}${node.type==='stock'&&node.qty!==null ? `<div class="node-field" style="margin-top:4px;"><span class="node-field-label">Stock</span><span class="node-field-val ${node.stockMax&&node.qty>node.stockMax?'warn':'ok'}">${node.qty} pcs</span></div>` : ''}${config.hasMOS && mosTaskCount>0 ? `<div class="node-field" style="margin-top:4px;"><span class="node-field-label">MOS</span><span class="node-field-val accent">${mosTaskCount} tâches</span></div>` : ''}${config.hasMOS ? `<button class="node-mos-btn" onclick="openMOSForNode(${node.id})">📋 MOS</button>` : ''}</div>${vaPercent!==null ? `<div class="node-vana-bar"><div class="vna-va" style="width:${vaPercent}%"></div><div class="vna-nva" style="width:${100-vaPercent}%"></div></div>` : ''}<div class="port port-in" id="port-in-${node.id}"></div><div class="port port-out" id="port-out-${node.id}"></div>`;
-}
+
 function bindNodeEvents(el, node) {
   el.addEventListener('pointerdown', e => {
-    if (e.target.classList.contains('node-mos-btn')) return; e.stopPropagation();
-    if (isLinkMode) { if (!linkSourceId) { linkSourceId = node.id; el.classList.add('link-source'); } else if (linkSourceId !== node.id) { const idx = connections.findIndex(c => c.from === linkSourceId && c.to === node.id); if (idx !== -1) connections.splice(idx, 1); else connections.push({ from: linkSourceId, to: node.id }); renderConnections(); updateKPIs(); markDirty(); toggleLinkMode(); } return; }
-    selectNode(node.id); isDraggingNode = true; el.setPointerCapture(e.pointerId); const rect = el.getBoundingClientRect(); dragOffsetX = (e.clientX - rect.left) / scale; dragOffsetY = (e.clientY - rect.top) / scale;
-    function onMove(ev) { if (!isDraggingNode) return; const r = canvas.getBoundingClientRect(); node.x = (ev.clientX - r.left) / scale - dragOffsetX; node.y = (ev.clientY - r.top) / scale - dragOffsetY; el.style.left = node.x + 'px'; el.style.top = node.y + 'px'; renderConnections(); markDirty(); }
+    if (e.target.classList.contains('node-mos-btn')) return;
+    e.stopPropagation(); e.preventDefault();
+
+    if (isLinkMode) {
+      if (!linkSourceId) { 
+        linkSourceId = node.id; el.classList.add('link-source'); 
+      }
+      else if (linkSourceId !== node.id) {
+        const existingLinkIndex = connections.findIndex(c => c.from === linkSourceId && c.to === node.id);
+        if (existingLinkIndex !== -1) connections.splice(existingLinkIndex, 1);
+        else connections.push({ from: linkSourceId, to: node.id });
+        renderConnections(); updateKPIs(); markDirty(); toggleLinkMode();
+      }
+      return; 
+    }
+
+    selectNode(node.id);
+    isDraggingNode = true; el.setPointerCapture(e.pointerId);
+    const rect = el.getBoundingClientRect(); dragOffsetX = (e.clientX - rect.left) / scale; dragOffsetY = (e.clientY - rect.top) / scale;
+
+    function onMove(ev) {
+      if (!isDraggingNode) return;
+      const r = canvas.getBoundingClientRect(); node.x = (ev.clientX - r.left) / scale - dragOffsetX; node.y = (ev.clientY - r.top) / scale - dragOffsetY;
+      el.style.left = node.x + 'px'; el.style.top = node.y + 'px';
+      renderConnections(); markDirty();
+    }
     function onUp() { isDraggingNode = false; el.removeEventListener('pointermove', onMove); el.removeEventListener('pointerup', onUp); }
     el.addEventListener('pointermove', onMove); el.addEventListener('pointerup', onUp);
   });
 }
-function selectNode(id) { if (selectedNodeId) document.getElementById(`node-${selectedNodeId}`)?.classList.remove('selected'); selectedNodeId=id; document.getElementById(`node-${id}`)?.classList.add('selected'); showProps(id); }
-function showProps(id) {
-  const n=nodes.find(x=>x.id===id); if(!n) return; const c=BLOCK_CONFIG[n.type]; document.getElementById('propsEmpty').style.display='none'; document.getElementById('propsForm').classList.add('visible');
-  document.getElementById('propName').value = n.label; document.getElementById('propCycle').value = n.cycle||''; document.getElementById('propDispo').value = n.dispo!==undefined?n.dispo:100; document.getElementById('propRebut').value = n.rebut||0; document.getElementById('propMachines').value = n.machines||1; document.getElementById('propOps').value = n.ops||1; document.getElementById('propQty').value = n.qty||''; document.getElementById('propVSM').value = n.vsm||'va';
-  document.getElementById('pfCycle').style.display=c.hasTime?'block':'none'; document.getElementById('pfMachines').style.display=c.hasMachines?'block':'none'; document.getElementById('pfDispo').style.display=c.hasMachines?'block':'none'; document.getElementById('pfRebut').style.display=c.hasMachines?'block':'none'; document.getElementById('pfOps').style.display=c.hasOps?'block':'none'; document.getElementById('pfQty').style.display=c.hasQty?'block':'none'; document.getElementById('openMosBtn').style.display=c.hasMOS?'block':'none';
+
+function buildNodeHTML(node) {
+  const config = BLOCK_CONFIG[node.type];
+  const cycleVal = getEffectiveCycle(node);
+  const mosTaskCount = node.mos.tasks.filter(t=>t.desc).length;
+  const vaPercent = getNodeVAPercent(node);
+  const machHtml = (node.machines && node.machines > 1) ? `<span style="color:var(--accent); font-size:0.65rem;"> (x${node.machines})</span>` : '';
+  
+  const dispo = node.dispo !== undefined ? node.dispo : 100;
+  const rebut = node.rebut !== undefined ? node.rebut : 0;
+  const trs = Math.round((dispo / 100) * (1 - rebut / 100) * 100);
+  const trsHtml = (trs < 100 && config.hasMachines) ? `<div style="font-size:0.65rem; color:var(--warn); margin-top:2px; font-weight:600; text-align:right;">TRS Estimé: ${trs}%</div>` : '';
+
+  return `
+    <div class="node-header"><div class="node-type-icon ${config.color}">${config.icon}</div><div class="node-label">${node.label}${machHtml}</div><span class="node-alert" id="alert-${node.id}" style="display:none">⚠</span></div>
+    <div class="node-body">
+      ${cycleVal !== Infinity && cycleVal ? `<div class="node-field"><span class="node-field-label">Temps utile</span><span class="node-field-val neutral">${cycleVal}s</span></div>` : `<div class="node-field"><span class="node-field-label">Temps utile</span><span class="node-field-val neutral">—</span></div>`}
+      ${trsHtml}
+      ${config.hasOps ? `<div class="node-field" style="margin-top:4px;"><span class="node-field-label">Opérateurs</span><span class="node-field-val neutral">${node.ops}</span></div>` : ''}
+      ${node.type==='stock'&&node.qty!==null ? `<div class="node-field" style="margin-top:4px;"><span class="node-field-label">Stock</span><span class="node-field-val ${node.stockMax&&node.qty>node.stockMax?'warn':'ok'}">${node.qty} pcs</span></div>` : ''}
+      ${config.hasMOS && mosTaskCount>0 ? `<div class="node-field" style="margin-top:4px;"><span class="node-field-label">MOS</span><span class="node-field-val accent">${mosTaskCount} tâches</span></div>` : ''}
+      ${config.hasMOS ? `<button class="node-mos-btn" onclick="openMOSForNode(${node.id})">📋 Mode Opératoire</button>` : ''}
+    </div>
+    ${vaPercent!==null ? `<div class="node-vana-bar"><div class="vna-va" style="width:${vaPercent}%"></div><div class="vna-nva" style="width:${100-vaPercent}%"></div></div>` : ''}
+    <div class="port port-in" id="port-in-${node.id}"></div><div class="port port-out" id="port-out-${node.id}"></div>`;
 }
-['propName','propCycle','propDispo','propRebut','propMachines','propOps','propQty','propVSM'].forEach(id => {
+
+function refreshNodeDisplay(nodeId) {
+  const node = nodes.find(n=>n.id===nodeId); if (!node) return;
+  const el = document.getElementById(`node-${nodeId}`); if (!el) return;
+  el.innerHTML = buildNodeHTML(node); bindNodeEvents(el, node);
+  if (selectedNodeId === nodeId) el.classList.add('selected'); updateKPIs();
+}
+
+// CORRECTION STRATÉGIQUE : CALCUL DU TEMPS UTILE (INTEGRE LE TRS)
+function getEffectiveCycle(node) {
+  if (!node) return 0;
+  let rawCycle = node.cycle || 0;
+  
+  if (node.mos && node.mos.tasks.length > 0) {
+    const sum = node.mos.tasks.reduce((s,t) => s + (parseFloat(t.manual)||0) + (parseFloat(t.move)||0) + (parseFloat(t.wait)||0),0);
+    if (sum > 0) rawCycle = sum;
+  }
+  
+  const mach = parseInt(node.machines) || 1;
+  const dispo = node.dispo !== undefined ? parseFloat(node.dispo) / 100 : 1;
+  const rebut = node.rebut !== undefined ? parseFloat(node.rebut) / 100 : 0;
+  
+  const denominator = mach * dispo * (1 - rebut);
+  if (denominator <= 0) return Infinity; // Sécurité division par zéro
+  
+  return Math.round(rawCycle / denominator);
+}
+
+function getNodeVAPercent(node) {
+  if (!node.mos || node.mos.tasks.length===0) return null;
+  let va=0, total=0;
+  node.mos.tasks.forEach(t => {
+    const rowTotal = (parseFloat(t.manual)||0) + (parseFloat(t.machine)||0) + (parseFloat(t.move)||0) + (parseFloat(t.wait)||0);
+    total += rowTotal; if (t.vsm==='va') va += rowTotal;
+  });
+  return total>0 ? Math.round((va/total)*100) : null;
+}
+
+// ─── SELECTION & SUPPRESSION ──────────────────────────────────────────────────
+function selectNode(id) {
+  if (selectedNodeId) document.getElementById(`node-${selectedNodeId}`)?.classList.remove('selected');
+  selectedNodeId=id; document.getElementById(`node-${id}`)?.classList.add('selected'); showProps(id);
+}
+
+canvas.addEventListener('pointerdown', e => {
+  if (e.target === canvas || e.target === svg || e.target.tagName === 'svg') {
+    if (selectedNodeId) document.getElementById(`node-${selectedNodeId}`)?.classList.remove('selected');
+    selectedNodeId=null; document.getElementById('propsEmpty').style.display='flex'; document.getElementById('propsForm').classList.remove('visible');
+    if (isLinkMode) toggleLinkMode();
+  }
+});
+
+function deleteSelected() {
+  if(!selectedNodeId) return;
+  document.getElementById(`node-${selectedNodeId}`)?.remove();
+  nodes=nodes.filter(n=>n.id!==selectedNodeId); connections=connections.filter(c=>c.from!==selectedNodeId&&c.to!==selectedNodeId);
+  selectedNodeId=null; document.getElementById('propsEmpty').style.display='flex'; document.getElementById('propsForm').classList.remove('visible');
+  renderConnections(); updateKPIs(); updateHint(); markDirty();
+}
+
+// ─── PROPS PANEL ──────────────────────────────────────────────────────────────
+function showProps(id) {
+  const node=nodes.find(n=>n.id===id); if(!node) return;
+  const config=BLOCK_CONFIG[node.type];
+  document.getElementById('propsEmpty').style.display='none'; document.getElementById('propsForm').classList.add('visible');
+  document.getElementById('propsSubtitle').textContent=config.label;
+  ['Name','Cycle','Ops','Capacity','Qty','StockMax','Dist','Machines','Dispo','Rebut'].forEach(k => document.getElementById(`prop${k}`) ? document.getElementById(`prop${k}`).value = node[k.toLowerCase()]!==undefined?node[k.toLowerCase()]:'' : null);
+  
+  document.getElementById('propName').value = node.label; 
+  document.getElementById('propVSM').value = node.vsm||'va';
+  document.getElementById('propMachines').value = node.machines || 1;
+  document.getElementById('propDispo').value = node.dispo !== undefined ? node.dispo : 100;
+  document.getElementById('propRebut').value = node.rebut !== undefined ? node.rebut : 0;
+
+  document.getElementById('pfCycle').style.display=config.hasTime?'block':'none';
+  document.getElementById('pfMachines').style.display=config.hasMachines?'block':'none';
+  document.getElementById('pfDispo').style.display=config.hasMachines?'block':'none';
+  document.getElementById('pfRebut').style.display=config.hasMachines?'block':'none';
+  document.getElementById('pfOps').style.display=config.hasOps?'block':'none';
+  document.getElementById('pfCapacity').style.display=config.hasTime?'block':'none';
+  document.getElementById('pfQty').style.display=config.hasQty?'block':'none';
+  document.getElementById('pfStockMax').style.display=config.hasQty?'block':'none';
+  document.getElementById('pfDist').style.display=config.hasDist?'block':'none';
+  document.getElementById('openMosBtn').style.display=config.hasMOS?'block':'none';
+}
+
+['propName','propCycle','propOps','propMachines','propDispo','propRebut','propCapacity','propVSM','propQty','propStockMax','propDist'].forEach(id => {
   document.getElementById(id)?.addEventListener('input', () => {
-    if(!selectedNodeId) return; const n=nodes.find(x=>x.id===selectedNodeId); if(!n) return;
-    n.label = document.getElementById('propName').value; n.cycle = parseFloat(document.getElementById('propCycle').value)||null; n.dispo = parseFloat(document.getElementById('propDispo').value); if(isNaN(n.dispo)) n.dispo=100; n.rebut = parseFloat(document.getElementById('propRebut').value); if(isNaN(n.rebut)) n.rebut=0; n.machines = parseInt(document.getElementById('propMachines').value)||1; n.ops = parseInt(document.getElementById('propOps').value)||1; n.qty = parseFloat(document.getElementById('propQty').value)||null; n.vsm = document.getElementById('propVSM').value;
-    document.getElementById(`node-${n.id}`).innerHTML = buildNodeHTML(n); bindNodeEvents(document.getElementById(`node-${n.id}`), n); updateKPIs(); markDirty();
+    if(!selectedNodeId) return; const node=nodes.find(n=>n.id===selectedNodeId); if(!node) return;
+    node.label = document.getElementById('propName').value||node.label;
+    node.cycle = parseFloat(document.getElementById('propCycle').value)||null;
+    node.ops = parseInt(document.getElementById('propOps').value)||1;
+    node.machines = parseInt(document.getElementById('propMachines').value)||1;
+    node.dispo = parseFloat(document.getElementById('propDispo').value); if(isNaN(node.dispo)) node.dispo = 100;
+    node.rebut = parseFloat(document.getElementById('propRebut').value); if(isNaN(node.rebut)) node.rebut = 0;
+    node.capacity = parseFloat(document.getElementById('propCapacity').value)||480;
+    node.vsm = document.getElementById('propVSM').value;
+    node.qty = parseFloat(document.getElementById('propQty').value)||null;
+    node.stockMax = parseFloat(document.getElementById('propStockMax').value)||null;
+    node.dist = parseFloat(document.getElementById('propDist').value)||null;
+    refreshNodeDisplay(selectedNodeId); markDirty();
   });
 });
+
+// ─── CONNECTIONS RENDERING ────────────────────────────────────────────────────
 function makeCurve(x1,y1,x2,y2) { const cx=(x1+x2)/2; return `M ${x1} ${y1} C ${cx} ${y1}, ${cx} ${y2}, ${x2} ${y2}`; }
+function getPortPos(nodeId, portType) {
+  const portEl=document.getElementById(`port-${portType}-${nodeId}`); if(!portEl)return null;
+  const rect=portEl.getBoundingClientRect(), r=canvas.getBoundingClientRect(); return {x:(rect.left+rect.width/2-r.left)/scale, y:(rect.top+rect.height/2-r.top)/scale};
+}
 function renderConnections() {
-  svg.innerHTML=''; connections.forEach(conn => {
-    const fromEl = document.getElementById(`port-out-${conn.from}`), toEl = document.getElementById(`port-in-${conn.to}`); if(!fromEl||!toEl) return;
-    const r = canvas.getBoundingClientRect(), rf = fromEl.getBoundingClientRect(), rt = toEl.getBoundingClientRect();
-    const x1 = (rf.left + rf.width/2 - r.left)/scale, y1 = (rf.top + rf.height/2 - r.top)/scale, x2 = (rt.left + rt.width/2 - r.left)/scale, y2 = (rt.top + rt.height/2 - r.top)/scale;
-    const path = document.createElementNS('http://www.w3.org/2000/svg','path'); path.setAttribute('d', makeCurve(x1,y1,x2,y2)); path.setAttribute('class','connection-path active'); svg.appendChild(path);
+  svg.innerHTML='';
+  connections.forEach(conn => {
+    const from=getPortPos(conn.from,'out'), to=getPortPos(conn.to,'in'); if(!from||!to)return;
+    const path=document.createElementNS('http://www.w3.org/2000/svg','path');
+    path.setAttribute('d',makeCurve(from.x,from.y,to.x,to.y)); path.setAttribute('class','connection-path active'); svg.appendChild(path);
+    const angle=Math.atan2(to.y-from.y,to.x-from.x), arr=document.createElementNS('http://www.w3.org/2000/svg','polygon');
+    const ax=to.x-6*Math.cos(angle), ay=to.y-6*Math.sin(angle);
+    arr.setAttribute('points',`${to.x},${to.y} ${ax-4*Math.sin(angle)},${ay+4*Math.cos(angle)} ${ax+4*Math.sin(angle)},${ay-4*Math.cos(angle)}`);
+    arr.setAttribute('fill','rgba(0,229,255,0.6)'); svg.appendChild(arr);
   });
 }
-function zoom(f) { scale=Math.min(2,Math.max(0.4,scale*f)); canvas.style.transform = `scale(${scale})`; canvas.style.transformOrigin = 'top left'; document.getElementById('zoomInfo').textContent=Math.round(scale*100)+'%'; }
-function resetZoom() { scale=1; canvas.style.transform = ''; document.getElementById('zoomInfo').textContent='100%'; }
-function toggleLinkMode() { isLinkMode = !isLinkMode; linkSourceId = null; document.getElementById('linkModeBtn').classList.toggle('active', isLinkMode); nodes.forEach(n=>document.getElementById(`node-${n.id}`).classList.remove('link-source')); }
-function markDirty() { dirty=true; document.getElementById('saveStatus').textContent='Non sauvé'; }
-async function saveFlux() { 
-  if (!currentUser) return; 
-  const payload = { user_id: currentUser.id, nom: document.getElementById('fluxTitle').value, nodes, connections, updated_at: new Date().toISOString() };
-  await supabaseClient.from('flux').upsert(currentFluxId ? {id: currentFluxId, ...payload} : payload);
-  dirty=false; document.getElementById('saveStatus').textContent='Sauvegardé ✓';
+
+// ─── ALGORITHME PERT ET LOI DE LITTLE ───────────────────────────────────────
+function calculateCriticalPathLeadTime(cadence) {
+  if (nodes.length === 0) return 0;
+  const memo = {};
+  
+  function getNodeWeight(node) {
+    if (!node) return 0;
+    if (node.type === 'stock') return (node.qty || 0) * cadence; 
+    return getEffectiveCycle(node) || 0;
+  }
+  
+  function getLongestPath(nodeId, visited) {
+    if (visited.has(nodeId)) return 0;
+    if (memo[nodeId] !== undefined) return memo[nodeId];
+    visited.add(nodeId);
+    
+    const childrenIds = connections.filter(c => c.from === nodeId).map(c => c.to);
+    let maxChildTime = 0;
+    for (const childId of childrenIds) {
+      maxChildTime = Math.max(maxChildTime, getLongestPath(childId, visited));
+    }
+    
+    visited.delete(nodeId);
+    const time = getNodeWeight(nodes.find(n => n.id === nodeId)) + maxChildTime;
+    memo[nodeId] = time; 
+    return time;
+  }
+  
+  let maxLeadTime = 0; 
+  nodes.forEach(n => { maxLeadTime = Math.max(maxLeadTime, getLongestPath(n.id, new Set())); });
+  return maxLeadTime;
 }
 
-function openMOSForNode(id) { currentMOSNodeId=id; document.getElementById('mosOverlay').classList.add('open'); resetChrono(); renderTasksList(nodes.find(n=>n.id===id).mos.tasks); updateMOSCalcs(); }
-function closeMOS() { document.getElementById('mosOverlay').classList.remove('open'); currentMOSNodeId=null; }
-function saveMOS() { closeMOS(); updateKPIs(); markDirty(); refreshNodeDisplay(currentMOSNodeId); }
+// ─── ANALYSE DES GLOULOTS ET GROUPES PARALLÈLES ───
+function updateKPIs() {
+  document.getElementById('kpiPostes').textContent = nodes.length;
+  
+  const workNodes = nodes.filter(n=>n.type==='work'||n.type==='control');
+  const groups = {};
+  
+  workNodes.forEach(n => {
+    const c = getEffectiveCycle(n);
+    if (c === 0 || c === Infinity) return;
+    const preds = connections.filter(conn => conn.to === n.id).map(conn => conn.from).sort().join(',');
+    const succs = connections.filter(conn => conn.from === n.id).map(conn => conn.to).sort().join(',');
+    const sig = `in:${preds}|out:${succs}`;
+    
+    if (!groups[sig]) groups[sig] = { ids: [], nodes: [], sumInverse: 0, label: n.label };
+    groups[sig].ids.push(n.id);
+    groups[sig].nodes.push(n);
+    groups[sig].sumInverse += (1 / c);
+  });
 
-function addTask() { nodes.find(n=>n.id===currentMOSNodeId).mos.tasks.push({id:++taskIdCounter, desc:'', manual:'', machine:'', move:'', wait:'', vsm:'va'}); renderTasksList(nodes.find(n=>n.id===currentMOSNodeId).mos.tasks); updateMOSCalcs(); }
-function removeTask(id) { const node = nodes.find(n=>n.id===currentMOSNodeId); node.mos.tasks = node.mos.tasks.filter(t=>t.id!==id); renderTasksList(node.mos.tasks); updateMOSCalcs(); }
-function updateTask(id, f, v) { const t = nodes.find(n=>n.id===currentMOSNodeId).mos.tasks.find(x=>x.id===id); t[f]=v; updateMOSCalcs(); }
+  let maxCycle = 0;
+  let bottleneckGroup = null;
+
+  for (const sig in groups) {
+    const g = groups[sig];
+    g.eqCycle = Math.round(1 / g.sumInverse);
+    if (g.ids.length > 1) g.label = g.nodes[0].label + ' (+ ' + (g.ids.length - 1) + ' en //)';
+    
+    if (g.eqCycle > maxCycle) {
+      maxCycle = g.eqCycle;
+      bottleneckGroup = g;
+    }
+  }
+  
+  const takt = getGlobalTaktTime();
+  const cadenceReelle = Math.max(takt, maxCycle);
+  const leadTime = calculateCriticalPathLeadTime(cadenceReelle);
+  
+  if (leadTime > 0 && leadTime !== Infinity) {
+    let ltText = '';
+    if (leadTime > 86400) ltText = Math.floor(leadTime/86400) + 'j ' + Math.floor((leadTime%86400)/3600) + 'h';
+    else if (leadTime > 3600) ltText = Math.floor(leadTime/3600) + 'h ' + Math.floor((leadTime%3600)/60) + 'min';
+    else if (leadTime > 60) ltText = Math.floor(leadTime/60) + 'min ' + (leadTime%60) + 's';
+    else ltText = leadTime + 's';
+    document.getElementById('kpiLead').textContent = ltText;
+  } else {
+    document.getElementById('kpiLead').textContent = '—';
+  }
+  
+  let totalVA=0, totalNVA=0;
+  nodes.forEach(n => {
+    const c = getEffectiveCycle(n); 
+    if(c === 0 && n.type !== 'stock') return; 
+    
+    if (n.mos && n.mos.tasks.length > 0) {
+      n.mos.tasks.forEach(t=>{ 
+        const tt=(parseFloat(t.manual)||0)+(parseFloat(t.move)||0)+(parseFloat(t.wait)||0); 
+        if(t.vsm==='va') totalVA+=tt; else totalNVA+=tt; 
+      });
+    } else {
+      let weight = c; 
+      if (n.type === 'stock') weight = (n.qty || 0) * cadenceReelle;
+      if (weight > 0 && weight !== Infinity) { 
+        if(n.vsm==='va') totalVA+=weight; else totalNVA+=weight; 
+      }
+    }
+  });
+  
+  const totalTime=totalVA+totalNVA;
+  if(totalTime>0) {
+    const vaP=Math.round((totalVA/totalTime)*100);
+    document.getElementById('kpiVA').textContent = vaP+'%'; 
+    document.getElementById('kpiVA').className = 'kpi-value '+(vaP>=60?'ok':'warn');
+    const bar=document.getElementById('vanaBar'); 
+    bar.children[0].style.width=vaP+'%'; 
+    bar.children[1].style.width=(100-vaP)+'%';
+  } else { 
+    document.getElementById('kpiVA').textContent='—'; 
+    document.getElementById('kpiVA').className='kpi-value neutral'; 
+  }
+
+  if (Object.keys(groups).length === 0) {
+    ['kpiTakt','kpiCycle','kpiBottleneck','kpiRendement','kpiCharge'].forEach(id=>{ document.getElementById(id).textContent='—'; document.getElementById(id).className='kpi-value neutral'; });
+    document.getElementById('kpiBottleneckSub').innerHTML=''; 
+    nodes.forEach(n=>{ document.getElementById(`node-${n.id}`)?.classList.remove('bottleneck'); document.getElementById(`alert-${n.id}`).style.display='none'; });
+    renderYamazumi(null);
+    return;
+  }
+  
+  const isOk = maxCycle<=takt;
+  const rendement = Math.round((takt/maxCycle)*100);
+  
+  document.getElementById('kpiTakt').textContent = takt+'s'; 
+  document.getElementById('kpiCycle').textContent = maxCycle+'s'; 
+  document.getElementById('kpiCycle').className = 'kpi-value '+(isOk?'ok':'warn');
+  document.getElementById('kpiBottleneck').textContent = bottleneckGroup.label; 
+  document.getElementById('kpiBottleneck').className = 'kpi-value '+(isOk?'ok':'warn');
+  document.getElementById('kpiBottleneckSub').innerHTML = isOk?'<span style="color:var(--ok);font-size:0.6rem">✓ Dans les limites</span>':'<span class="kpi-alert-tag">⚠ Dépasse le takt net</span>';
+  document.getElementById('kpiRendement').textContent = rendement+'%'; 
+  document.getElementById('kpiRendement').className = 'kpi-value '+(rendement>=85?'ok':'warn');
+  
+  let sumCharge = 0, countCharge = 0;
+  for (const sig in groups) {
+    sumCharge += (groups[sig].eqCycle / takt) * 100;
+    countCharge++;
+  }
+  const avgCharge = sumCharge / countCharge;
+  
+  document.getElementById('kpiCharge').textContent=Math.round(avgCharge)+'%'; 
+  document.getElementById('kpiCharge').className='kpi-value '+(avgCharge>100?'warn':avgCharge>80?'ok':'neutral');
+  
+  nodes.forEach(n=>{
+    const isBottleneck = bottleneckGroup.ids.includes(n.id) && !isOk;
+    document.getElementById(`node-${n.id}`)?.classList.toggle('bottleneck',isBottleneck);
+    const alertEl=document.getElementById(`alert-${n.id}`); 
+    if(alertEl) alertEl.style.display=isBottleneck?'inline':'none';
+  });
+
+  renderYamazumi(groups);
+}
+
+function zoom(factor) { scale=Math.min(2,Math.max(0.4,scale*factor)); canvas.style.backgroundSize=`${32*scale}px ${32*scale}px`; document.getElementById('zoomInfo').textContent=Math.round(scale*100)+'%'; nodes.forEach(n=>{const el=document.getElementById(`node-${n.id}`); if(el){el.style.left=n.x*scale+'px';el.style.top=n.y*scale+'px';el.style.transform=`scale(${scale})`;el.style.transformOrigin='top left';}}); renderConnections(); }
+function resetZoom() { scale=1; document.getElementById('zoomInfo').textContent='100%'; canvas.style.backgroundSize='32px 32px'; nodes.forEach(n=>{const el=document.getElementById(`node-${n.id}`); if(el){el.style.left=n.x+'px';el.style.top=n.y+'px';el.style.transform='';}}); renderConnections(); }
+
+// ─── SUPABASE / SAUVEGARDE ──────────────────────────────────────────────────
+function updateHint() { document.getElementById('canvasHint').style.opacity=nodes.length===0?'1':'0'; }
+function markDirty() { dirty=true; document.getElementById('saveStatus').textContent='Non sauvegardé'; document.getElementById('saveStatus').style.color='var(--warn)'; }
+
+async function saveFlux() {
+  if (!currentUser) return;
+  const title = document.getElementById('fluxTitle').value || 'Nouveau flux';
+  const payload = { 
+    user_id: currentUser.id, 
+    nom: title, 
+    nodes: nodes, 
+    connections: connections, 
+    takt_time_cible: getGlobalTaktTime(),
+    updated_at: new Date().toISOString() 
+  };
+  
+  let error;
+  if (currentFluxId) { ({ error } = await supabaseClient.from('flux').update(payload).eq('id', currentFluxId)); }
+  else {
+    const { data, error: err } = await supabaseClient.from('flux').insert(payload).select().single();
+    error = err; if (data) currentFluxId = data.id;
+  }
+  if (error) { document.getElementById('saveStatus').textContent = '⚠ Erreur'; document.getElementById('saveStatus').style.color = 'var(--warn)'; }
+  else { dirty = false; document.getElementById('saveStatus').textContent = 'Sauvegardé ✓'; document.getElementById('saveStatus').style.color = 'var(--ok)'; setTimeout(() => { if (!dirty) document.getElementById('saveStatus').textContent = 'Sauvegardé'; }, 3000); }
+}
+setInterval(() => { if (dirty && currentUser) saveFlux(); }, 30000);
+
+async function deleteFlux() {
+  if (!currentFluxId) { window.location.href = '/dashboard'; return; }
+  if (confirm("Supprimer définitivement ce flux ? Cette action est irréversible.")) {
+    const { error } = await supabaseClient.from('flux').delete().eq('id', currentFluxId);
+    if (error) alert("Erreur lors de la suppression.");
+    else window.location.href = '/dashboard';
+  }
+}
+
+// ─── MOS MODAL ───────────────────────────────────────────────────────────────
+function openMOSForNode(id) { currentMOSNodeId=id; openMOS(); }
+function openMOS() {
+  const id=currentMOSNodeId||selectedNodeId; currentMOSNodeId=id; const node=nodes.find(n=>n.id===id); if(!node) return;
+  document.getElementById('mosModalTitle').textContent='MOS — '+node.label;
+  ['ProcessName','Author'].forEach(k => document.getElementById(`mos${k}`).value=node.mos[k.charAt(0).toLowerCase()+k.slice(1)]||'');
+  resetChrono();
+  renderTasksList(node.mos.tasks); renderNCList(node.mos.nc); updateMOSCalcs(); document.getElementById('mosOverlay').classList.add('open');
+}
+function closeMOS() { document.getElementById('mosOverlay').classList.remove('open'); currentMOSNodeId=null; resetChrono(); }
+function saveMOS() {
+  const node=nodes.find(n=>n.id===currentMOSNodeId); if(!node)return;
+  node.mos.processName=document.getElementById('mosProcessName').value; node.mos.author=document.getElementById('mosAuthor').value;
+  if(node.mos.tasks.reduce((s,t)=>s+(parseFloat(t.manual)||0)+(parseFloat(t.move)||0)+(parseFloat(t.wait)||0),0)>0) node.cycle=null;
+  refreshNodeDisplay(currentMOSNodeId); markDirty(); closeMOS();
+}
+
+let taskIdCounter=0;
+function addTask() { nodes.find(n=>n.id===currentMOSNodeId)?.mos.tasks.push({id:++taskIdCounter, desc:'', manual:'', machine:'', move:'', wait:'', vsm:'va'}); renderTasksList(nodes.find(n=>n.id===currentMOSNodeId).mos.tasks); updateMOSCalcs(); }
+function removeTask(id) { const node=nodes.find(n=>n.id===currentMOSNodeId); node.mos.tasks=node.mos.tasks.filter(t=>t.id!==id); renderTasksList(node.mos.tasks); updateMOSCalcs(); }
+function updateTask(id, f, v) { nodes.find(n=>n.id===currentMOSNodeId)?.mos.tasks.find(t=>t.id===id) && (nodes.find(n=>n.id===currentMOSNodeId).mos.tasks.find(t=>t.id===id)[f]=v); updateMOSCalcs(); }
 function setTaskVSM(id, v) { updateTask(id,'vsm',v); renderTasksList(nodes.find(n=>n.id===currentMOSNodeId).mos.tasks); }
 
-function renderTasksList(tasks) { 
+function renderTasksList(tasks) {
   let cumul=0;
   document.getElementById('tasksList').innerHTML = tasks.map((t,i) => {
     cumul += (parseFloat(t.manual)||0)+(parseFloat(t.move)||0)+(parseFloat(t.wait)||0);
-    return `<div class="task-row ${t.desc?'has-data':''} ${t.vsm}"><div class="task-num">${i+1}</div><div class="task-main"><input class="task-input" placeholder="Tâche..." value="${t.desc}" oninput="updateTask(${t.id},'desc',this.value)"><div class="task-type-tag"><span class="type-badge va-tag ${t.vsm==='va'?'active':''}" onclick="setTaskVSM(${t.id},'va')">VA</span><span class="type-badge nva-tag ${t.vsm==='nva'?'active':''}" onclick="setTaskVSM(${t.id},'nva')">NVA</span></div></div><div class="time-wrap" data-label="Manuel"><input type="number" class="task-time-input" value="${t.manual}" oninput="updateTask(${t.id},'manual',this.value)"></div><div class="time-wrap" data-label="Machine"><input type="number" class="task-time-input" value="${t.machine}" oninput="updateTask(${t.id},'machine',this.value)"></div><div class="time-wrap" data-label="Dépl."><input type="number" class="task-time-input" value="${t.move}" oninput="updateTask(${t.id},'move',this.value)"></div><div class="time-wrap" data-label="Attente"><input type="number" class="task-time-input" value="${t.wait}" oninput="updateTask(${t.id},'wait',this.value)"></div><div class="time-wrap" data-label="Cumul"><div class="task-cumul">${cumul>0?cumul+'s':''}</div></div><button class="task-del" onclick="removeTask(${t.id})">✕ Supprimer</button></div>`;
-  }).join(''); 
+    return `
+    <div class="task-row ${t.desc?'has-data':''} ${t.vsm}">
+      <div class="task-num">${i+1}</div>
+      <div class="task-main">
+        <input class="task-input" placeholder="Description de la tâche..." value="${t.desc}" oninput="updateTask(${t.id},'desc',this.value)">
+        <div class="task-type-tag">
+          <span class="type-badge va-tag ${t.vsm==='va'?'active':''}" onclick="setTaskVSM(${t.id},'va')">VA</span>
+          <span class="type-badge nva-tag ${t.vsm==='nva'?'active':''}" onclick="setTaskVSM(${t.id},'nva')">NVA</span>
+        </div>
+      </div>
+      <div class="time-wrap" data-label="Manuel (s)"><input type="number" class="task-time-input" value="${t.manual}" oninput="updateTask(${t.id},'manual',this.value)"></div>
+      <div class="time-wrap" data-label="Machine (s)"><input type="number" class="task-time-input" value="${t.machine}" oninput="updateTask(${t.id},'machine',this.value)"></div>
+      <div class="time-wrap" data-label="Dépl. (s)"><input type="number" class="task-time-input" value="${t.move}" oninput="updateTask(${t.id},'move',this.value)"></div>
+      <div class="time-wrap" data-label="Attente (s)"><input type="number" class="task-time-input" value="${t.wait}" oninput="updateTask(${t.id},'wait',this.value)"></div>
+      <div class="time-wrap" data-label="Cumul (s)"><div class="task-cumul">${cumul>0?cumul+'s':''}</div></div>
+      <button class="task-del" onclick="removeTask(${t.id})">✕ Supprimer</button>
+    </div>`;
+  }).join('');
 }
 
 function addNC() { nodes.find(n=>n.id===currentMOSNodeId)?.mos.nc.push({id:++taskIdCounter, desc:'', temps:'', pieces:'', freq:''}); renderNCList(nodes.find(n=>n.id===currentMOSNodeId).mos.nc); }
 function removeNC(id) { const node=nodes.find(n=>n.id===currentMOSNodeId); node.mos.nc=node.mos.nc.filter(n=>n.id!==id); renderNCList(node.mos.nc); }
 function updateNC(id, f, v) { nodes.find(n=>n.id===currentMOSNodeId)?.mos.nc.find(n=>n.id===id) && (nodes.find(n=>n.id===currentMOSNodeId).mos.nc.find(n=>n.id===id)[f]=v); }
-function renderNCList(nc) { document.getElementById('ncList').innerHTML = nc.map(item => `<div class="nc-row"><div class="time-wrap" style="width:100%"><input class="task-input" value="${item.desc}" oninput="updateNC(${item.id},'desc',this.value)" style="width:100%"></div><div class="time-wrap"><input type="number" class="task-time-input" value="${item.temps}" oninput="updateNC(${item.id},'temps',this.value)"></div><div class="time-wrap"><input type="number" class="task-time-input" value="${item.pieces}" oninput="updateNC(${item.id},'pieces',this.value)"></div><div class="time-wrap"><input type="number" class="task-time-input" value="${item.freq}" oninput="updateNC(${item.id},'freq',this.value)"></div><button class="task-del" onclick="removeNC(${item.id})">✕</button></div>`).join(''); }
+function renderNCList(nc) { 
+  document.getElementById('ncList').innerHTML = nc.map(item => `
+    <div class="nc-row">
+      <div class="time-wrap" data-label="Activité" style="width:100%"><input class="task-input" value="${item.desc}" oninput="updateNC(${item.id},'desc',this.value)" style="width:100%"></div>
+      <div class="time-wrap" data-label="Temps (s)"><input type="number" class="task-time-input" value="${item.temps}" oninput="updateNC(${item.id},'temps',this.value)"></div>
+      <div class="time-wrap" data-label="Pièces"><input type="number" class="task-time-input" value="${item.pieces}" oninput="updateNC(${item.id},'pieces',this.value)"></div>
+      <div class="time-wrap" data-label="Fréq."><input type="number" class="task-time-input" value="${item.freq}" oninput="updateNC(${item.id},'freq',this.value)"></div>
+      <button class="task-del" onclick="removeNC(${item.id})">✕</button>
+    </div>
+  `).join(''); 
+}
 
 function updateMOSCalcs() {
   const node=nodes.find(n=>n.id===currentMOSNodeId); if(!node)return;
@@ -722,6 +1188,7 @@ function updateMOSCalcs() {
   if(cyc+mc>0) { const tot=m+mc+mv+w||1; ['manual','machine','move','wait'].forEach((k,i) => document.getElementById(`gantt-${k}`).style.width=([m,mc,mv,w][i]/tot*100)+'%'); }
 }
 
+// ─── INITIALISATION ──────────────────────────────────────────────────────────
 async function initEditor() {
   currentUser = await requireAuth(); if (!currentUser) return;
   const fluxId = new URLSearchParams(window.location.search).get('id');
@@ -730,13 +1197,7 @@ async function initEditor() {
     if (data && !error) {
       currentFluxId = data.id; document.getElementById('fluxTitle').value = data.nom;
       if (data.takt_time_cible) { globalSettings.demand = Math.round((globalSettings.openingTime * 60) / data.takt_time_cible); }
-      (Array.isArray(data.nodes) ? data.nodes : JSON.parse(data.nodes||'[]')).forEach(n => {
-        const node = addNode(n.type, n.label, n.x, n.y);
-        Object.assign(node, n);
-        if (n.id > nodeCounter) nodeCounter = n.id;
-        if (n.mos) node.mos = n.mos;
-        refreshNodeDisplay(node.id);
-      });
+      (Array.isArray(data.nodes) ? data.nodes : JSON.parse(data.nodes||'[]')).forEach(n => { const node = addNode(n.type, n.label, n.x, n.y); Object.assign(node, n); if (n.mos) node.mos = n.mos; refreshNodeDisplay(node.id); });
       connections.push(...(Array.isArray(data.connections) ? data.connections : JSON.parse(data.connections||'[]')));
       setTimeout(() => { renderConnections(); updateKPIs(); updateHint(); }, 80);
     }
