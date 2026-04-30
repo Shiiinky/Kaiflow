@@ -18,7 +18,8 @@ html, body { height: 100%; overflow: hidden; display: flex; flex-direction: colu
 .breadcrumb a { color: var(--muted); cursor: pointer; text-decoration: none; }
 .breadcrumb a:hover { color: var(--text); }
 .topbar-spacer { flex: 1; }
-.flux-title-input { background: transparent; border: none; border-bottom: 1px solid transparent; outline: none; font-family: 'Syne', sans-serif; font-size: 0.95rem; font-weight: 700; color: var(--text); text-align: center; padding: 0.2rem 0.5rem; transition: border-color 0.2s; min-width: 200px; }
+/* CORRECTION : Largeur du titre augmentée */
+.flux-title-input { background: transparent; border: none; border-bottom: 1px solid transparent; outline: none; font-family: 'Syne', sans-serif; font-size: 0.95rem; font-weight: 700; color: var(--text); text-align: center; padding: 0.2rem 0.5rem; transition: border-color 0.2s; width: 100%; max-width: 380px; }
 .flux-title-input:focus { border-bottom-color: var(--accent); }
 .topbar-actions { display: flex; gap: 0.6rem; align-items: center; }
 .tb-btn { display: flex; align-items: center; gap: 0.4rem; padding: 0.45rem 1rem; border-radius: 7px; font-family: 'DM Sans', sans-serif; font-size: 0.82rem; font-weight: 400; cursor: pointer; transition: all 0.15s; border: 1px solid var(--border); background: transparent; color: var(--muted2); }
@@ -125,36 +126,37 @@ html, body { height: 100%; overflow: hidden; display: flex; flex-direction: colu
 .delete-btn:hover { background: var(--warn-dim); border-color: var(--warn); }
 .open-mos-btn { width: 100%; margin-top: 0.5rem; padding: 0.55rem; background: var(--accent-dim); border: 1px solid rgba(0,229,255,0.3); border-radius: 7px; color: var(--accent); font-family: 'DM Sans', sans-serif; font-size: 0.8rem; font-weight: 500; cursor: pointer; transition: all 0.15s; }
 
-/* ─── YAMAZUMI PANEL (CORRIGÉ : RATIO ET LABELS) ─── */
+/* ─── YAMAZUMI PANEL (CORRIGÉ : LABELS ET ALIGNEMENT) ─── */
 .yamazumi-panel {
   position: absolute; bottom: 0; left: 0; right: 0;
   background: var(--surface); border-top: 1px solid var(--border);
   height: 0; overflow: hidden; transition: height 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   display: flex; flex-direction: column; z-index: 40;
 }
-.yamazumi-panel.open { height: 340px; box-shadow: 0 -10px 40px rgba(0,0,0,0.5); }
+.yamazumi-panel.open { height: 350px; box-shadow: 0 -10px 40px rgba(0,0,0,0.5); }
 .yamazumi-header { padding: 1rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
 .y-title { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 800; }
 .y-subtitle { font-size: 0.75rem; color: var(--muted); }
 .y-fte { font-size: 0.85rem; color: var(--text); background: var(--surface2); padding: 0.4rem 0.8rem; border-radius: 6px; border: 1px solid var(--border); }
-.yamazumi-body { flex: 1; padding: 2rem 2rem 1.5rem; display: flex; justify-content: center; overflow-x: auto; background: var(--bg); }
 
-/* Zone graphique pure avec trait en bas */
-.y-chart-area { position: relative; height: 180px; display: flex; align-items: flex-end; gap: 2.5rem; border-bottom: 2px solid var(--border2); padding: 0 2rem; min-width: 100%; justify-content: center; }
+/* On centre le conteneur en haut pour laisser de la place aux étiquettes en bas */
+.yamazumi-body { flex: 1; padding: 2rem; display: flex; justify-content: center; align-items: flex-start; overflow-x: auto; background: var(--bg); }
 
-/* Ligne de Takt proportionnelle */
+.y-chart-area { position: relative; height: 180px; margin-top: 10px; display: flex; align-items: flex-end; gap: 2.5rem; border-bottom: 2px solid var(--border2); padding: 0 2rem; min-width: 100%; justify-content: center; }
+
 .takt-line { position: absolute; left: 0; right: 0; border-top: 1.5px dashed var(--warn); z-index: 5; pointer-events: none; }
 .takt-line span { background: var(--warn-dim); color: var(--warn); font-size: 0.65rem; font-weight: 700; padding: 0.15rem 0.5rem; border-radius: 4px; position: absolute; top: -10px; left: 1rem; border: 1px solid rgba(255,107,53,0.3); }
 
-/* Colonnes d'histogramme */
 .y-col { position: relative; width: 60px; height: 100%; display: flex; align-items: flex-end; justify-content: center; z-index: 10; }
 .y-bar { width: 100%; background: var(--accent-dim); border: 1px solid rgba(0,229,255,0.3); border-bottom: none; border-radius: 4px 4px 0 0; display: flex; flex-direction: column; justify-content: flex-end; overflow: hidden; transition: height 0.3s; }
 .y-bar.goulot { background: var(--warn-dim); border-color: rgba(255,107,53,0.4); }
 
-/* Valeurs et Textes repensés */
 .y-val { position: absolute; width: 100%; text-align: center; font-family: 'Syne', sans-serif; font-size: 0.8rem; font-weight: 700; color: var(--text); transition: bottom 0.3s; }
 .y-val.warn { color: var(--warn); }
-.y-label { position: absolute; bottom: -35px; width: 120px; text-align: center; font-size: 0.65rem; color: var(--muted2); font-weight: 500; line-height: 1.2; word-wrap: break-word; }
+
+/* L'étiquette sort du conteneur par le bas, mais comme le parent (yamazumi-body) est grand, elle ne sera pas coupée */
+.y-label { position: absolute; top: calc(100% + 8px); left: 50%; transform: translateX(-50%); width: 120px; text-align: center; font-size: 0.65rem; color: var(--muted2); font-weight: 500; line-height: 1.3; }
+
 
 /* MODALS (MOS ET SETTINGS) */
 .mos-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 300; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.25s; backdrop-filter: blur(6px); padding: 1rem; }
@@ -294,17 +296,22 @@ html, body { height: 100%; overflow: hidden; display: flex; flex-direction: colu
 
     </div>
     
+    <!-- CORRECTION : LÉGENDE CONTEXTUELLE AU CANVAS -->
     <div class="panel-section">
-      <div class="panel-section-title">Légende temps</div>
-      <div style="display:flex;flex-direction:column;gap:0.35rem;padding:0 0.2rem;">
-        <div class="legend-dot manual"><span style="width:10px;height:10px;background:var(--manual);border-radius:2px;flex-shrink:0"></span>Travail manuel</div>
-        <div class="legend-dot machine"><span style="width:10px;height:10px;background:var(--machine);border-radius:2px;flex-shrink:0"></span>Machine</div>
-        <div class="legend-dot move"><span style="width:10px;height:10px;background:var(--move);border-radius:2px;flex-shrink:0"></span>Déplacement</div>
-        <div class="legend-dot wait"><span style="width:10px;height:10px;background:var(--wait);border-radius:2px;flex-shrink:0"></span>Attente</div>
-      </div>
-      <div style="margin-top:1rem;font-size:0.72rem;color:var(--muted);line-height:1.6;padding:0 0.2rem;">
-        <span style="color:var(--ok)">●</span> VA = Valeur Ajoutée<br>
-        <span style="color:var(--warn)">●</span> NVA = Non Valeur Ajoutée
+      <div class="panel-section-title">Légende Canvas</div>
+      <div style="display:flex;flex-direction:column;gap:0.6rem;padding:0 0.2rem;font-size:0.72rem;color:var(--muted);line-height:1.4;">
+        <div style="display:flex;align-items:center;gap:0.5rem;">
+          <span style="width:14px;height:14px;border:2px solid var(--warn);border-radius:4px;box-shadow: 0 0 0 2px rgba(255,107,53,0.15);flex-shrink:0;"></span> 
+          <span><strong>Goulot</strong><br>Dépasse le Takt Time</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:0.5rem;">
+          <span style="width:14px;height:5px;background:var(--ok);border-radius:2px;flex-shrink:0;"></span> 
+          <span><strong>VA</strong><br>Valeur Ajoutée</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:0.5rem;">
+          <span style="width:14px;height:5px;background:var(--warn);border-radius:2px;flex-shrink:0;"></span> 
+          <span><strong>NVA</strong><br>Non Valeur Ajoutée</span>
+        </div>
       </div>
     </div>
   </div>
@@ -396,7 +403,7 @@ html, body { height: 100%; overflow: hidden; display: flex; flex-direction: colu
 
 </div>
 
-<!-- ─── MOS MODAL ET PARAMÈTRES (Identique) ─── -->
+<!-- ─── MOS MODAL ET PARAMÈTRES ─── -->
 <div class="mos-overlay" id="mosOverlay">
   <div class="modal">
     <div class="mos-header">
