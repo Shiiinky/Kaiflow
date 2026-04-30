@@ -566,20 +566,19 @@ function resetChrono() {
   document.getElementById('chronoLapBtn').disabled = true;
 }
 
-// ─── GESTION YAMAZUMI ─────────────────────────────────────────────────────────
+// ─── GESTION YAMAZUMI ET GROUPES PARALLÈLES ───────────────────────────────────
 function toggleYamazumi() {
   const panel = document.getElementById('yamazumiPanel');
   isYamazumiOpen = !isYamazumiOpen;
-  if (isYamazumiOpen) { panel.classList.add('open'); renderYamazumi(); }
+  if (isYamazumiOpen) { panel.classList.add('open'); updateKPIs(); } // updateKPIs force le rendu
   else { panel.classList.remove('open'); }
 }
 
-function renderYamazumi() {
+function renderYamazumi(groups) {
   if (!isYamazumiOpen) return;
-  const workNodes = nodes.filter(n => n.type === 'work' || n.type === 'control');
   const chartEl = document.getElementById('yChart');
   
-  if (workNodes.length === 0) {
+  if (!groups || Object.keys(groups).length === 0) {
     chartEl.innerHTML = '<div style="margin:auto;color:var(--muted)">Aucun poste de travail à équilibrer sur le flux.</div>';
     document.getElementById('yFTE').textContent = '— opérateurs';
     return;
@@ -589,21 +588,30 @@ function renderYamazumi() {
   let sumCycle = 0;
   let maxCycle = takt;
 
-  const barsData = workNodes.map(n => {
-    const c = getEffectiveCycle(n);
-    sumCycle += c;
-    if (c > maxCycle) maxCycle = c;
+  const barsData = [];
+  for (const sig in groups) {
+    const g = groups[sig];
+    sumCycle += g.eqCycle;
+    if (g.eqCycle > maxCycle) maxCycle = g.eqCycle;
+    
+    const firstNode = nodes.find(n => n.id === g.ids[0]);
     let va = 0, nva = 0;
-    if (n.mos && n.mos.tasks.length > 0) {
-      n.mos.tasks.forEach(t => {
-        const tt = (parseFloat(t.manual)||0) + (parseFloat(t.move)||0) + (parseFloat(t.wait)||0);
-        if (t.vsm === 'va') va += tt; else nva += tt;
-      });
-    } else {
-      if (n.vsm === 'va') va = c; else nva = c;
+    const origC = getEffectiveCycle(firstNode);
+    if (origC > 0) {
+      if (firstNode.mos && firstNode.mos.tasks.length > 0) {
+        let rVa = 0, rNva = 0;
+        firstNode.mos.tasks.forEach(t => {
+          const tt = (parseFloat(t.manual)||0) + (parseFloat(t.move)||0) + (parseFloat(t.wait)||0);
+          if (t.vsm === 'va') rVa += tt; else rNva += tt;
+        });
+        va = (rVa / origC) * g.eqCycle;
+        nva = (rNva / origC) * g.eqCycle;
+      } else {
+        if (firstNode.vsm === 'va') va = g.eqCycle; else nva = g.eqCycle;
+      }
     }
-    return { label: n.label, cycle: c, va, nva };
-  });
+    barsData.push({ label: g.label, cycle: g.eqCycle, va, nva });
+  }
 
   const fte = takt > 0 ? (sumCycle / takt).toFixed(1) : 0;
   document.getElementById('yFTE').innerHTML = `Effectif théorique cible : <strong style="color:var(--accent); font-size:1.1rem;">${fte} opérateurs</strong>`;
@@ -925,23 +933,49 @@ function calculateCriticalPathLeadTime(cadence) {
   return maxLeadTime;
 }
 
+// ─── ANALYSE DES GLOULOTS ET GROUPES PARALLÈLES ───
 function updateKPIs() {
   document.getElementById('kpiPostes').textContent = nodes.length;
+  
+  // 1. DÉTECTION DES GROUPES EN PARALLÈLE
   const workNodes = nodes.filter(n=>n.type==='work'||n.type==='control');
-  const cycles = workNodes.map(n=>({node:n, cycle:getEffectiveCycle(n)})).filter(c=>c.cycle > 0);
+  const groups = {};
+  
+  workNodes.forEach(n => {
+    const c = getEffectiveCycle(n);
+    if (c === 0) return;
+    
+    // Signature unique = [Entrées] | [Sorties]
+    const preds = connections.filter(conn => conn.to === n.id).map(conn => conn.from).sort().join(',');
+    const succs = connections.filter(conn => conn.from === n.id).map(conn => conn.to).sort().join(',');
+    const sig = `in:${preds}|out:${succs}`;
+    
+    if (!groups[sig]) groups[sig] = { ids: [], nodes: [], sumInverse: 0, label: n.label };
+    groups[sig].ids.push(n.id);
+    groups[sig].nodes.push(n);
+    groups[sig].sumInverse += (1 / c);
+  });
+
+  let maxCycle = 0;
+  let bottleneckGroup = null;
+
+  // Calcul du Cycle Équivalent pour chaque groupe
+  for (const sig in groups) {
+    const g = groups[sig];
+    g.eqCycle = Math.round(1 / g.sumInverse);
+    if (g.ids.length > 1) g.label = g.nodes[0].label + ' (+ ' + (g.ids.length - 1) + ' en //)';
+    
+    if (g.eqCycle > maxCycle) {
+      maxCycle = g.eqCycle;
+      bottleneckGroup = g;
+    }
+  }
   
   const takt = getGlobalTaktTime();
-  let maxCycle = 0, bottleneck = null;
-  
-  if (cycles.length > 0) {
-    const maxCycleObj = cycles.reduce((a,b)=>b.cycle>a.cycle?b:a);
-    maxCycle = maxCycleObj.cycle;
-    bottleneck = maxCycleObj.node;
-  }
-
   const cadenceReelle = Math.max(takt, maxCycle);
   const leadTime = calculateCriticalPathLeadTime(cadenceReelle);
   
+  // Formatage du Lead Time
   if (leadTime > 0) {
     let ltText = '';
     if (leadTime > 86400) ltText = Math.floor(leadTime/86400) + 'j ' + Math.floor((leadTime%86400)/3600) + 'h';
@@ -953,6 +987,7 @@ function updateKPIs() {
     document.getElementById('kpiLead').textContent = '—';
   }
   
+  // Calcul ratio VA / NVA
   let totalVA=0, totalNVA=0;
   nodes.forEach(n => {
     const c = getEffectiveCycle(n); 
@@ -985,37 +1020,46 @@ function updateKPIs() {
     document.getElementById('kpiVA').className='kpi-value neutral'; 
   }
 
-  if (cycles.length===0) {
+  if (Object.keys(groups).length === 0) {
     ['kpiTakt','kpiCycle','kpiBottleneck','kpiRendement','kpiCharge'].forEach(id=>{ document.getElementById(id).textContent='—'; document.getElementById(id).className='kpi-value neutral'; });
     document.getElementById('kpiBottleneckSub').innerHTML=''; 
     nodes.forEach(n=>{ document.getElementById(`node-${n.id}`)?.classList.remove('bottleneck'); document.getElementById(`alert-${n.id}`).style.display='none'; });
-    renderYamazumi();
+    renderYamazumi(null);
     return;
   }
   
-  const isOk = maxCycle<=takt, rendement = Math.round((takt/maxCycle)*100);
+  const isOk = maxCycle<=takt;
+  const rendement = Math.round((takt/maxCycle)*100);
   
   document.getElementById('kpiTakt').textContent = takt+'s'; 
-  document.getElementById('kpiCycle').textContent=maxCycle+'s'; 
-  document.getElementById('kpiCycle').className='kpi-value '+(isOk?'ok':'warn');
-  document.getElementById('kpiBottleneck').textContent=bottleneck.label; 
-  document.getElementById('kpiBottleneck').className='kpi-value '+(isOk?'ok':'warn');
-  document.getElementById('kpiBottleneckSub').innerHTML=isOk?'<span style="color:var(--ok);font-size:0.6rem">✓ Dans les limites</span>':'<span class="kpi-alert-tag">⚠ Dépasse le takt net</span>';
-  document.getElementById('kpiRendement').textContent=rendement+'%'; 
-  document.getElementById('kpiRendement').className='kpi-value '+(rendement>=85?'ok':'warn');
+  document.getElementById('kpiCycle').textContent = maxCycle+'s'; 
+  document.getElementById('kpiCycle').className = 'kpi-value '+(isOk?'ok':'warn');
+  document.getElementById('kpiBottleneck').textContent = bottleneckGroup.label; 
+  document.getElementById('kpiBottleneck').className = 'kpi-value '+(isOk?'ok':'warn');
+  document.getElementById('kpiBottleneckSub').innerHTML = isOk?'<span style="color:var(--ok);font-size:0.6rem">✓ Dans les limites</span>':'<span class="kpi-alert-tag">⚠ Dépasse le takt net</span>';
+  document.getElementById('kpiRendement').textContent = rendement+'%'; 
+  document.getElementById('kpiRendement').className = 'kpi-value '+(rendement>=85?'ok':'warn');
   
-  const avgCharge = cycles.reduce((s,c)=> s+(c.cycle/(c.node.capacity||480)*100),0)/cycles.length;
+  // Taux de charge moyen basé sur le cycle équivalent des groupes
+  let sumCharge = 0, countCharge = 0;
+  for (const sig in groups) {
+    sumCharge += (groups[sig].eqCycle / takt) * 100;
+    countCharge++;
+  }
+  const avgCharge = sumCharge / countCharge;
+  
   document.getElementById('kpiCharge').textContent=Math.round(avgCharge)+'%'; 
   document.getElementById('kpiCharge').className='kpi-value '+(avgCharge>100?'warn':avgCharge>80?'ok':'neutral');
   
+  // Highlighting des blocs Goulots
   nodes.forEach(n=>{
-    const isBottleneck=n.id===bottleneck.id&&!isOk;
+    const isBottleneck = bottleneckGroup.ids.includes(n.id) && !isOk;
     document.getElementById(`node-${n.id}`)?.classList.toggle('bottleneck',isBottleneck);
     const alertEl=document.getElementById(`alert-${n.id}`); 
     if(alertEl) alertEl.style.display=isBottleneck?'inline':'none';
   });
 
-  renderYamazumi(); // Mise à jour du graphique en direct
+  renderYamazumi(groups);
 }
 
 function zoom(factor) { scale=Math.min(2,Math.max(0.4,scale*factor)); canvas.style.backgroundSize=`${32*scale}px ${32*scale}px`; document.getElementById('zoomInfo').textContent=Math.round(scale*100)+'%'; nodes.forEach(n=>{const el=document.getElementById(`node-${n.id}`); if(el){el.style.left=n.x*scale+'px';el.style.top=n.y*scale+'px';el.style.transform=`scale(${scale})`;el.style.transformOrigin='top left';}}); renderConnections(); }
