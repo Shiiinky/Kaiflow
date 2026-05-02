@@ -41,13 +41,16 @@
   .btn-primary { background: var(--accent); color: #000; border: none; padding: 0.6rem 1.4rem; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; width: fit-content; white-space: nowrap; flex: 0 0 auto; }
   .btn-primary:hover { box-shadow: 0 4px 15px rgba(0,229,255,0.25); transform: translateY(-1px); }
 
+  .btn-icon { background: transparent; border: none; color: var(--muted); cursor: pointer; font-size: 1rem; transition: all 0.2s; padding: 0.3rem; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; margin-left: 0.5rem; }
+  .btn-icon:hover { color: var(--accent); background: rgba(0,229,255,0.1); }
+
   /* GROUPEMENT (USINE / ATELIER) */
   .usine-section { margin-bottom: 4rem; }
-  .usine-title { font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 700; color: var(--text); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.7rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
-  .usine-title::before { content: '🏭'; font-size: 1.2rem; }
+  .usine-title { font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 700; color: var(--text); margin-bottom: 1.5rem; display: flex; align-items: center; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
+  .usine-title::before { content: '🏭'; font-size: 1.2rem; margin-right: 0.7rem; }
   
   .atelier-section { margin-bottom: 2.5rem; padding-left: 1rem; border-left: 2px solid var(--border2); }
-  .atelier-title { font-size: 1rem; font-weight: 600; color: var(--muted); margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 0.5rem; }
+  .atelier-title { font-size: 1rem; font-weight: 600; color: var(--muted); margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; }
 
   /* GRID & CARDS */
   .flux-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; }
@@ -126,8 +129,7 @@
     </div>
     <nav class="sidebar-nav">
       <a href="/dashboard" class="nav-item active">📊 Dashboard</a>
-      <a href="#" class="nav-item">👤 Profil (Bientôt)</a>
-      <a href="#" class="nav-item">⚙️ Paramètres usine</a>
+      <a href="/account" class="nav-item">👤 Profil</a>
     </nav>
     <div class="sidebar-footer">
       <div class="user-email" id="userEmail">Chargement...</div>
@@ -219,13 +221,28 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="renameModal">
+  <div class="modal-content" style="max-width: 400px;">
+    <div class="modal-title" id="rmTitle">Renommer</div>
+    <input type="hidden" id="rmType">
+    <input type="hidden" id="rmOldName">
+    <input type="hidden" id="rmParentUsine">
+    <div class="input-group">
+      <label>Nouveau nom</label>
+      <input type="text" id="rmNewName" autocomplete="off">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeRenameModal()">Annuler</button>
+      <button class="btn-submit" onclick="submitRename()">💾 Mettre à jour</button>
+    </div>
+  </div>
+</div>
+
 <script type="module">
 import { supabaseClient, requireAuth } from '/js/supabase-client.js';
 
 let currentUser = null;
 let currentTemplate = 'blank';
-
-// On stocke l'arborescence pour l'autocomplétion
 window.factoryTree = {};
 
 // ─── GESTION AUTOCOMPLETION (DATALISTS) ───
@@ -243,10 +260,8 @@ window.populateAteliersList = (usineName) => {
   }
 };
 
-// Écouteurs pour mettre à jour la liste des ateliers en fonction de l'usine tapée/sélectionnée
 document.getElementById('nfUsine').addEventListener('input', e => window.populateAteliersList(e.target.value));
 document.getElementById('efUsine').addEventListener('input', e => window.populateAteliersList(e.target.value));
-
 
 // ─── GESTION TEMPLATES ───
 window.selectTemplate = (tpl) => {
@@ -335,7 +350,6 @@ window.loadDashboard = async () => {
       return;
     }
 
-    // Construction de l'arbre Usine -> Atelier
     const tree = {};
     fluxList.forEach(f => {
       const u = f.usine || 'Site Principal';
@@ -345,16 +359,25 @@ window.loadDashboard = async () => {
       tree[u][a].push(f);
     });
 
-    // Mise à jour de la mémoire globale pour l'autocomplétion
     window.factoryTree = tree;
-
     let html = '';
 
     for (const [usine, ateliers] of Object.entries(tree)) {
-      html += `<div class="usine-section"><h2 class="usine-title">${usine}</h2>`;
+      html += `
+        <div class="usine-section">
+          <h2 class="usine-title">
+            <span>${usine}</span>
+            <button class="btn-icon" onclick="openRenameModal('usine', '${usine.replace(/'/g, "\\'")}')" title="Renommer l'usine">✏️</button>
+          </h2>`;
       
       for (const [atelier, fluxArr] of Object.entries(ateliers)) {
-        html += `<div class="atelier-section"><h3 class="atelier-title">${atelier}</h3><div class="flux-grid">`;
+        html += `
+          <div class="atelier-section">
+            <h3 class="atelier-title">
+              <span>${atelier}</span>
+              <button class="btn-icon" onclick="openRenameModal('atelier', '${atelier.replace(/'/g, "\\'")}', '${usine.replace(/'/g, "\\'")}')" title="Renommer l'atelier">✏️</button>
+            </h3>
+            <div class="flux-grid">`;
         
         fluxArr.forEach(f => {
           const stats = analyzeFlux(f);
@@ -414,17 +437,56 @@ window.loadDashboard = async () => {
   }
 };
 
+// ─── RENOMMER USINE / ATELIER (BATCH UPDATE) ───
+window.openRenameModal = (type, oldName, parentUsine = '') => {
+  document.getElementById('rmType').value = type;
+  document.getElementById('rmOldName').value = oldName;
+  document.getElementById('rmParentUsine').value = parentUsine;
+  document.getElementById('rmTitle').textContent = type === 'usine' ? `Renommer l'usine` : `Renommer l'atelier`;
+  document.getElementById('rmNewName').value = oldName;
+  document.getElementById('renameModal').classList.add('open');
+};
+
+window.closeRenameModal = () => document.getElementById('renameModal').classList.remove('open');
+
+window.submitRename = async () => {
+  const type = document.getElementById('rmType').value;
+  const oldName = document.getElementById('rmOldName').value;
+  const parentUsine = document.getElementById('rmParentUsine').value;
+  const newName = document.getElementById('rmNewName').value.trim();
+
+  if (!newName || newName === oldName) return closeRenameModal();
+
+  document.getElementById('dashboardContainer').innerHTML = `<div style="text-align:center; padding:3rem; color:var(--muted)">Mise à jour en cours...</div>`;
+  closeRenameModal();
+
+  const { data: fluxes } = await supabaseClient.from('flux').select('id, usine, atelier').eq('user_id', currentUser.id);
+  if (!fluxes) return loadDashboard();
+
+  // On identifie tous les ID qui appartiennent au groupe renommé
+  const idsToUpdate = fluxes.filter(f => {
+    const u = f.usine || 'Site Principal';
+    const a = f.atelier || 'Atelier Général';
+    if (type === 'usine') return u === oldName;
+    return u === parentUsine && a === oldName;
+  }).map(f => f.id);
+
+  if (idsToUpdate.length > 0) {
+    const updatePayload = type === 'usine' ? { usine: newName } : { atelier: newName };
+    await supabaseClient.from('flux').update(updatePayload).in('id', idsToUpdate);
+  }
+
+  loadDashboard();
+};
+
 // ─── GESTION MODALS CREATION ───
 window.openNewFluxModal = () => {
   selectTemplate('blank'); 
   document.getElementById('nfNom').value = '';
   document.getElementById('nfUsine').value = '';
   document.getElementById('nfAtelier').value = '';
-  
-  // On précharge les listes de l'autocomplétion
   window.populateUsinesList();
   window.populateAteliersList('');
-
   document.getElementById('newFluxModal').classList.add('open');
 };
 window.closeNewFluxModal = () => document.getElementById('newFluxModal').classList.remove('open');
@@ -455,12 +517,7 @@ window.createNewFlux = async () => {
     prefillConns = [ {from:1, to:2}, {from:2, to:3}, {from:3, to:4} ];
   }
 
-  const payload = { 
-    user_id: currentUser.id, 
-    nom: nom, 
-    nodes: prefillNodes, 
-    connections: prefillConns 
-  };
+  const payload = { user_id: currentUser.id, nom: nom, nodes: prefillNodes, connections: prefillConns };
   try { payload.usine = usine; payload.atelier = atelier; } catch(e) {}
 
   const { data, error } = await supabaseClient.from('flux').insert(payload).select().single();
@@ -473,7 +530,7 @@ window.createNewFlux = async () => {
   }
 };
 
-// ─── EDITION EMPLACEMENT ───
+// ─── EDITION EMPLACEMENT FLUX ───
 window.openEditFluxModal = (id, nom, usine, atelier) => {
   document.getElementById('efId').value = id;
   document.getElementById('efNom').value = nom;
@@ -481,7 +538,6 @@ window.openEditFluxModal = (id, nom, usine, atelier) => {
   document.getElementById('efUsine').value = usineVal;
   document.getElementById('efAtelier').value = atelier === 'null' ? '' : atelier;
   
-  // On précharge l'autocomplétion
   window.populateUsinesList();
   window.populateAteliersList(usineVal);
 
@@ -503,7 +559,7 @@ window.updateFluxLocation = async () => {
   const { error } = await supabaseClient.from('flux').update(payload).eq('id', id);
 
   if (error) {
-    alert("Erreur lors de la mise à jour. (Avez-vous créé les colonnes usine et atelier dans Supabase ?)");
+    alert("Erreur lors de la mise à jour.");
     console.error(error);
   } else {
     closeEditFluxModal();
