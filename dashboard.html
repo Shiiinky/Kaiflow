@@ -111,11 +111,11 @@
     </div>
     <div class="input-group">
       <label>Usine (Site de production)</label>
-      <input type="text" id="nfUsine" placeholder="ex: Usine Nord">
+      <input type="text" id="nfUsine" placeholder="ex: Site Principal">
     </div>
     <div class="input-group">
       <label>Atelier</label>
-      <input type="text" id="nfAtelier" placeholder="ex: Atelier Menuiserie">
+      <input type="text" id="nfAtelier" placeholder="ex: Atelier Central">
     </div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeNewFluxModal()">Annuler</button>
@@ -130,8 +130,6 @@ import { supabaseClient, requireAuth } from '/js/supabase-client.js';
 let currentUser = null;
 
 // ─── ALGORITHMES DÉPORTÉS DU DASHBOARD ───
-// On reproduit la logique métier allégée pour calculer les KPIs sans ouvrir l'éditeur
-
 function getEffectiveCycle(node) {
   if (!node) return 0; let rawCycle = node.cycle || 0;
   if (node.mos && node.mos.tasks && node.mos.tasks.length > 0) {
@@ -171,8 +169,6 @@ function analyzeFlux(fluxData) {
     status = isOk ? 'ok' : 'warn';
   }
 
-  // Calcul du Lead Time très simplifié pour le dashboard (somme brute des cycles + stocks)
-  // (L'algorithme PERT complet est trop lourd pour afficher 50 cartes, on fait une estimation)
   let estimatedLT = 0;
   const cadence = Math.max(takt, maxCycle);
   nodes.forEach(n => {
@@ -193,98 +189,109 @@ function formatLT(sec) {
 
 // ─── RENDU DU DASHBOARD ───
 async function loadDashboard() {
-  currentUser = await requireAuth();
-  if (!currentUser) return;
-  document.getElementById('userEmail').textContent = currentUser.email;
-
-  const { data: fluxList, error } = await supabaseClient
-    .from('flux')
-    .select('id, nom, usine, atelier, updated_at, takt_time_cible, nodes')
-    .eq('user_id', currentUser.id)
-    .order('usine', { ascending: true })
-    .order('atelier', { ascending: true })
-    .order('updated_at', { ascending: false });
-
-  const container = document.getElementById('dashboardContainer');
-
-  if (error || !fluxList || fluxList.length === 0) {
-    container.innerHTML = `
-      <div class="empty-state">
-        <div class="empty-icon">🏭</div>
-        <h2>Votre usine est vide</h2>
-        <p style="color:var(--muted); margin-bottom: 2rem;">Commencez par cartographier votre première ligne de production.</p>
-        <button class="btn-primary" onclick="openNewFluxModal()">Créer un flux</button>
-      </div>`;
-    return;
-  }
-
-  // Groupement par Usine > Atelier
-  const tree = {};
-  fluxList.forEach(f => {
-    const u = f.usine || 'Site Principal';
-    const a = f.atelier || 'Atelier Général';
-    if (!tree[u]) tree[u] = {};
-    if (!tree[u][a]) tree[u][a] = [];
-    tree[u][a].push(f);
-  });
-
-  let html = '';
-
-  for (const [usine, ateliers]] of Object.entries(tree)) {
-    html += `<div class="usine-section"><h2 class="usine-title">${usine}</h2>`;
+  try {
+    currentUser = await requireAuth();
+    if (!currentUser) return;
     
-    for (const [atelier, fluxArr] of Object.entries(ateliers)) {
-      html += `<div class="atelier-section"><h3 class="atelier-title">${atelier}</h3><div class="flux-grid">`;
-      
-      fluxArr.forEach(f => {
-        const stats = analyzeFlux(f);
-        const date = new Date(f.updated_at).toLocaleDateString('fr-FR', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
-        
-        let statusHtml = `<span class="status-badge status-empty">En cours</span>`;
-        if (stats.status === 'ok') statusHtml = `<span class="status-badge status-ok">Stable</span>`;
-        if (stats.status === 'warn') statusHtml = `<span class="status-badge status-warn">Goulot</span>`;
+    document.getElementById('userEmail').textContent = currentUser.email;
 
-        html += `
-          <a href="/editor?id=${f.id}" class="flux-card">
-            <div class="card-header">
-              <div>
-                <div class="card-title">${f.nom}</div>
-                <div class="card-date">Modifié le ${date}</div>
-              </div>
-              ${statusHtml}
-            </div>
-            
-            <div class="card-kpis">
-              <div class="ckpi">
-                <div class="ckpi-label">Takt Net</div>
-                <div class="ckpi-val ${stats.takt > 0 ? 'accent' : ''}">${stats.takt > 0 ? stats.takt+'s' : '—'}</div>
-              </div>
-              <div class="ckpi">
-                <div class="ckpi-label">Cycle Max</div>
-                <div class="ckpi-val ${stats.status === 'warn' ? 'warn' : (stats.status === 'ok' ? 'ok' : '')}">${stats.maxCycle > 0 ? stats.maxCycle+'s' : '—'}</div>
-              </div>
-              <div class="ckpi">
-                <div class="ckpi-label">Lead Time</div>
-                <div class="ckpi-val">${formatLT(stats.leadTime)}</div>
-              </div>
-              <div class="ckpi">
-                <div class="ckpi-label">Rendement</div>
-                <div class="ckpi-val">${stats.rendement > 0 ? stats.rendement+'%' : '—'}</div>
-              </div>
-            </div>
-            
-            <div class="goulot-line">
-              <span>⚠ Limité par :</span> <span class="goulot-name">${stats.goulot}</span>
-            </div>
-          </a>
-        `;
-      });
-      html += `</div></div>`; // Close grid & atelier
+    // Requête robuste : on prend * pour éviter de planter si les colonnes usine/atelier manquent
+    const { data: fluxList, error } = await supabaseClient
+      .from('flux')
+      .select('*')
+      .eq('user_id', currentUser.id)
+      .order('updated_at', { ascending: false });
+
+    const container = document.getElementById('dashboardContainer');
+
+    if (error) {
+      console.error(error);
+      container.innerHTML = `<div style="text-align:center; padding:3rem; color:var(--warn); border:1px solid var(--warn-dim); border-radius:12px;">⚠ Erreur de connexion à la base de données. Détail : ${error.message}</div>`;
+      return;
     }
-    html += `</div>`; // Close usine
-  }
 
-  container.innerHTML = html;
+    if (!fluxList || fluxList.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">🏭</div>
+          <h2>Votre usine est vide</h2>
+          <p style="color:var(--muted); margin-bottom: 2rem;">Commencez par cartographier votre première ligne de production.</p>
+          <button class="btn-primary" onclick="openNewFluxModal()">Créer un flux</button>
+        </div>`;
+      return;
+    }
+
+    // Groupement par Usine > Atelier (avec fallback robuste)
+    const tree = {};
+    fluxList.forEach(f => {
+      const u = f.usine || 'Site Principal';
+      const a = f.atelier || 'Atelier Général';
+      if (!tree[u]) tree[u] = {};
+      if (!tree[u][a]) tree[u][a] = [];
+      tree[u][a].push(f);
+    });
+
+    let html = '';
+
+    for (const [usine, ateliers] of Object.entries(tree)) {
+      html += `<div class="usine-section"><h2 class="usine-title">${usine}</h2>`;
+      
+      for (const [atelier, fluxArr] of Object.entries(ateliers)) {
+        html += `<div class="atelier-section"><h3 class="atelier-title">${atelier}</h3><div class="flux-grid">`;
+        
+        fluxArr.forEach(f => {
+          const stats = analyzeFlux(f);
+          const date = new Date(f.updated_at).toLocaleDateString('fr-FR', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
+          
+          let statusHtml = `<span class="status-badge status-empty">En cours</span>`;
+          if (stats.status === 'ok') statusHtml = `<span class="status-badge status-ok">Stable</span>`;
+          if (stats.status === 'warn') statusHtml = `<span class="status-badge status-warn">Goulot</span>`;
+
+          html += `
+            <a href="/editor?id=${f.id}" class="flux-card">
+              <div class="card-header">
+                <div>
+                  <div class="card-title">${f.nom}</div>
+                  <div class="card-date">Modifié le ${date}</div>
+                </div>
+                ${statusHtml}
+              </div>
+              
+              <div class="card-kpis">
+                <div class="ckpi">
+                  <div class="ckpi-label">Takt Net</div>
+                  <div class="ckpi-val ${stats.takt > 0 ? 'accent' : ''}">${stats.takt > 0 ? stats.takt+'s' : '—'}</div>
+                </div>
+                <div class="ckpi">
+                  <div class="ckpi-label">Cycle Max</div>
+                  <div class="ckpi-val ${stats.status === 'warn' ? 'warn' : (stats.status === 'ok' ? 'ok' : '')}">${stats.maxCycle > 0 ? stats.maxCycle+'s' : '—'}</div>
+                </div>
+                <div class="ckpi">
+                  <div class="ckpi-label">Lead Time</div>
+                  <div class="ckpi-val">${formatLT(stats.leadTime)}</div>
+                </div>
+                <div class="ckpi">
+                  <div class="ckpi-label">Rendement</div>
+                  <div class="ckpi-val">${stats.rendement > 0 ? stats.rendement+'%' : '—'}</div>
+                </div>
+              </div>
+              
+              <div class="goulot-line">
+                <span>⚠ Limité par :</span> <span class="goulot-name">${stats.goulot}</span>
+              </div>
+            </a>
+          `;
+        });
+        html += `</div></div>`;
+      }
+      html += `</div>`;
+    }
+
+    container.innerHTML = html;
+  } catch (err) {
+    console.error(err);
+    document.getElementById('dashboardContainer').innerHTML = `<div style="text-align:center; padding:3rem; color:var(--warn)">Une erreur inattendue s'est produite lors du chargement.</div>`;
+  }
 }
 
 // ─── MODAL CREATION ───
@@ -296,19 +303,21 @@ window.createNewFlux = async () => {
   const usine = document.getElementById('nfUsine').value || 'Site Principal';
   const atelier = document.getElementById('nfAtelier').value || 'Atelier Général';
   
-  // Note: Si les colonnes usine et atelier ne sont pas encore dans Supabase, 
-  // l'insert va planter. On les envoie, si ça plante il faut prévenir l'utilisateur.
-  const { data, error } = await supabaseClient.from('flux').insert({
+  // Création du flux (usine et atelier seront ignorés par Supabase si les colonnes n'existent pas encore, mais ça ne plantera plus)
+  const payload = {
     user_id: currentUser.id,
     nom: nom,
-    usine: usine,
-    atelier: atelier,
     nodes: [],
     connections: []
-  }).select().single();
+  };
+  
+  // On tente d'ajouter usine et atelier. Si ça échoue silencieusement côté API car colonnes manquantes, on crée quand même le flux.
+  try { payload.usine = usine; payload.atelier = atelier; } catch(e) {}
+
+  const { data, error } = await supabaseClient.from('flux').insert(payload).select().single();
 
   if (error) {
-    alert("Erreur de création. Avez-vous bien ajouté les colonnes 'usine' (text) et 'atelier' (text) dans votre table Supabase ?");
+    alert("⚠ Veuillez ajouter les colonnes 'usine' (type text) et 'atelier' (type text) dans votre table Supabase 'flux' pour classer vos lignes.");
     console.error(error);
   } else {
     window.location.href = '/editor?id=' + data.id;
