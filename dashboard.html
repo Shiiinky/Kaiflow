@@ -34,11 +34,31 @@
 
   .content-scroll { flex: 1; overflow-y: auto; padding: 2.5rem 3rem; z-index: 1; }
 
-  .page-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 3rem; }
-  .page-title { font-family: 'Syne', sans-serif; font-size: 2.2rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.5rem; }
-  .page-sub { color: var(--muted); font-size: 0.95rem; }
+  /* PAGE HEADER CORRIGÉ */
+  .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem; flex-wrap: wrap; gap: 1.5rem; }
+  .page-title { font-family: 'Syne', sans-serif; font-size: 2.2rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.2rem; margin-top: 0; }
+  .page-sub { color: var(--muted); font-size: 0.95rem; margin: 0; }
 
-  .btn-primary { background: var(--accent); color: #000; border: none; padding: 0.6rem 1.4rem; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 0.5rem; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; }
+  /* BOUTON CORRIGÉ (Anti-étirement) */
+  .btn-primary { 
+    background: var(--accent); 
+    color: #000; 
+    border: none; 
+    padding: 0.6rem 1.4rem; 
+    border-radius: 6px; 
+    font-weight: 600; 
+    cursor: pointer; 
+    transition: all 0.2s; 
+    display: inline-flex; 
+    align-items: center; 
+    justify-content: center;
+    gap: 0.5rem; 
+    font-family: 'DM Sans', sans-serif; 
+    font-size: 0.9rem; 
+    width: fit-content; 
+    white-space: nowrap;
+    flex: 0 0 auto;
+  }
   .btn-primary:hover { box-shadow: 0 4px 15px rgba(0,229,255,0.25); transform: translateY(-1px); }
 
   /* GROUPEMENT (USINE / ATELIER) */
@@ -82,7 +102,7 @@
   .goulot-line { font-size: 0.75rem; color: var(--muted); display: flex; align-items: center; gap: 0.4rem; background: var(--bg); padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border); }
   .goulot-name { font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-  /* MODALS CORRIGÉES ET AFFINÉES */
+  /* MODALS */
   .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
   .modal-overlay.open { opacity: 1; pointer-events: all; }
   .modal-content { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; width: 100%; max-width: 500px; padding: 2rem; transform: translateY(20px); transition: transform 0.2s; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
@@ -97,7 +117,7 @@
   .template-icon { font-size: 1.4rem; margin-bottom: 0.4rem; }
   .template-name { font-size: 0.75rem; font-weight: 600; color: var(--text); }
 
-  /* INPUTS REDIMENSIONNÉS */
+  /* INPUTS */
   .input-group { margin-bottom: 1rem; }
   .input-group label { display: block; font-size: 0.75rem; color: var(--muted); margin-bottom: 0.3rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
   .input-group input { width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 0.6rem 0.8rem; border-radius: 6px; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; outline: none; transition: border-color 0.2s; }
@@ -386,7 +406,7 @@ window.loadDashboard = async () => {
 
 // ─── GESTION MODALS CREATION ───
 window.openNewFluxModal = () => {
-  selectTemplate('blank'); // Reset template selection
+  selectTemplate('blank'); 
   document.getElementById('nfNom').value = '';
   document.getElementById('newFluxModal').classList.add('open');
 };
@@ -400,7 +420,6 @@ window.createNewFlux = async () => {
   let prefillNodes = [];
   let prefillConns = [];
 
-  // Injection des données de template
   if (currentTemplate === 'usinage') {
     prefillNodes = [
       { id:1, type:'stock', label:'Encours brut', x:50, y:200, qty:100, vsm:'nva', mos:{tasks:[], nc:[]} },
