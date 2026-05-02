@@ -38,19 +38,16 @@
   .page-title { font-family: 'Syne', sans-serif; font-size: 2.2rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.2rem; margin-top: 0; }
   .page-sub { color: var(--muted); font-size: 0.95rem; margin: 0; }
 
-  .btn-primary { background: var(--accent); color: #000; border: none; padding: 0.6rem 1.4rem; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; width: fit-content; white-space: nowrap; flex: 0 0 auto; }
+  .btn-primary { background: var(--accent); color: #000; border: none; padding: 0.6rem 1.4rem; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; width: fit-content; white-space: nowrap; flex: 0 0 auto;}
   .btn-primary:hover { box-shadow: 0 4px 15px rgba(0,229,255,0.25); transform: translateY(-1px); }
-
-  .btn-icon { background: transparent; border: none; color: var(--muted); cursor: pointer; font-size: 1rem; transition: all 0.2s; padding: 0.3rem; border-radius: 6px; display: inline-flex; align-items: center; justify-content: center; margin-left: 0.5rem; }
-  .btn-icon:hover { color: var(--accent); background: rgba(0,229,255,0.1); }
 
   /* GROUPEMENT (USINE / ATELIER) */
   .usine-section { margin-bottom: 4rem; }
-  .usine-title { font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 700; color: var(--text); margin-bottom: 1.5rem; display: flex; align-items: center; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
-  .usine-title::before { content: '🏭'; font-size: 1.2rem; margin-right: 0.7rem; }
+  .usine-title { font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 700; color: var(--text); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.7rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
+  .usine-title::before { content: '🏭'; font-size: 1.2rem; }
   
   .atelier-section { margin-bottom: 2.5rem; padding-left: 1rem; border-left: 2px solid var(--border2); }
-  .atelier-title { font-size: 1rem; font-weight: 600; color: var(--muted); margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; }
+  .atelier-title { font-size: 1rem; font-weight: 600; color: var(--muted); margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 0.5rem; }
 
   /* GRID & CARDS */
   .flux-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; }
@@ -115,12 +112,20 @@
   /* EMPTY STATE */
   .empty-state { text-align: center; padding: 6rem 2rem; background: var(--surface); border: 1px dashed var(--border2); border-radius: 12px; }
   .empty-icon { font-size: 3.5rem; opacity: 0.5; margin-bottom: 1rem; }
+
+  /* MODAL PAYWALL */
+  .paywall-content { text-align: center; padding: 3rem 2rem; }
+  .paywall-icon { font-size: 4rem; margin-bottom: 1rem; }
+  .paywall-title { font-family: 'Syne', sans-serif; font-size: 1.6rem; font-weight: 800; color: var(--accent); margin-bottom: 1rem; }
+  .paywall-text { color: var(--muted); margin-bottom: 2rem; font-size: 0.95rem; line-height: 1.6; }
+  .premium-list { list-style: none; padding: 0; margin-bottom: 2rem; text-align: left; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; }
+  .premium-list li { margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; color: var(--text); }
+  .premium-list li::before { content: '✓'; color: var(--accent); font-weight: bold; }
+  .btn-upgrade { display: block; width: 100%; background: var(--accent); color: #000; padding: 1rem; border-radius: 8px; font-weight: 700; font-size: 1.1rem; text-decoration: none; transition: transform 0.2s; font-family: 'DM Sans', sans-serif; }
+  .btn-upgrade:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,229,255,0.3); }
 </style>
 </head>
 <body>
-
-<datalist id="usinesList"></datalist>
-<datalist id="ateliersList"></datalist>
 
 <div class="app-layout">
   <aside class="sidebar">
@@ -129,7 +134,8 @@
     </div>
     <nav class="sidebar-nav">
       <a href="/dashboard" class="nav-item active">📊 Dashboard</a>
-      <a href="/account" class="nav-item">👤 Profil</a>
+      <a href="#" class="nav-item">👤 Profil (Bientôt)</a>
+      <a href="#" class="nav-item">⚙️ Paramètres usine</a>
     </nav>
     <div class="sidebar-footer">
       <div class="user-email" id="userEmail">Chargement...</div>
@@ -144,7 +150,9 @@
           <h1 class="page-title">Dashboard</h1>
           <p class="page-sub">Pilotage de la performance industrielle multi-sites.</p>
         </div>
-        <button class="btn-primary" onclick="openNewFluxModal()">✚ Nouvelle Ligne</button>
+        <button class="btn-primary" onclick="checkQuotaAndOpenModal()" id="newFluxBtn">
+          <span style="display:none;" id="btnSpinner">⏳</span> ✚ Nouvelle Ligne
+        </button>
       </div>
 
       <div id="dashboardContainer">
@@ -181,11 +189,11 @@
     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
       <div class="input-group">
         <label>Usine / Site</label>
-        <input type="text" id="nfUsine" list="usinesList" placeholder="Sélectionner ou créer" autocomplete="off">
+        <input type="text" id="nfUsine" placeholder="ex: Usine Nord">
       </div>
       <div class="input-group">
         <label>Atelier</label>
-        <input type="text" id="nfAtelier" list="ateliersList" placeholder="Sélectionner ou créer" autocomplete="off">
+        <input type="text" id="nfAtelier" placeholder="ex: Menuiserie">
       </div>
     </div>
     
@@ -193,6 +201,25 @@
       <button class="btn-cancel" onclick="closeNewFluxModal()">Annuler</button>
       <button class="btn-submit" onclick="createNewFlux()">Créer la ligne →</button>
     </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="paywallModal">
+  <div class="modal-content paywall-content">
+    <button class="mos-close" style="position:absolute; top: 1rem; right: 1rem; background:transparent; border:none; color:var(--muted); cursor:pointer; font-size:1.2rem;" onclick="document.getElementById('paywallModal').classList.remove('open')">✕</button>
+    <div class="paywall-icon">🚀</div>
+    <div class="paywall-title">Passez à la vitesse supérieure</div>
+    <p class="paywall-text">Vous avez atteint la limite de votre plan gratuit (1 ligne de production). Débloquez la puissance complète de Kaiflow pour toute votre usine.</p>
+    
+    <ul class="premium-list">
+      <li>Création de lignes et flux illimités</li>
+      <li>Structuration multi-usines et ateliers</li>
+      <li>Export des rapports PDF complets</li>
+      <li>Support prioritaire 7j/7</li>
+    </ul>
+
+    <a href="https://buy.stripe.com/test_14AeVddh535K6fJ3jU9bO00" class="btn-upgrade">Débloquer Kaiflow Pro — 49€/mois</a>
+    <div style="font-size:0.75rem; color:var(--muted); margin-top:1rem;">Paiement sécurisé par Stripe</div>
   </div>
 </div>
 
@@ -207,11 +234,11 @@
     <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
       <div class="input-group">
         <label>Déplacer vers Usine</label>
-        <input type="text" id="efUsine" list="usinesList" autocomplete="off">
+        <input type="text" id="efUsine">
       </div>
       <div class="input-group">
         <label>Déplacer vers Atelier</label>
-        <input type="text" id="efAtelier" list="ateliersList" autocomplete="off">
+        <input type="text" id="efAtelier">
       </div>
     </div>
     <div class="modal-actions">
@@ -221,47 +248,11 @@
   </div>
 </div>
 
-<div class="modal-overlay" id="renameModal">
-  <div class="modal-content" style="max-width: 400px;">
-    <div class="modal-title" id="rmTitle">Renommer</div>
-    <input type="hidden" id="rmType">
-    <input type="hidden" id="rmOldName">
-    <input type="hidden" id="rmParentUsine">
-    <div class="input-group">
-      <label>Nouveau nom</label>
-      <input type="text" id="rmNewName" autocomplete="off">
-    </div>
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeRenameModal()">Annuler</button>
-      <button class="btn-submit" onclick="submitRename()">💾 Mettre à jour</button>
-    </div>
-  </div>
-</div>
-
 <script type="module">
 import { supabaseClient, requireAuth } from '/js/supabase-client.js';
 
 let currentUser = null;
 let currentTemplate = 'blank';
-window.factoryTree = {};
-
-// ─── GESTION AUTOCOMPLETION (DATALISTS) ───
-window.populateUsinesList = () => {
-  const list = document.getElementById('usinesList');
-  list.innerHTML = Object.keys(window.factoryTree).map(u => `<option value="${u}"></option>`).join('');
-};
-
-window.populateAteliersList = (usineName) => {
-  const list = document.getElementById('ateliersList');
-  if (window.factoryTree[usineName]) {
-    list.innerHTML = Object.keys(window.factoryTree[usineName]).map(a => `<option value="${a}"></option>`).join('');
-  } else {
-    list.innerHTML = '';
-  }
-};
-
-document.getElementById('nfUsine').addEventListener('input', e => window.populateAteliersList(e.target.value));
-document.getElementById('efUsine').addEventListener('input', e => window.populateAteliersList(e.target.value));
 
 // ─── GESTION TEMPLATES ───
 window.selectTemplate = (tpl) => {
@@ -345,7 +336,7 @@ window.loadDashboard = async () => {
           <div class="empty-icon">🏭</div>
           <h2>Votre parc est vide</h2>
           <p style="color:var(--muted); margin-bottom: 2rem;">Commencez par cartographier votre première ligne de production.</p>
-          <button class="btn-primary" onclick="openNewFluxModal()">✚ Nouvelle Ligne</button>
+          <button class="btn-primary" onclick="checkQuotaAndOpenModal()">✚ Nouvelle Ligne</button>
         </div>`;
       return;
     }
@@ -359,25 +350,13 @@ window.loadDashboard = async () => {
       tree[u][a].push(f);
     });
 
-    window.factoryTree = tree;
     let html = '';
 
     for (const [usine, ateliers] of Object.entries(tree)) {
-      html += `
-        <div class="usine-section">
-          <h2 class="usine-title">
-            <span>${usine}</span>
-            <button class="btn-icon" onclick="openRenameModal('usine', '${usine.replace(/'/g, "\\'")}')" title="Renommer l'usine">✏️</button>
-          </h2>`;
+      html += `<div class="usine-section"><h2 class="usine-title">${usine}</h2>`;
       
       for (const [atelier, fluxArr] of Object.entries(ateliers)) {
-        html += `
-          <div class="atelier-section">
-            <h3 class="atelier-title">
-              <span>${atelier}</span>
-              <button class="btn-icon" onclick="openRenameModal('atelier', '${atelier.replace(/'/g, "\\'")}', '${usine.replace(/'/g, "\\'")}')" title="Renommer l'atelier">✏️</button>
-            </h3>
-            <div class="flux-grid">`;
+        html += `<div class="atelier-section"><h3 class="atelier-title">${atelier}</h3><div class="flux-grid">`;
         
         fluxArr.forEach(f => {
           const stats = analyzeFlux(f);
@@ -437,58 +416,34 @@ window.loadDashboard = async () => {
   }
 };
 
-// ─── RENOMMER USINE / ATELIER (BATCH UPDATE) ───
-window.openRenameModal = (type, oldName, parentUsine = '') => {
-  document.getElementById('rmType').value = type;
-  document.getElementById('rmOldName').value = oldName;
-  document.getElementById('rmParentUsine').value = parentUsine;
-  document.getElementById('rmTitle').textContent = type === 'usine' ? `Renommer l'usine` : `Renommer l'atelier`;
-  document.getElementById('rmNewName').value = oldName;
-  document.getElementById('renameModal').classList.add('open');
-};
+// ─── LE PAYWALL (LE PÉAGE) ───
+window.checkQuotaAndOpenModal = async () => {
+  document.getElementById('btnSpinner').style.display = 'inline';
+  
+  // On compte combien de flux possède le client
+  const { count, error } = await supabaseClient
+    .from('flux')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', currentUser.id);
+    
+  document.getElementById('btnSpinner').style.display = 'none';
 
-window.closeRenameModal = () => document.getElementById('renameModal').classList.remove('open');
-
-window.submitRename = async () => {
-  const type = document.getElementById('rmType').value;
-  const oldName = document.getElementById('rmOldName').value;
-  const parentUsine = document.getElementById('rmParentUsine').value;
-  const newName = document.getElementById('rmNewName').value.trim();
-
-  if (!newName || newName === oldName) return closeRenameModal();
-
-  document.getElementById('dashboardContainer').innerHTML = `<div style="text-align:center; padding:3rem; color:var(--muted)">Mise à jour en cours...</div>`;
-  closeRenameModal();
-
-  const { data: fluxes } = await supabaseClient.from('flux').select('id, usine, atelier').eq('user_id', currentUser.id);
-  if (!fluxes) return loadDashboard();
-
-  // On identifie tous les ID qui appartiennent au groupe renommé
-  const idsToUpdate = fluxes.filter(f => {
-    const u = f.usine || 'Site Principal';
-    const a = f.atelier || 'Atelier Général';
-    if (type === 'usine') return u === oldName;
-    return u === parentUsine && a === oldName;
-  }).map(f => f.id);
-
-  if (idsToUpdate.length > 0) {
-    const updatePayload = type === 'usine' ? { usine: newName } : { atelier: newName };
-    await supabaseClient.from('flux').update(updatePayload).in('id', idsToUpdate);
+  if (error) {
+    console.error(error);
+    return;
   }
 
-  loadDashboard();
+  // Pour la démo / MVP : bloqué à 1 flux max
+  if (count >= 1) {
+    document.getElementById('paywallModal').classList.add('open');
+  } else {
+    selectTemplate('blank'); 
+    document.getElementById('nfNom').value = '';
+    document.getElementById('newFluxModal').classList.add('open');
+  }
 };
 
-// ─── GESTION MODALS CREATION ───
-window.openNewFluxModal = () => {
-  selectTemplate('blank'); 
-  document.getElementById('nfNom').value = '';
-  document.getElementById('nfUsine').value = '';
-  document.getElementById('nfAtelier').value = '';
-  window.populateUsinesList();
-  window.populateAteliersList('');
-  document.getElementById('newFluxModal').classList.add('open');
-};
+
 window.closeNewFluxModal = () => document.getElementById('newFluxModal').classList.remove('open');
 
 window.createNewFlux = async () => {
@@ -517,7 +472,12 @@ window.createNewFlux = async () => {
     prefillConns = [ {from:1, to:2}, {from:2, to:3}, {from:3, to:4} ];
   }
 
-  const payload = { user_id: currentUser.id, nom: nom, nodes: prefillNodes, connections: prefillConns };
+  const payload = { 
+    user_id: currentUser.id, 
+    nom: nom, 
+    nodes: prefillNodes, 
+    connections: prefillConns 
+  };
   try { payload.usine = usine; payload.atelier = atelier; } catch(e) {}
 
   const { data, error } = await supabaseClient.from('flux').insert(payload).select().single();
@@ -530,17 +490,12 @@ window.createNewFlux = async () => {
   }
 };
 
-// ─── EDITION EMPLACEMENT FLUX ───
+// ─── EDITION EMPLACEMENT ───
 window.openEditFluxModal = (id, nom, usine, atelier) => {
   document.getElementById('efId').value = id;
   document.getElementById('efNom').value = nom;
-  const usineVal = usine === 'null' ? '' : usine;
-  document.getElementById('efUsine').value = usineVal;
+  document.getElementById('efUsine').value = usine === 'null' ? '' : usine;
   document.getElementById('efAtelier').value = atelier === 'null' ? '' : atelier;
-  
-  window.populateUsinesList();
-  window.populateAteliersList(usineVal);
-
   document.getElementById('editFluxModal').classList.add('open');
 };
 
@@ -559,7 +514,7 @@ window.updateFluxLocation = async () => {
   const { error } = await supabaseClient.from('flux').update(payload).eq('id', id);
 
   if (error) {
-    alert("Erreur lors de la mise à jour.");
+    alert("Erreur lors de la mise à jour. (Avez-vous créé les colonnes usine et atelier dans Supabase ?)");
     console.error(error);
   } else {
     closeEditFluxModal();
