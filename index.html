@@ -421,7 +421,7 @@
     line-height: 1.7;
   }
 
-  /* IKIGAI (Anciennement Problems) */
+  /* IKIGAI */
   .ikigai {
     background: var(--surface);
     border-top: 1px solid var(--border);
@@ -630,21 +630,6 @@
     flex-wrap: wrap;
   }
 
-  .cta-input {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 0.85rem 1.2rem;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 1rem;
-    color: var(--text);
-    width: 300px;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-  .cta-input:focus { border-color: var(--accent); }
-  .cta-input::placeholder { color: var(--muted); }
-
   /* FOOTER */
   footer {
     border-top: 1px solid var(--border);
@@ -669,7 +654,6 @@
     to { opacity: 1; transform: translate(0, -45%); }
   }
 
-  /* Scroll reveal */
   .reveal {
     opacity: 0;
     transform: translateY(24px);
@@ -680,10 +664,15 @@
     transform: translateY(0);
   }
 
+  @keyframes flowPulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.6; }
+  }
+  .flow-block.active { animation: flowPulse 2s infinite; }
+
   /* RESPONSIVE MOBILE */
   @media (max-width: 900px) {
     nav { padding: 1rem 1.5rem; }
-    /* On masque les liens textes, on garde juste le bouton principal */
     nav ul li:not(:last-child) { display: none; }
     
     .hero { padding: 8rem 1.5rem 4rem; text-align: center; align-items: center; }
@@ -699,7 +688,6 @@
     .ikigai-grid { grid-template-columns: 1fr; gap: 1.5rem; }
     .features-grid { grid-template-columns: 1fr; }
     
-    .cta-input { width: 100%; }
     .cta-form button { width: 100%; }
     
     footer { flex-direction: column; gap: 1rem; text-align: center; }
@@ -729,7 +717,7 @@
   <h1>Modélisez vos flux.<br><em>Pilotez</em> votre performance.</h1>
 
   <p class="hero-sub">
-    Le simulateur industriel conçu pour le terrain. Cartographiez vos lignes de production et obtenez instantanément vos indicateurs clés : takt time, temps de cycle utile, et goulots d'étranglement.
+    Le simulateur industriel conçu pour le terrain. Cartographiez vos lignes de production et obtenez instantanément vos indicateurs clés : takt time, temps de cycle utile et goulots d'étranglement.
   </p>
 
   <div class="hero-actions">
@@ -744,11 +732,11 @@
     </div>
     <div class="stat-item">
       <div class="stat-num">3<span>min</span></div>
-      <div class="stat-label">Pour modéliser votre premier flux</div>
+      <div class="stat-label">Pour cartographier votre 1ère ligne</div>
     </div>
     <div class="stat-item">
       <div class="stat-num">100<span>%</span></div>
-      <div class="stat-label">Calculs mathématiques en temps réel</div>
+      <div class="stat-label">Calculs mathématiques automatisés</div>
     </div>
   </div>
 
@@ -812,51 +800,51 @@
 <section class="ikigai" id="ikigai">
   <div class="section-tag reveal">Notre Ikigai</div>
   <h2 class="reveal">L'alliance de l'humain et de la performance</h2>
-  <p class="section-desc reveal">Nous croyons que l'industrie de demain ne se pilote pas sur des tableurs obscurs, mais sur le terrain, avec des outils visuels qui redonnent le pouvoir aux équipes.</p>
+  <p class="section-desc reveal">L'industrie de demain ne se gère pas sur des tableurs obscurs. Elle se pilote sur le terrain, avec des outils visuels qui redonnent le pouvoir aux équipes.</p>
 
   <div class="ikigai-grid">
     <div class="ikigai-card reveal">
       <div class="ikigai-icon">👁️</div>
       <h3>Rendre l'invisible visible</h3>
-      <p>Mettre en lumière les goulots d'étranglement et la non-valeur ajoutée avant qu'ils n'impactent votre rentabilité et vos délais de livraison.</p>
+      <p>Mettre en lumière la non-valeur ajoutée et les pannes cachées avant qu'elles n'impactent votre rentabilité et vos délais de livraison.</p>
     </div>
     <div class="ikigai-card reveal">
       <div class="ikigai-icon">⚡</div>
       <h3>L'efficacité sans l'effort</h3>
-      <p>Automatiser les mathématiques complexes (Takt Time, TRS, PERT) pour que vos ingénieurs se concentrent sur l'essentiel : l'amélioration continue.</p>
+      <p>Automatiser les standards (Takt Time, TRS, PERT) pour que vos ingénieurs se concentrent sur l'essentiel : l'amélioration continue.</p>
     </div>
     <div class="ikigai-card reveal">
       <div class="ikigai-icon">🤝</div>
       <h3>Aligner les visions</h3>
-      <p>Créer un langage commun et instantané entre les opérateurs de ligne et la direction stratégique grâce à une cartographie claire et partagée.</p>
+      <p>Créer un langage commun entre les opérateurs de ligne et la direction stratégique grâce à une cartographie claire, unique et partagée.</p>
     </div>
   </div>
 </section>
 
 <section id="how">
-  <div class="section-tag reveal">Comment ça marche</div>
-  <h2 class="reveal">Modélisez en 3 étapes, pilotez en temps réel</h2>
+  <div class="section-tag reveal">Conception</div>
+  <h2 class="reveal">Concevez en 3 étapes, analysez instantanément</h2>
 
   <div class="steps">
     <div class="step reveal">
       <div class="step-num">01</div>
       <div class="step-content">
         <h3>Glissez vos blocs de production</h3>
-        <p>Depuis la bibliothèque de composants (postes, stocks, transports…), construisez le jumeau numérique de votre flux par simple glisser-déposer sur le Canvas infini.</p>
+        <p>Depuis la bibliothèque de composants, construisez le jumeau numérique de votre flux par simple glisser-déposer sur le Canvas infini.</p>
       </div>
     </div>
     <div class="step reveal">
       <div class="step-num">02</div>
       <div class="step-content">
         <h3>Renseignez la réalité terrain</h3>
-        <p>Entrez les temps de cycle bruts, le taux de disponibilité machine (pannes) et les taux de rebuts. Intégrez vos chronométrages réels via l'outil MOS intégré.</p>
+        <p>Entrez les temps bruts, les taux de disponibilité machine et de rebuts. Intégrez vos chronométrages réels directement via l'outil MOS.</p>
       </div>
     </div>
     <div class="step reveal">
       <div class="step-num">03</div>
       <div class="step-content">
         <h3>L'algorithme s'occupe du reste</h3>
-        <p>Takt time net, Lead time par chemin critique, équilibrage Yamazumi, détection automatique du goulot : toutes vos métriques s'actualisent instantanément.</p>
+        <p>Lead time par chemin critique, équilibrage Yamazumi, détection du goulot : toutes vos métriques s'actualisent de manière fluide.</p>
       </div>
     </div>
   </div>
@@ -871,54 +859,54 @@
       <div class="feature-icon">🎯</div>
       <div>
         <h4>Éditeur visuel immersif</h4>
-        <p>Interface intuitive inspirée des standards du web moderne (Canvas infini, zoom, pan) pour modéliser sans limites.</p>
+        <p>Interface intuitive inspirée des standards du web moderne pour cartographier vos installations sans aucune limite spatiale.</p>
       </div>
     </div>
     <div class="feature-item reveal">
       <div class="feature-icon">⚙️</div>
       <div>
         <h4>Moteur de calcul TRS</h4>
-        <p>Ne vous fiez plus aux temps théoriques. Intégrez vos taux de pannes et de rebuts pour calculer le véritable cycle de production.</p>
+        <p>Ne vous fiez plus aux temps théoriques. Intégrez vos taux de pannes et de défauts pour connaître la véritable capacité de votre ligne.</p>
       </div>
     </div>
     <div class="feature-item reveal">
       <div class="feature-icon">🚨</div>
       <div>
-        <h4>Détection algorithmique du goulot</h4>
-        <p>Kaiflow analyse vos flux parallèles et vos chemins critiques pour mettre en évidence la machine qui bride réellement l'usine.</p>
+        <h4>Détection du goulot</h4>
+        <p>Kaiflow analyse vos opérations parallèles pour mettre en évidence la machine qui bride réellement la capacité de l'usine.</p>
       </div>
     </div>
     <div class="feature-item reveal">
       <div class="feature-icon">📊</div>
       <div>
         <h4>Équilibrage Yamazumi</h4>
-        <p>Visualisez la charge de vos opérateurs par rapport au Takt Time et calculez instantanément votre cible d'Équivalent Temps Plein (ETP).</p>
+        <p>Visualisez la charge de vos opérateurs par rapport au Takt Time et calculez instantanément votre besoin en Équivalent Temps Plein (ETP).</p>
       </div>
     </div>
     <div class="feature-item reveal">
       <div class="feature-icon">🏭</div>
       <div>
         <h4>Tour de contrôle multi-sites</h4>
-        <p>Gérez plusieurs lignes de production regroupées par usines et ateliers depuis un tableau de bord consolidé.</p>
+        <p>Gérez l'ensemble de votre parc industriel regroupé par usines et par ateliers depuis un tableau de bord global.</p>
       </div>
     </div>
     <div class="feature-item reveal">
       <div class="feature-icon">📋</div>
       <div>
         <h4>Export de rapport PDF <span class="badge-soon">À venir</span></h4>
-        <p>Compilez vos indicateurs clés, votre diagramme Yamazumi et la capture de votre flux dans un rapport A4 d'un seul clic.</p>
+        <p>Compilez vos indicateurs clés, votre diagramme Yamazumi et la capture de votre flux dans un document prêt à être partagé.</p>
       </div>
     </div>
   </div>
 </section>
 
 <section class="cta-section" id="cta">
-  <div class="section-tag" style="text-align:center">Kaiflow Bêta</div>
-  <h2 class="reveal">Passez de l'expert Excel au Dirigeant 4.0</h2>
-  <p class="section-desc reveal">L'outil est actuellement en phase Bêta publique. Créez un compte gratuitement dès maintenant pour commencer à modéliser vos usines.</p>
+  <div class="section-tag" style="text-align:center">Accès Bêta</div>
+  <h2 class="reveal">Prêt à optimiser vos lignes de production ?</h2>
+  <p class="section-desc reveal">Oubliez les fichiers de calcul complexes. Créez votre compte gratuitement et testez l'outil avec les données de votre usine dès maintenant.</p>
 
   <div class="cta-form reveal">
-    <button class="btn-primary" style="font-size: 1.1rem; padding: 1rem 2.5rem;" onclick="window.location.href='/signup'">Créer un compte gratuit</button>
+    <button class="btn-primary" style="font-size: 1.1rem; padding: 1rem 2.5rem;" onclick="window.location.href='/signup'">Commencer la cartographie</button>
   </div>
 </section>
 
