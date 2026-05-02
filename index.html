@@ -14,6 +14,7 @@
     --surface: #111620;
     --border: #1e2736;
     --accent: #00e5ff;
+    --accent-dim: rgba(0, 229, 255, 0.15);
     --accent2: #ff6b35;
     --text: #e8edf5;
     --muted: #6b7a96;
@@ -62,6 +63,7 @@
     font-size: 1.4rem;
     letter-spacing: -0.02em;
     color: var(--text);
+    text-decoration: none;
   }
   .logo span { color: var(--accent); }
 
@@ -74,15 +76,13 @@
     color: var(--muted);
     text-decoration: none;
     font-size: 0.9rem;
-    font-weight: 400;
+    font-weight: 500;
     transition: color 0.2s;
   }
   nav ul a:hover { color: var(--text); }
 
-  /* Login Link Specific Style */
   .nav-login {
     color: var(--text);
-    font-weight: 500;
     margin-left: 1rem;
   }
 
@@ -91,10 +91,13 @@
     color: #000 !important;
     padding: 0.55rem 1.4rem;
     border-radius: 6px;
-    font-weight: 500 !important;
-    transition: opacity 0.2s !important;
+    font-weight: 600 !important;
+    transition: transform 0.2s, box-shadow 0.2s !important;
   }
-  .nav-cta:hover { opacity: 0.85; color: #000 !important; }
+  .nav-cta:hover { 
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(0,229,255,0.25);
+  }
 
   /* HERO */
   .hero {
@@ -142,7 +145,7 @@
     border: 1px solid rgba(0,229,255,0.2);
     color: var(--accent);
     font-size: 0.8rem;
-    font-weight: 500;
+    font-weight: 600;
     padding: 0.4rem 1rem;
     border-radius: 100px;
     margin-bottom: 2rem;
@@ -168,7 +171,7 @@
   h1 {
     font-family: 'Syne', sans-serif;
     font-weight: 800;
-    font-size: clamp(3rem, 6vw, 5.5rem);
+    font-size: clamp(2.5rem, 6vw, 5.5rem);
     line-height: 1.05;
     letter-spacing: -0.03em;
     max-width: 850px;
@@ -182,7 +185,7 @@
   }
 
   .hero-sub {
-    font-size: 1.2rem;
+    font-size: 1.1rem;
     color: var(--muted);
     max-width: 560px;
     margin-top: 1.5rem;
@@ -194,6 +197,7 @@
     display: flex;
     gap: 1rem;
     margin-top: 2.5rem;
+    flex-wrap: wrap;
     animation: fadeUp 0.6s 0.3s ease both;
   }
 
@@ -205,12 +209,13 @@
     border-radius: 8px;
     font-family: 'DM Sans', sans-serif;
     font-size: 1rem;
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
     transition: transform 0.2s, box-shadow 0.2s;
     text-decoration: none;
     display: inline-flex;
     align-items: center;
+    justify-content: center;
     gap: 0.5rem;
   }
   .btn-primary:hover {
@@ -226,10 +231,13 @@
     border-radius: 8px;
     font-family: 'DM Sans', sans-serif;
     font-size: 1rem;
-    font-weight: 400;
+    font-weight: 500;
     cursor: pointer;
     transition: border-color 0.2s, background 0.2s;
     text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
   .btn-secondary:hover {
     border-color: var(--accent);
@@ -243,9 +251,9 @@
     padding-top: 2rem;
     border-top: 1px solid var(--border);
     animation: fadeUp 0.6s 0.4s ease both;
+    flex-wrap: wrap;
   }
 
-  .stat-item { }
   .stat-num {
     font-family: 'Syne', sans-serif;
     font-size: 2rem;
@@ -392,7 +400,7 @@
     text-transform: uppercase;
     letter-spacing: 0.12em;
     color: var(--accent);
-    font-weight: 500;
+    font-weight: 600;
     margin-bottom: 1rem;
   }
 
@@ -409,25 +417,25 @@
   .section-desc {
     color: var(--muted);
     font-size: 1.05rem;
-    max-width: 520px;
+    max-width: 600px;
     line-height: 1.7;
   }
 
-  /* PROBLEMS */
-  .problems {
+  /* IKIGAI (Anciennement Problems) */
+  .ikigai {
     background: var(--surface);
     border-top: 1px solid var(--border);
     border-bottom: 1px solid var(--border);
   }
 
-  .problems-grid {
+  .ikigai-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 2rem;
     margin-top: 3rem;
   }
 
-  .problem-card {
+  .ikigai-card {
     padding: 2rem;
     border: 1px solid var(--border);
     border-radius: 12px;
@@ -437,9 +445,9 @@
     transition: border-color 0.3s;
   }
 
-  .problem-card:hover { border-color: rgba(0,229,255,0.3); }
+  .ikigai-card:hover { border-color: rgba(0,229,255,0.3); }
 
-  .problem-card::before {
+  .ikigai-card::before {
     content: '';
     position: absolute;
     top: 0; left: 0; right: 0;
@@ -448,21 +456,21 @@
     opacity: 0;
     transition: opacity 0.3s;
   }
-  .problem-card:hover::before { opacity: 1; }
+  .ikigai-card:hover::before { opacity: 1; }
 
-  .problem-icon {
+  .ikigai-icon {
     font-size: 2rem;
     margin-bottom: 1rem;
   }
 
-  .problem-card h3 {
+  .ikigai-card h3 {
     font-family: 'Syne', sans-serif;
     font-size: 1.1rem;
     font-weight: 700;
     margin-bottom: 0.75rem;
   }
 
-  .problem-card p {
+  .ikigai-card p {
     font-size: 0.9rem;
     color: var(--muted);
     line-height: 1.6;
@@ -528,7 +536,6 @@
   .features-bg {
     background: var(--surface);
     border-top: 1px solid var(--border);
-    border-bottom: 1px solid var(--border);
   }
 
   .features-grid {
@@ -569,6 +576,22 @@
     font-size: 1rem;
     font-weight: 700;
     margin-bottom: 0.4rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .badge-soon {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.6rem;
+    background: var(--accent-dim);
+    color: var(--accent);
+    padding: 0.15rem 0.5rem;
+    border-radius: 100px;
+    border: 1px solid rgba(0,229,255,0.2);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 700;
   }
 
   .feature-item p {
@@ -577,124 +600,13 @@
     line-height: 1.55;
   }
 
-  /* PRICING */
-  .pricing-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.5rem;
-    margin-top: 3rem;
-    max-width: 960px;
-  }
-
-  .plan-card {
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 2rem;
-    background: var(--card);
-    transition: border-color 0.3s;
-    position: relative;
-  }
-
-  .plan-card.featured {
-    border-color: var(--accent);
-    background: rgba(0,229,255,0.04);
-  }
-
-  .plan-badge {
-    position: absolute;
-    top: -12px; left: 50%;
-    transform: translateX(-50%);
-    background: var(--accent);
-    color: #000;
-    font-size: 0.72rem;
-    font-weight: 700;
-    padding: 0.25rem 0.9rem;
-    border-radius: 100px;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    white-space: nowrap;
-  }
-
-  .plan-name {
-    font-family: 'Syne', sans-serif;
-    font-size: 1rem;
-    font-weight: 700;
-    margin-bottom: 0.75rem;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-  }
-
-  .plan-price {
-    font-family: 'Syne', sans-serif;
-    font-size: 2.5rem;
-    font-weight: 800;
-    margin-bottom: 0.3rem;
-  }
-  .plan-price span { font-size: 1rem; color: var(--muted); font-weight: 400; }
-
-  .plan-desc {
-    font-size: 0.85rem;
-    color: var(--muted);
-    margin-bottom: 1.5rem;
-    line-height: 1.5;
-  }
-
-  .plan-features {
-    list-style: none;
-    display: flex;
-    flex-direction: column;
-    gap: 0.65rem;
-    margin-bottom: 1.8rem;
-  }
-
-  .plan-features li {
-    font-size: 0.88rem;
-    display: flex;
-    align-items: flex-start;
-    gap: 0.6rem;
-    color: var(--text);
-  }
-
-  .plan-features li::before {
-    content: '✓';
-    color: var(--accent);
-    font-weight: 700;
-    flex-shrink: 0;
-  }
-
-  .plan-btn {
-    width: 100%;
-    padding: 0.8rem;
-    border-radius: 8px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 0.95rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s;
-    text-align: center;
-  }
-
-  .plan-btn.outline {
-    background: transparent;
-    border: 1px solid var(--border);
-    color: var(--text);
-  }
-  .plan-btn.outline:hover { border-color: var(--accent); background: rgba(0,229,255,0.05); }
-
-  .plan-btn.filled {
-    background: var(--accent);
-    border: none;
-    color: #000;
-  }
-  .plan-btn.filled:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(0,229,255,0.25); }
-
   /* CTA */
   .cta-section {
     text-align: center;
     padding: 7rem 4rem;
     position: relative;
     overflow: hidden;
+    border-top: 1px solid var(--border);
   }
 
   .cta-section::before {
@@ -744,7 +656,7 @@
     font-size: 0.85rem;
   }
 
-  footer .logo { font-size: 1.1rem; }
+  footer .logo { font-size: 1.1rem; text-decoration: none;}
 
   /* ANIMATIONS */
   @keyframes fadeUp {
@@ -768,24 +680,28 @@
     transform: translateY(0);
   }
 
-  /* Animated flow */
-  @keyframes flowPulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.6; }
-  }
-
-  .flow-block.active { animation: flowPulse 2s infinite; }
-
-  /* RESPONSIVE */
+  /* RESPONSIVE MOBILE */
   @media (max-width: 900px) {
     nav { padding: 1rem 1.5rem; }
-    nav ul { display: none; } /* Les liens de nav disparaissent sur petit écran avec ce template */
-    .hero { padding: 7rem 1.5rem 3rem; }
+    /* On masque les liens textes, on garde juste le bouton principal */
+    nav ul li:not(:last-child) { display: none; }
+    
+    .hero { padding: 8rem 1.5rem 4rem; text-align: center; align-items: center; }
+    .hero-sub { margin-left: auto; margin-right: auto; }
+    .hero-actions { justify-content: center; width: 100%; flex-direction: column; }
+    .btn-primary, .btn-secondary { width: 100%; }
     .hero-visual { display: none; }
-    h1 { font-size: 2.5rem; }
+    h1 { font-size: 2.2rem; }
+    .hero-stats { justify-content: center; gap: 1.5rem; }
+    .stat-item { text-align: center; }
+    
     section { padding: 4rem 1.5rem; }
-    .problems-grid, .pricing-grid { grid-template-columns: 1fr; }
+    .ikigai-grid { grid-template-columns: 1fr; gap: 1.5rem; }
     .features-grid { grid-template-columns: 1fr; }
+    
+    .cta-input { width: 100%; }
+    .cta-form button { width: 100%; }
+    
     footer { flex-direction: column; gap: 1rem; text-align: center; }
   }
 </style>
@@ -793,14 +709,13 @@
 <body>
 
 <nav>
-  <div class="logo">Kai<span>flow</span></div>
+  <a href="/" class="logo">Kai<span>flow</span></a>
   <ul>
-    <li><a href="#problems">Problèmes</a></li>
-    <li><a href="#how">Comment ça marche</a></li>
+    <li><a href="#ikigai">Notre Ikigai</a></li>
+    <li><a href="#how">Fonctionnement</a></li>
     <li><a href="#features">Fonctionnalités</a></li>
-    <li><a href="#pricing">Tarifs</a></li>
-    <li><a href="/login" class="nav-login">Se connecter</a></li>
-    <li><a href="/signup" class="nav-cta">Accès bêta</a></li>
+    <li><a href="/dashboard" class="nav-login">Mon Dashboard</a></li>
+    <li><a href="/editor" class="nav-cta">Ouvrir l'Éditeur</a></li>
   </ul>
 </nav>
 
@@ -809,23 +724,23 @@
   <div class="hero-glow"></div>
   <div class="hero-glow2"></div>
 
-  <div class="hero-tag">Bêta — Accès limité</div>
+  <div class="hero-tag">Kaiflow Bêta</div>
 
   <h1>Modélisez vos flux.<br><em>Pilotez</em> votre performance.</h1>
 
   <p class="hero-sub">
-    Kaiflow permet aux équipes industrielles de modéliser visuellement leurs lignes de production et d'obtenir automatiquement leurs indicateurs clés — takt time, temps de cycle, goulots d'étranglement.
+    Le simulateur industriel conçu pour le terrain. Cartographiez vos lignes de production et obtenez instantanément vos indicateurs clés : takt time, temps de cycle utile, et goulots d'étranglement.
   </p>
 
   <div class="hero-actions">
-    <a href="#cta" class="btn-primary">Demander l'accès bêta →</a>
+    <a href="/editor" class="btn-primary">Essayer l'éditeur gratuitement →</a>
     <a href="#how" class="btn-secondary">Voir comment ça marche</a>
   </div>
 
   <div class="hero-stats">
     <div class="stat-item">
       <div class="stat-num">No<span>‑</span>code</div>
-      <div class="stat-label">Aucune compétence technique requise</div>
+      <div class="stat-label">Aucune compétence requise</div>
     </div>
     <div class="stat-item">
       <div class="stat-num">3<span>min</span></div>
@@ -833,7 +748,7 @@
     </div>
     <div class="stat-item">
       <div class="stat-num">100<span>%</span></div>
-      <div class="stat-label">Calculs automatisés en temps réel</div>
+      <div class="stat-label">Calculs mathématiques en temps réel</div>
     </div>
   </div>
 
@@ -894,26 +809,26 @@
   </div>
 </section>
 
-<section class="problems" id="problems">
-  <div class="section-tag reveal">Le problème</div>
-  <h2 class="reveal">L'industrie mérite mieux qu'Excel</h2>
-  <p class="section-desc reveal">Les équipes de production perdent un temps considérable sur des tâches qui devraient être automatiques.</p>
+<section class="ikigai" id="ikigai">
+  <div class="section-tag reveal">Notre Ikigai</div>
+  <h2 class="reveal">L'alliance de l'humain et de la performance</h2>
+  <p class="section-desc reveal">Nous croyons que l'industrie de demain ne se pilote pas sur des tableurs obscurs, mais sur le terrain, avec des outils visuels qui redonnent le pouvoir aux équipes.</p>
 
-  <div class="problems-grid">
-    <div class="problem-card reveal">
-      <div class="problem-icon">⏱</div>
-      <h3>Calculs chronophages</h3>
-      <p>Vos équipes passent des heures à calculer manuellement le takt time, les temps de cycle et les rendements sur des fichiers Excel complexes et sources d'erreurs.</p>
+  <div class="ikigai-grid">
+    <div class="ikigai-card reveal">
+      <div class="ikigai-icon">👁️</div>
+      <h3>Rendre l'invisible visible</h3>
+      <p>Mettre en lumière les goulots d'étranglement et la non-valeur ajoutée avant qu'ils n'impactent votre rentabilité et vos délais de livraison.</p>
     </div>
-    <div class="problem-card reveal">
-      <div class="problem-icon">🔍</div>
-      <h3>Goulots invisibles</h3>
-      <p>Sans vision globale de votre flux, les bottlenecks restent cachés jusqu'à ce qu'ils impactent votre production — trop tard pour réagir efficacement.</p>
+    <div class="ikigai-card reveal">
+      <div class="ikigai-icon">⚡</div>
+      <h3>L'efficacité sans l'effort</h3>
+      <p>Automatiser les mathématiques complexes (Takt Time, TRS, PERT) pour que vos ingénieurs se concentrent sur l'essentiel : l'amélioration continue.</p>
     </div>
-    <div class="problem-card reveal">
-      <div class="problem-icon">📊</div>
-      <h3>Communication difficile</h3>
-      <p>Expliquer un flux de production complexe à votre équipe ou à la direction prend du temps et manque souvent de clarté visuelle.</p>
+    <div class="ikigai-card reveal">
+      <div class="ikigai-icon">🤝</div>
+      <h3>Aligner les visions</h3>
+      <p>Créer un langage commun et instantané entre les opérateurs de ligne et la direction stratégique grâce à une cartographie claire et partagée.</p>
     </div>
   </div>
 </section>
@@ -927,21 +842,21 @@
       <div class="step-num">01</div>
       <div class="step-content">
         <h3>Glissez vos blocs de production</h3>
-        <p>Depuis une bibliothèque de blocs prédéfinis (postes, stocks, transports…), construisez votre flux par simple glisser-déposer. Aucune compétence technique requise.</p>
+        <p>Depuis la bibliothèque de composants (postes, stocks, transports…), construisez le jumeau numérique de votre flux par simple glisser-déposer sur le Canvas infini.</p>
       </div>
     </div>
     <div class="step reveal">
       <div class="step-num">02</div>
       <div class="step-content">
-        <h3>Renseignez vos données</h3>
-        <p>Entrez les temps de cycle, la cadence de production et le nombre d'opérateurs pour chaque poste. Kaiflow fait le reste.</p>
+        <h3>Renseignez la réalité terrain</h3>
+        <p>Entrez les temps de cycle bruts, le taux de disponibilité machine (pannes) et les taux de rebuts. Intégrez vos chronométrages réels via l'outil MOS intégré.</p>
       </div>
     </div>
     <div class="step reveal">
       <div class="step-num">03</div>
       <div class="step-content">
-        <h3>Obtenez vos indicateurs instantanément</h3>
-        <p>Takt time, temps de cycle global, goulots d'étranglement, rendement par poste — tous vos KPIs s'affichent en temps réel et s'actualisent à chaque modification.</p>
+        <h3>L'algorithme s'occupe du reste</h3>
+        <p>Takt time net, Lead time par chemin critique, équilibrage Yamazumi, détection automatique du goulot : toutes vos métriques s'actualisent instantanément.</p>
       </div>
     </div>
   </div>
@@ -955,124 +870,61 @@
     <div class="feature-item reveal">
       <div class="feature-icon">🎯</div>
       <div>
-        <h4>Éditeur visuel drag & drop</h4>
-        <p>Interface intuitive inspirée des outils de VSM (Value Stream Mapping) — sans la courbe d'apprentissage.</p>
+        <h4>Éditeur visuel immersif</h4>
+        <p>Interface intuitive inspirée des standards du web moderne (Canvas infini, zoom, pan) pour modéliser sans limites.</p>
       </div>
     </div>
     <div class="feature-item reveal">
-      <div class="feature-icon">⚡</div>
+      <div class="feature-icon">⚙️</div>
       <div>
-        <h4>Calcul automatique des KPIs</h4>
-        <p>Takt time, temps de cycle, OEE, taux de rendement synthétique — calculés et mis à jour en temps réel.</p>
+        <h4>Moteur de calcul TRS</h4>
+        <p>Ne vous fiez plus aux temps théoriques. Intégrez vos taux de pannes et de rebuts pour calculer le véritable cycle de production.</p>
       </div>
     </div>
     <div class="feature-item reveal">
       <div class="feature-icon">🚨</div>
       <div>
-        <h4>Détection des goulots</h4>
-        <p>Kaiflow identifie et met en évidence automatiquement les postes qui limitent votre flux de production.</p>
+        <h4>Détection algorithmique du goulot</h4>
+        <p>Kaiflow analyse vos flux parallèles et vos chemins critiques pour mettre en évidence la machine qui bride réellement l'usine.</p>
       </div>
     </div>
     <div class="feature-item reveal">
-      <div class="feature-icon">📋</div>
+      <div class="feature-icon">📊</div>
       <div>
-        <h4>Export & partage</h4>
-        <p>Exportez vos analyses en PDF pour vos réunions de production ou partagez-les directement avec votre équipe.</p>
-      </div>
-    </div>
-    <div class="feature-item reveal">
-      <div class="feature-icon">💾</div>
-      <div>
-        <h4>Sauvegarde de vos flux</h4>
-        <p>Enregistrez et comparez différentes configurations de ligne pour simuler des améliorations avant de les implémenter.</p>
+        <h4>Équilibrage Yamazumi</h4>
+        <p>Visualisez la charge de vos opérateurs par rapport au Takt Time et calculez instantanément votre cible d'Équivalent Temps Plein (ETP).</p>
       </div>
     </div>
     <div class="feature-item reveal">
       <div class="feature-icon">🏭</div>
       <div>
-        <h4>Multi-lignes & multi-sites</h4>
-        <p>Gérez plusieurs lignes de production ou plusieurs usines depuis un tableau de bord centralisé.</p>
+        <h4>Tour de contrôle multi-sites</h4>
+        <p>Gérez plusieurs lignes de production regroupées par usines et ateliers depuis un tableau de bord consolidé.</p>
+      </div>
+    </div>
+    <div class="feature-item reveal">
+      <div class="feature-icon">📋</div>
+      <div>
+        <h4>Export de rapport PDF <span class="badge-soon">À venir</span></h4>
+        <p>Compilez vos indicateurs clés, votre diagramme Yamazumi et la capture de votre flux dans un rapport A4 d'un seul clic.</p>
       </div>
     </div>
   </div>
 </section>
 
-<section id="pricing">
-  <div class="section-tag reveal">Tarifs</div>
-  <h2 class="reveal">Simple. Transparent. Sans surprise.</h2>
-
-  <div class="pricing-grid">
-    <div class="plan-card reveal">
-      <div class="plan-name">Starter</div>
-      <div class="plan-price">Gratuit</div>
-      <div class="plan-desc">Pour découvrir Kaiflow et tester la modélisation.</div>
-      <ul class="plan-features">
-        <li>1 flux de production</li>
-        <li>Jusqu'à 10 blocs</li>
-        <li>KPIs de base (takt time, temps de cycle)</li>
-        <li>Export PDF</li>
-      </ul>
-      <button class="plan-btn outline" onclick="window.location.href='/signup'">Commencer gratuitement</button>
-    </div>
-
-    <div class="plan-card featured reveal">
-      <div class="plan-badge">Le plus populaire</div>
-      <div class="plan-name">Pro</div>
-      <div class="plan-price">49€ <span>/ mois</span></div>
-      <div class="plan-desc">Pour les équipes de production qui veulent piloter leur performance au quotidien.</div>
-      <ul class="plan-features">
-        <li>Flux illimités</li>
-        <li>Blocs illimités</li>
-        <li>Tous les KPIs avancés (OEE, TRS…)</li>
-        <li>Détection automatique des goulots</li>
-        <li>Comparaison de scénarios</li>
-        <li>Support prioritaire</li>
-      </ul>
-      <button class="plan-btn filled" onclick="window.location.href='/signup'">Accès bêta gratuit →</button>
-    </div>
-
-    <div class="plan-card reveal">
-      <div class="plan-name">Entreprise</div>
-      <div class="plan-price">Sur devis</div>
-      <div class="plan-desc">Pour les grands sites industriels avec des besoins spécifiques.</div>
-      <ul class="plan-features">
-        <li>Multi-sites & multi-lignes</li>
-        <li>Intégrations ERP / MES</li>
-        <li>Tableau de bord personnalisé</li>
-        <li>Formation & onboarding dédié</li>
-        <li>SLA garanti</li>
-      </ul>
-      <button class="plan-btn outline" onclick="window.location.href='mailto:contact@kaiflow.fr'">Nous contacter</button>
-    </div>
-  </div>
-</section>
-
 <section class="cta-section" id="cta">
-  <div class="section-tag" style="text-align:center">Accès bêta</div>
-  <h2 class="reveal">Rejoignez les premiers utilisateurs</h2>
-  <p class="section-desc reveal">Kaiflow est en phase bêta. Laissez votre email pour obtenir un accès gratuit et participer à la construction du produit.</p>
+  <div class="section-tag" style="text-align:center">Kaiflow Bêta</div>
+  <h2 class="reveal">Passez de l'expert Excel au Dirigeant 4.0</h2>
+  <p class="section-desc reveal">L'outil est actuellement en phase Bêta publique. Créez un compte gratuitement dès maintenant pour commencer à modéliser vos usines.</p>
 
   <div class="cta-form reveal">
-    <input type="email" class="cta-input" id="ctaEmail" placeholder="votre@entreprise.fr">
-    <button class="btn-primary" onclick="submitCTA()">Obtenir l'accès →</button>
+    <button class="btn-primary" style="font-size: 1.1rem; padding: 1rem 2.5rem;" onclick="window.location.href='/signup'">Créer un compte gratuit</button>
   </div>
-  <p id="ctaMsg" style="color: var(--muted); font-size: 0.8rem; margin-top: 1rem;" class="reveal">Aucune carte bancaire requise · Accès 100% gratuit pendant la bêta</p>
-  <script>
-  function submitCTA() {
-    const email = document.getElementById('ctaEmail').value.trim();
-    if (!email || !email.includes('@')) {
-      document.getElementById('ctaMsg').textContent = '⚠ Veuillez entrer un email valide.';
-      document.getElementById('ctaMsg').style.color = 'var(--warn)';
-      return;
-    }
-    window.location.href = '/signup';
-  }
-  </script>
 </section>
 
 <footer>
-  <div class="logo">Kai<span style="color:var(--accent)">flow</span></div>
-  <div>© 2025 Kaiflow — Tous droits réservés</div>
+  <a href="/" class="logo">Kai<span style="color:var(--accent)">flow</span></a>
+  <div>© 2026 Kaiflow — Tous droits réservés</div>
   <div style="display:flex; gap: 1.5rem;">
     <a href="#" style="color: var(--muted); text-decoration: none;">Mentions légales</a>
     <a href="#" style="color: var(--muted); text-decoration: none;">Confidentialité</a>
