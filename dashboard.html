@@ -30,7 +30,6 @@
 
   /* MAIN CONTENT */
   .main-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--bg); position: relative; }
-  /* Ajout d'une texture de fond pour habiller */
   .main-area::before { content: ''; position: absolute; inset: 0; background-image: radial-gradient(circle at 50% 0%, rgba(0,229,255,0.03) 0%, transparent 50%); pointer-events: none; z-index: 0; }
 
   .content-scroll { flex: 1; overflow-y: auto; padding: 2.5rem 3rem; z-index: 1; }
@@ -83,20 +82,31 @@
   .goulot-line { font-size: 0.75rem; color: var(--muted); display: flex; align-items: center; gap: 0.4rem; background: var(--bg); padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border); }
   .goulot-name { font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-  /* MODALS */
+  /* MODALS CORRIGÉES ET AFFINÉES */
   .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
   .modal-overlay.open { opacity: 1; pointer-events: all; }
-  .modal-content { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; width: 100%; max-width: 420px; padding: 2rem; transform: translateY(20px); transition: transform 0.2s; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+  .modal-content { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; width: 100%; max-width: 500px; padding: 2rem; transform: translateY(20px); transition: transform 0.2s; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
   .modal-overlay.open .modal-content { transform: translateY(0); }
-  .modal-title { font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 700; margin-bottom: 1.5rem; }
-  .input-group { margin-bottom: 1.2rem; }
-  .input-group label { display: block; font-size: 0.8rem; color: var(--muted); margin-bottom: 0.4rem; font-weight: 500; }
-  .input-group input { width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 0.75rem; border-radius: 6px; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; outline: none; transition: border-color 0.2s; }
+  .modal-title { font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 700; margin-bottom: 1.5rem; }
+  
+  /* TEMPLATES GRID */
+  .template-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.8rem; margin-bottom: 1.5rem; }
+  .template-card { border: 1px solid var(--border); border-radius: 8px; padding: 1rem 0.5rem; text-align: center; cursor: pointer; transition: all 0.2s; background: var(--bg); }
+  .template-card:hover { border-color: var(--accent); background: rgba(0,229,255,0.05); }
+  .template-card.selected { border-color: var(--accent); background: rgba(0,229,255,0.1); box-shadow: 0 0 0 1px var(--accent); }
+  .template-icon { font-size: 1.4rem; margin-bottom: 0.4rem; }
+  .template-name { font-size: 0.75rem; font-weight: 600; color: var(--text); }
+
+  /* INPUTS REDIMENSIONNÉS */
+  .input-group { margin-bottom: 1rem; }
+  .input-group label { display: block; font-size: 0.75rem; color: var(--muted); margin-bottom: 0.3rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
+  .input-group input { width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 0.6rem 0.8rem; border-radius: 6px; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; outline: none; transition: border-color 0.2s; }
   .input-group input:focus { border-color: var(--accent); }
+  
   .modal-actions { display: flex; gap: 1rem; margin-top: 2rem; }
-  .btn-cancel { flex: 1; background: transparent; border: 1px solid var(--border); color: var(--text); padding: 0.7rem; border-radius: 6px; cursor: pointer; font-weight: 500; font-family: 'DM Sans', sans-serif; transition: background 0.2s; }
+  .btn-cancel { flex: 1; background: transparent; border: 1px solid var(--border); color: var(--text); padding: 0.6rem; border-radius: 6px; cursor: pointer; font-weight: 500; font-family: 'DM Sans', sans-serif; transition: background 0.2s; }
   .btn-cancel:hover { background: var(--surface2); }
-  .btn-submit { flex: 2; background: var(--accent); border: none; color: #000; font-weight: 600; padding: 0.7rem; border-radius: 6px; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: transform 0.2s; }
+  .btn-submit { flex: 2; background: var(--accent); border: none; color: #000; font-weight: 600; padding: 0.6rem; border-radius: 6px; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: transform 0.2s; }
   .btn-submit:hover { transform: translateY(-1px); }
 
   /* EMPTY STATE */
@@ -141,22 +151,42 @@
 
 <div class="modal-overlay" id="newFluxModal">
   <div class="modal-content">
-    <div class="modal-title">Créer un nouveau flux</div>
+    <div class="modal-title">Créer une ligne de production</div>
+    
+    <label style="display:block; font-size:0.75rem; color:var(--muted); margin-bottom:0.5rem; font-weight:500; text-transform:uppercase;">Modèle de départ</label>
+    <div class="template-grid">
+      <div class="template-card selected" onclick="selectTemplate('blank')" id="tpl-blank">
+        <div class="template-icon">📄</div>
+        <div class="template-name">Flux Vierge</div>
+      </div>
+      <div class="template-card" onclick="selectTemplate('usinage')" id="tpl-usinage">
+        <div class="template-icon">⚙️</div>
+        <div class="template-name">Usinage Série</div>
+      </div>
+      <div class="template-card" onclick="selectTemplate('assemblage')" id="tpl-assemblage">
+        <div class="template-icon">📦</div>
+        <div class="template-name">Assemblage</div>
+      </div>
+    </div>
+
     <div class="input-group">
       <label>Nom de la ligne / flux</label>
       <input type="text" id="nfNom" placeholder="ex: Ligne Assemblage Stylos">
     </div>
-    <div class="input-group">
-      <label>Usine (Site de production)</label>
-      <input type="text" id="nfUsine" placeholder="ex: Usine Nord">
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
+      <div class="input-group">
+        <label>Usine / Site</label>
+        <input type="text" id="nfUsine" placeholder="ex: Usine Nord">
+      </div>
+      <div class="input-group">
+        <label>Atelier</label>
+        <input type="text" id="nfAtelier" placeholder="ex: Menuiserie">
+      </div>
     </div>
-    <div class="input-group">
-      <label>Atelier</label>
-      <input type="text" id="nfAtelier" placeholder="ex: Atelier Menuiserie">
-    </div>
+    
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeNewFluxModal()">Annuler</button>
-      <button class="btn-submit" onclick="createNewFlux()">Créer et modéliser →</button>
+      <button class="btn-submit" onclick="createNewFlux()">Créer la ligne →</button>
     </div>
   </div>
 </div>
@@ -169,13 +199,15 @@
       <label>Nom de la ligne</label>
       <input type="text" id="efNom">
     </div>
-    <div class="input-group">
-      <label>Déplacer vers l'Usine</label>
-      <input type="text" id="efUsine">
-    </div>
-    <div class="input-group">
-      <label>Déplacer vers l'Atelier</label>
-      <input type="text" id="efAtelier">
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
+      <div class="input-group">
+        <label>Déplacer vers Usine</label>
+        <input type="text" id="efUsine">
+      </div>
+      <div class="input-group">
+        <label>Déplacer vers Atelier</label>
+        <input type="text" id="efAtelier">
+      </div>
     </div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeEditFluxModal()">Annuler</button>
@@ -188,6 +220,14 @@
 import { supabaseClient, requireAuth } from '/js/supabase-client.js';
 
 let currentUser = null;
+let currentTemplate = 'blank';
+
+// ─── GESTION TEMPLATES ───
+window.selectTemplate = (tpl) => {
+  currentTemplate = tpl;
+  document.querySelectorAll('.template-card').forEach(el => el.classList.remove('selected'));
+  document.getElementById('tpl-' + tpl).classList.add('selected');
+};
 
 // ─── LOGIQUE METIER DEPORTEE ───
 function getEffectiveCycle(node) {
@@ -269,7 +309,6 @@ window.loadDashboard = async () => {
       return;
     }
 
-    // Groupement dynamique par Usine > Atelier
     const tree = {};
     fluxList.forEach(f => {
       const u = f.usine || 'Site Principal';
@@ -295,7 +334,6 @@ window.loadDashboard = async () => {
           if (stats.status === 'ok') statusHtml = `<span class="status-badge status-ok">Stable</span>`;
           if (stats.status === 'warn') statusHtml = `<span class="status-badge status-warn">Goulot</span>`;
 
-          // Format de la carte. Le bouton "Editer" bloque l'événement clic de la carte pour ne pas ouvrir l'éditeur.
           html += `
             <a href="/editor?id=${f.id}" class="flux-card">
               <div class="card-header">
@@ -346,8 +384,12 @@ window.loadDashboard = async () => {
   }
 };
 
-// ─── GESTION MODALS ───
-window.openNewFluxModal = () => document.getElementById('newFluxModal').classList.add('open');
+// ─── GESTION MODALS CREATION ───
+window.openNewFluxModal = () => {
+  selectTemplate('blank'); // Reset template selection
+  document.getElementById('nfNom').value = '';
+  document.getElementById('newFluxModal').classList.add('open');
+};
 window.closeNewFluxModal = () => document.getElementById('newFluxModal').classList.remove('open');
 
 window.createNewFlux = async () => {
@@ -355,7 +397,34 @@ window.createNewFlux = async () => {
   const usine = document.getElementById('nfUsine').value || 'Site Principal';
   const atelier = document.getElementById('nfAtelier').value || 'Atelier Général';
   
-  const payload = { user_id: currentUser.id, nom: nom, nodes: [], connections: [] };
+  let prefillNodes = [];
+  let prefillConns = [];
+
+  // Injection des données de template
+  if (currentTemplate === 'usinage') {
+    prefillNodes = [
+      { id:1, type:'stock', label:'Encours brut', x:50, y:200, qty:100, vsm:'nva', mos:{tasks:[], nc:[]} },
+      { id:2, type:'work', label:'Tournage CNC', x:300, y:200, cycle:180, ops:1, machines:1, dispo:100, rebut:0, vsm:'va', mos:{tasks:[], nc:[]} },
+      { id:3, type:'work', label:'Fraisage', x:550, y:200, cycle:140, ops:1, machines:1, dispo:100, rebut:0, vsm:'va', mos:{tasks:[], nc:[]} },
+      { id:4, type:'control', label:'Contrôle final', x:800, y:200, cycle:45, ops:1, machines:1, dispo:100, rebut:0, vsm:'va', mos:{tasks:[], nc:[]} }
+    ];
+    prefillConns = [ {from:1, to:2}, {from:2, to:3}, {from:3, to:4} ];
+  } else if (currentTemplate === 'assemblage') {
+    prefillNodes = [
+      { id:1, type:'stock', label:'Composants', x:50, y:200, qty:50, vsm:'nva', mos:{tasks:[], nc:[]} },
+      { id:2, type:'work', label:'Assemblage 1', x:300, y:200, cycle:55, ops:2, machines:1, dispo:100, rebut:0, vsm:'va', mos:{tasks:[], nc:[]} },
+      { id:3, type:'work', label:'Assemblage 2', x:550, y:200, cycle:60, ops:1, machines:1, dispo:100, rebut:0, vsm:'va', mos:{tasks:[], nc:[]} },
+      { id:4, type:'transport', label:'Transfert Logistique', x:800, y:200, cycle:120, vsm:'nva', mos:{tasks:[], nc:[]} }
+    ];
+    prefillConns = [ {from:1, to:2}, {from:2, to:3}, {from:3, to:4} ];
+  }
+
+  const payload = { 
+    user_id: currentUser.id, 
+    nom: nom, 
+    nodes: prefillNodes, 
+    connections: prefillConns 
+  };
   try { payload.usine = usine; payload.atelier = atelier; } catch(e) {}
 
   const { data, error } = await supabaseClient.from('flux').insert(payload).select().single();
@@ -368,7 +437,7 @@ window.createNewFlux = async () => {
   }
 };
 
-// ─── EDITION EMPLACEMENT (USINE / ATELIER) ───
+// ─── EDITION EMPLACEMENT ───
 window.openEditFluxModal = (id, nom, usine, atelier) => {
   document.getElementById('efId').value = id;
   document.getElementById('efNom').value = nom;
@@ -396,7 +465,6 @@ window.updateFluxLocation = async () => {
     console.error(error);
   } else {
     closeEditFluxModal();
-    // On recharge le tableau de bord silencieusement
     document.getElementById('dashboardContainer').innerHTML = `<div style="text-align:center; padding:3rem; color:var(--muted)">Actualisation...</div>`;
     loadDashboard();
   }
