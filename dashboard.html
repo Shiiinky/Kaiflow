@@ -4,320 +4,318 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kaiflow — Dashboard</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/globals.css">
 <style>
-  /* CSS Spécifique au layout du Dashboard */
-  body { display: flex; overflow: hidden; }
-  
-  /* Sidebar */
-  .sidebar { width: 240px; min-height: 100vh; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; z-index: 10; }
-  .sidebar-logo { padding: 1.8rem 1.5rem 1.5rem; border-bottom: 1px solid var(--border); }
-  .logo-tag { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-top: 0.15rem; }
-  .sidebar-nav { flex: 1; padding: 1.2rem 0.75rem; display: flex; flex-direction: column; gap: 0.2rem; }
-  .nav-section-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); padding: 0.8rem 0.75rem 0.4rem; font-weight: 500; }
-  .nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.65rem 0.75rem; border-radius: 8px; cursor: pointer; color: var(--muted2); font-size: 0.88rem; text-decoration: none; position: relative; transition: all 0.15s;}
-  .nav-item:hover { background: var(--surface2); color: var(--text); }
-  .nav-item.active { background: rgba(0,229,255,0.08); color: var(--accent); font-weight: 500; }
-  .nav-item.active::before { content: ''; position: absolute; left: 0; top: 20%; bottom: 20%; width: 2px; background: var(--accent); border-radius: 2px; }
-  .nav-icon { font-size: 1rem; width: 20px; text-align: center; }
-  .sidebar-user { padding: 1rem 1.2rem; border-top: 1px solid var(--border); display: flex; align-items: center; gap: 0.75rem; cursor: pointer; transition: background 0.15s;}
-  .sidebar-user:hover { background: var(--surface2); }
-  .user-avatar { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), #0077aa); display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-weight: 700; color: #000; }
-  .user-info { flex: 1; min-width: 0; }
-  .user-name { font-size: 0.85rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .user-role { font-size: 0.72rem; color: var(--muted); }
+  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; overflow-x: hidden; }
 
-  /* Main & Topbar */
-  .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-  .topbar { height: 60px; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 2rem; gap: 1rem; background: var(--bg); }
-  .topbar-title { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700; flex: 1; }
-  .section-count { font-size: 0.8rem; color: var(--muted); font-weight: 400; margin-left: 0.6rem; }
-  .topbar-date { font-size: 0.82rem; color: var(--muted); }
-  .topbar-btn { display: flex; align-items: center; gap: 0.5rem; background: var(--accent); color: #000; border: none; border-radius: 8px; padding: 0.5rem 1.1rem; font-family: 'DM Sans', sans-serif; font-size: 0.88rem; font-weight: 500; cursor: pointer; transition: transform 0.15s; }
-  .topbar-btn:hover { transform: translateY(-1px); }
-  
-  /* Layout Content */
-  .content { flex: 1; overflow-y: auto; padding: 2rem; display: flex; flex-direction: column; gap: 2rem; }
-  .content::-webkit-scrollbar { width: 5px; }
-  .content::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+  /* TOPBAR */
+  .topbar { height: 60px; background: rgba(17,22,32,0.85); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 2rem; position: sticky; top: 0; z-index: 100; }
+  .logo { font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 800; letter-spacing: -0.02em; }
+  .logo span { color: var(--accent); }
+  .user-profile { display: flex; align-items: center; gap: 1rem; font-size: 0.85rem; color: var(--muted); }
+  .btn-primary { background: var(--accent); color: #000; border: none; padding: 0.5rem 1.2rem; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 0.5rem; text-decoration: none; font-family: 'DM Sans', sans-serif; }
+  .btn-primary:hover { box-shadow: 0 4px 15px rgba(0,229,255,0.25); transform: translateY(-1px); }
 
-  /* Summary Cards */
-  .summary-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
-  .summary-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.3rem 1.5rem; position: relative; animation: fadeUp 0.5s ease both; }
-  .summary-card::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; border-radius: 12px 12px 0 0; }
-  .summary-card.c-accent::after { background: var(--accent); }
-  .summary-card.c-ok::after { background: var(--ok); }
-  .card-label { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); font-weight: 500; margin-bottom: 0.75rem; }
-  .card-value { font-family: 'Syne', sans-serif; font-size: 2.2rem; font-weight: 800; line-height: 1; margin-bottom: 0.5rem; }
-  .card-value.ok { color: var(--ok); }
-  .card-value.accent { color: var(--accent); }
+  /* LAYOUT */
+  .main-content { padding: 2rem; max-width: 1400px; margin: 0 auto; }
   
-  /* Flux Grid */
-  .section-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
-  .section-title { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700; }
-  .flux-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
-  .flux-card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; overflow: hidden; cursor: pointer; transition: transform 0.2s, border-color 0.2s; animation: fadeUp 0.5s ease both; }
-  .flux-card:hover { transform: translateY(-3px); border-color: var(--border2); }
-  .flux-preview { background: var(--bg); padding: 1rem 1.2rem 0.8rem; border-bottom: 1px solid var(--border); min-height: 80px; display: flex; align-items: center; }
-  .mini-flow { display: flex; align-items: center; gap: 0.4rem; overflow: hidden; }
-  .mini-block { background: var(--surface); border: 1px solid var(--border); border-radius: 6px; padding: 0.35rem 0.55rem; font-size: 0.62rem; color: var(--muted2); white-space: nowrap; }
-  .mini-block.ok { border-color: rgba(34,211,160,0.3); color: var(--ok); }
-  .flux-body { padding: 1rem 1.2rem; }
-  .flux-name { font-family: 'Syne', sans-serif; font-size: 0.95rem; font-weight: 700; }
-  .flux-meta { font-size: 0.75rem; color: var(--muted); margin-top:0.2rem;}
+  .page-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 3rem; }
+  .page-title { font-family: 'Syne', sans-serif; font-size: 2.2rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.5rem; }
+  .page-sub { color: var(--muted); font-size: 0.95rem; }
 
-  /* MODAL STYLES (TEMPLATES) */
-  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 200; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s; backdrop-filter: blur(4px); }
+  /* GROUPEMENT (USINE / ATELIER) */
+  .usine-section { margin-bottom: 4rem; }
+  .usine-title { font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 700; color: var(--text); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
+  .usine-title::before { content: '🏭'; font-size: 1.2rem; }
+  
+  .atelier-section { margin-bottom: 2.5rem; padding-left: 1rem; border-left: 2px solid var(--border2); }
+  .atelier-title { font-size: 1rem; font-weight: 600; color: var(--muted); margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 0.5rem; }
+
+  /* GRID & CARDS */
+  .flux-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; }
+  
+  .flux-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.2rem; display: flex; flex-direction: column; transition: all 0.2s; position: relative; overflow: hidden; text-decoration: none; color: inherit; }
+  .flux-card:hover { border-color: rgba(0,229,255,0.4); transform: translateY(-3px); box-shadow: 0 12px 30px rgba(0,0,0,0.4); }
+  
+  .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.2rem; }
+  .card-title { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 700; margin-bottom: 0.2rem; }
+  .card-date { font-size: 0.7rem; color: var(--muted2); }
+  
+  /* STATUS BADGE */
+  .status-badge { font-size: 0.65rem; font-weight: 700; padding: 0.25rem 0.6rem; border-radius: 100px; text-transform: uppercase; letter-spacing: 0.05em; border: 1px solid transparent; }
+  .status-ok { background: var(--ok-dim); color: var(--ok); border-color: rgba(34,211,160,0.2); }
+  .status-warn { background: var(--warn-dim); color: var(--warn); border-color: rgba(255,107,53,0.2); }
+  .status-empty { background: var(--surface2); color: var(--muted); border-color: var(--border); }
+
+  /* KPI GRID INSIDE CARD */
+  .card-kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin-bottom: 1.5rem; }
+  .ckpi { background: var(--bg); border: 1px solid var(--border); padding: 0.6rem; border-radius: 6px; }
+  .ckpi-label { font-size: 0.58rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.2rem; }
+  .ckpi-val { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700; }
+  .ckpi-val.accent { color: var(--accent); }
+  .ckpi-val.warn { color: var(--warn); }
+  .ckpi-val.ok { color: var(--ok); }
+  
+  .goulot-line { font-size: 0.75rem; color: var(--muted); display: flex; align-items: center; gap: 0.4rem; background: var(--bg); padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border); }
+  .goulot-name { font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* NEW FLUX MODAL */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
   .modal-overlay.open { opacity: 1; pointer-events: all; }
-  .modal { background: var(--surface); border: 1px solid var(--border2); border-radius: 16px; padding: 2rem; width: 500px; transform: translateY(20px); transition: transform 0.2s; }
-  .modal-overlay.open .modal { transform: translateY(0); }
-  .modal-title { font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 700; margin-bottom: 0.4rem; }
-  .modal-sub { font-size: 0.88rem; color: var(--muted2); margin-bottom: 1.5rem; }
-  .modal-actions { display: flex; gap: 0.75rem; margin-top: 1.5rem; }
-  .modal-btn-cancel { flex: 1; padding: 0.75rem; background: transparent; border: 1px solid var(--border); border-radius: 8px; color: var(--muted2); font-family: 'DM Sans', sans-serif; font-size: 0.9rem; cursor: pointer; transition: border-color 0.15s; }
-  .modal-btn-cancel:hover { border-color: var(--muted2); }
-  .modal-btn-create { flex: 2; padding: 0.75rem; background: var(--accent); border: none; border-radius: 8px; color: #000; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 500; cursor: pointer; transition: transform 0.15s; }
+  .modal-content { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; width: 100%; max-width: 400px; padding: 2rem; transform: translateY(20px); transition: transform 0.2s; }
+  .modal-overlay.open .modal-content { transform: translateY(0); }
+  .modal-title { font-family: 'Syne', sans-serif; font-size: 1.3rem; font-weight: 700; margin-bottom: 1.5rem; }
+  .input-group { margin-bottom: 1.2rem; }
+  .input-group label { display: block; font-size: 0.8rem; color: var(--muted); margin-bottom: 0.4rem; }
+  .input-group input { width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 0.7rem; border-radius: 6px; font-family: 'DM Sans', sans-serif; outline: none; }
+  .input-group input:focus { border-color: var(--accent); }
+  .modal-actions { display: flex; gap: 1rem; margin-top: 2rem; }
+  .btn-cancel { flex: 1; background: transparent; border: 1px solid var(--border); color: var(--text); padding: 0.7rem; border-radius: 6px; cursor: pointer; }
+  .btn-submit { flex: 2; background: var(--accent); border: none; color: #000; font-weight: 600; padding: 0.7rem; border-radius: 6px; cursor: pointer; }
 
-  /* Template Grid */
-  .template-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; margin-top: 0.5rem; }
-  .template-card { background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 1rem; cursor: pointer; transition: all 0.2s; display: flex; flex-direction: column; gap: 0.5rem; }
-  .template-card:hover { border-color: var(--border2); }
-  .template-card.selected { border-color: var(--accent); background: var(--accent-dim); box-shadow: 0 0 0 1px var(--accent); }
-  .template-icon { font-size: 1.5rem; }
-  .template-name { font-family: 'Syne', sans-serif; font-size: 0.85rem; font-weight: 700; }
-  .template-desc { font-size: 0.7rem; color: var(--muted); line-height: 1.4; }
-
-  .full-width-card { grid-column: 1 / -1; display: flex; flex-direction: row; align-items: center; }
-  .full-width-card .template-icon { margin-right: 1rem; margin-bottom: 0; }
+  /* EMPTY STATE */
+  .empty-state { text-align: center; padding: 5rem 2rem; background: var(--surface); border: 1px dashed var(--border2); border-radius: 12px; }
+  .empty-icon { font-size: 3rem; opacity: 0.5; margin-bottom: 1rem; }
 </style>
 </head>
 <body>
 
-<aside class="sidebar">
-  <div class="sidebar-logo">
-    <div class="logo-mark">Kai<em>flow</em></div>
-    <div class="logo-tag">Production Intelligence</div>
+<header class="topbar">
+  <div class="logo">Kai<span>flow</span></div>
+  <div class="user-profile">
+    <span id="userEmail">Chargement...</span>
+    <button class="btn-primary" onclick="openNewFluxModal()">✚ Nouvelle Ligne</button>
   </div>
-  <nav class="sidebar-nav">
-    <div class="nav-section-label">Principal</div>
-    <a class="nav-item active"><span class="nav-icon">⬛</span> Dashboard</a>
-    <a href="/editor" class="nav-item"><span class="nav-icon">〰</span> Éditeur</a>
-    <div class="nav-section-label">Compte</div>
-    <a href="/account" class="nav-item"><span class="nav-icon">⚙</span> Paramètres</a>
-    <a id="logoutBtn" class="nav-item" style="color:var(--warn); cursor:pointer;"><span class="nav-icon">↪</span> Déconnexion</a>
-  </nav>
-  <div class="sidebar-user" onclick="window.location.href='/account'">
-    <div class="user-avatar" id="userAvatar">…</div>
-    <div class="user-info">
-      <div class="user-name" id="userName">Chargement…</div>
-      <div class="user-role" id="userRole">—</div>
-    </div>
-  </div>
-</aside>
+</header>
 
-<div class="main">
-  <header class="topbar">
-    <div class="topbar-title">Dashboard <span class="section-count" id="companyTitle">— vue d'ensemble</span></div>
-    <div class="topbar-date" id="topbar-date"></div>
-    <button class="topbar-btn" onclick="openModal()">✚ Nouveau flux</button>
-  </header>
-
-  <div class="content">
-    <div class="summary-row">
-      <div class="summary-card c-accent">
-        <div class="card-label">Flux actifs</div>
-        <div class="card-value accent" id="summaryFlux">—</div>
-      </div>
-      <div class="summary-card c-ok">
-        <div class="card-label">Modélisations</div>
-        <div class="card-value ok" id="summaryPostes">—</div>
-      </div>
-    </div>
-
+<main class="main-content">
+  <div class="page-header">
     <div>
-      <div class="section-header">
-        <div><span class="section-title">Mes flux de production</span></div>
-      </div>
-      <div class="flux-grid" id="fluxGrid">
-        </div>
+      <h1 class="page-title">Tour de contrôle</h1>
+      <p class="page-sub">Pilotage de la performance industrielle multi-sites.</p>
     </div>
   </div>
-</div>
 
-<div class="modal-overlay" id="modal" onclick="closeModal(event)">
-  <div class="modal">
-    <div class="modal-title">Nouveau flux</div>
-    <div class="modal-sub">Démarrez de zéro ou gagnez du temps avec un modèle.</div>
+  <div id="dashboardContainer">
+    <div style="text-align:center; padding:3rem; color:var(--muted)">Analyse des flux en cours...</div>
+  </div>
+</main>
 
-    <div class="field">
-      <label>Nom du flux</label>
-      <input type="text" id="newFluxName" placeholder="ex: Ligne Assemblage A">
+<div class="modal-overlay" id="newFluxModal">
+  <div class="modal-content">
+    <div class="modal-title">Créer un nouveau flux</div>
+    <div class="input-group">
+      <label>Nom de la ligne / flux</label>
+      <input type="text" id="nfNom" placeholder="ex: Ligne Assemblage Stylos">
     </div>
-
-    <div class="field">
-      <label>Point de départ</label>
-      <div class="template-grid">
-        <div class="template-card full-width-card selected" data-template="blank" onclick="selectTemplate('blank')">
-          <div class="template-icon">📄</div>
-          <div>
-            <div class="template-name">Flux vierge</div>
-            <div class="template-desc">Démarrez avec une toile blanche.</div>
-          </div>
-        </div>
-        <div class="template-card" data-template="pickpack" onclick="selectTemplate('pickpack')">
-          <div class="template-icon">📦</div>
-          <div class="template-name">Pick & Pack</div>
-          <div class="template-desc">Logistique et expédition e-commerce.</div>
-        </div>
-        <div class="template-card" data-template="usinage" onclick="selectTemplate('usinage')">
-          <div class="template-icon">⚙️</div>
-          <div class="template-name">Usinage (Série)</div>
-          <div class="template-desc">Découpe, Tournage CNC et Fraisage.</div>
-        </div>
-      </div>
+    <div class="input-group">
+      <label>Usine (Site de production)</label>
+      <input type="text" id="nfUsine" placeholder="ex: Usine Nord">
     </div>
-
+    <div class="input-group">
+      <label>Atelier</label>
+      <input type="text" id="nfAtelier" placeholder="ex: Atelier Menuiserie">
+    </div>
     <div class="modal-actions">
-      <button class="modal-btn-cancel" onclick="closeModal(true)">Annuler</button>
-      <button class="modal-btn-create" id="btnCreateFlux" onclick="createFlux()">Créer et modéliser →</button>
+      <button class="btn-cancel" onclick="closeNewFluxModal()">Annuler</button>
+      <button class="btn-submit" onclick="createNewFlux()">Créer et modéliser →</button>
     </div>
   </div>
 </div>
 
 <script type="module">
-  import { supabaseClient, requireAuth, logoutUser } from '/js/supabase-client.js';
+import { supabaseClient, requireAuth } from '/js/supabase-client.js';
 
-  window.logout = logoutUser;
-  document.getElementById('logoutBtn').addEventListener('click', logoutUser);
-  document.getElementById('topbar-date').textContent = new Date().toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+let currentUser = null;
 
-  let currentUser = null;
-  let currentTemplate = 'blank';
+// ─── ALGORITHMES DÉPORTÉS DU DASHBOARD ───
+// On reproduit la logique métier allégée pour calculer les KPIs sans ouvrir l'éditeur
 
-  // ─── GESTION MODALE & TEMPLATES ──────────────────────────────────────────────
-  window.openModal = function() {
-    document.getElementById('modal').classList.add('open');
-    document.getElementById('newFluxName').value = '';
-    selectTemplate('blank'); // Reset
+function getEffectiveCycle(node) {
+  if (!node) return 0; let rawCycle = node.cycle || 0;
+  if (node.mos && node.mos.tasks && node.mos.tasks.length > 0) {
+    const sum = node.mos.tasks.reduce((s,t) => s + (parseFloat(t.manual)||0) + (parseFloat(t.move)||0) + (parseFloat(t.wait)||0), 0);
+    if (sum > 0) rawCycle = sum;
   }
+  const mach = parseInt(node.machines) || 1;
+  const dispo = node.dispo !== undefined ? parseFloat(node.dispo) / 100 : 1;
+  const rebut = node.rebut !== undefined ? parseFloat(node.rebut) / 100 : 0;
+  const den = mach * dispo * (1 - rebut);
+  return den <= 0 ? Infinity : Math.round(rawCycle / den);
+}
 
-  window.closeModal = function(e) {
-    // Ferme si on clique explicitement sur le bouton Annuler (e === true)
-    // OU si l'élément cliqué est strictement l'overlay gris (e.target === modal)
-    if (e === true || (e && e.target === document.getElementById('modal'))) {
-      document.getElementById('modal').classList.remove('open');
+function analyzeFlux(fluxData) {
+  const nodes = Array.isArray(fluxData.nodes) ? fluxData.nodes : JSON.parse(fluxData.nodes || '[]');
+  const takt = fluxData.takt_time_cible || 0;
+  
+  if (nodes.length === 0) return { status: 'empty', takt: 0, maxCycle: 0, goulot: 'Aucun bloc', leadTime: 0, rendement: 0 };
+
+  const workNodes = nodes.filter(n => n.type === 'work' || n.type === 'control');
+  let maxCycle = 0;
+  let goulotName = "Aucun goulot identifié";
+
+  workNodes.forEach(n => {
+    const c = getEffectiveCycle(n);
+    if (c !== Infinity && c > maxCycle) {
+      maxCycle = c;
+      goulotName = n.label;
     }
+  });
+
+  const isOk = maxCycle > 0 && maxCycle <= takt;
+  const rendement = maxCycle > 0 ? Math.round((takt / maxCycle) * 100) : 0;
+  let status = 'empty';
+  
+  if (workNodes.length > 0) {
+    status = isOk ? 'ok' : 'warn';
   }
 
-  window.selectTemplate = function(templateId) {
-    currentTemplate = templateId;
-    document.querySelectorAll('.template-card').forEach(el => el.classList.remove('selected'));
-    document.querySelector(`.template-card[data-template="${templateId}"]`).classList.add('selected');
+  // Calcul du Lead Time très simplifié pour le dashboard (somme brute des cycles + stocks)
+  // (L'algorithme PERT complet est trop lourd pour afficher 50 cartes, on fait une estimation)
+  let estimatedLT = 0;
+  const cadence = Math.max(takt, maxCycle);
+  nodes.forEach(n => {
+    if (n.type === 'stock') estimatedLT += (n.qty || 0) * cadence;
+    else if (n.type === 'work' || n.type === 'control') estimatedLT += getEffectiveCycle(n);
+  });
+
+  return { takt, maxCycle, goulot: goulotName, leadTime: estimatedLT, rendement, status };
+}
+
+function formatLT(sec) {
+  if (sec === 0 || sec === Infinity) return "—";
+  if (sec > 86400) return Math.floor(sec/86400) + 'j';
+  if (sec > 3600) return Math.floor(sec/3600) + 'h ' + Math.floor((sec%3600)/60) + 'm';
+  if (sec > 60) return Math.floor(sec/60) + 'm';
+  return sec + 's';
+}
+
+// ─── RENDU DU DASHBOARD ───
+async function loadDashboard() {
+  currentUser = await requireAuth();
+  if (!currentUser) return;
+  document.getElementById('userEmail').textContent = currentUser.email;
+
+  const { data: fluxList, error } = await supabaseClient
+    .from('flux')
+    .select('id, nom, usine, atelier, updated_at, takt_time_cible, nodes')
+    .eq('user_id', currentUser.id)
+    .order('usine', { ascending: true })
+    .order('atelier', { ascending: true })
+    .order('updated_at', { ascending: false });
+
+  const container = document.getElementById('dashboardContainer');
+
+  if (error || !fluxList || fluxList.length === 0) {
+    container.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">🏭</div>
+        <h2>Votre usine est vide</h2>
+        <p style="color:var(--muted); margin-bottom: 2rem;">Commencez par cartographier votre première ligne de production.</p>
+        <button class="btn-primary" onclick="openNewFluxModal()">Créer un flux</button>
+      </div>`;
+    return;
   }
 
-  // Définition des bibliothèques de données pour les templates
-  const TEMPLATES_DATA = {
-    blank: { nodes: [], connections: [], takt_time_cible: null },
-    pickpack: {
-      takt_time_cible: 30, // 30s par colis
-      nodes: [
-        { id: 1, type: "work", label: "Réception & Tri", x: 40, y: 150, cycle: 25, ops: 1, capacity: 480, vsm: "va", mos: { processName:'', author:'', taktTime:null, nbPieces:1, tasks: [], nc: [] } },
-        { id: 2, type: "stock", label: "Zone Tampon", x: 260, y: 150, qty: 150, vsm: "nva", mos: { processName:'', author:'', taktTime:null, nbPieces:1, tasks: [], nc: [] } },
-        { id: 3, type: "work", label: "Picking", x: 480, y: 150, cycle: 45, ops: 2, capacity: 480, vsm: "va", mos: { processName:'', author:'', taktTime:null, nbPieces:1, tasks: [], nc: [] } },
-        { id: 4, type: "work", label: "Packing (Emballage)", x: 700, y: 150, cycle: 38, ops: 2, capacity: 480, vsm: "va", mos: { processName:'', author:'', taktTime:null, nbPieces:1, tasks: [], nc: [] } },
-        { id: 5, type: "work", label: "Expédition", x: 920, y: 150, cycle: 15, ops: 1, capacity: 480, vsm: "va", mos: { processName:'', author:'', taktTime:null, nbPieces:1, tasks: [], nc: [] } }
-      ],
-      connections: [ { from: 1, to: 2 }, { from: 2, to: 3 }, { from: 3, to: 4 }, { from: 4, to: 5 } ]
-    },
-    usinage: {
-      takt_time_cible: 120, // 2 minutes par pièce
-      nodes: [
-        { id: 1, type: "work", label: "Scie (Débit)", x: 40, y: 150, cycle: 45, ops: 1, capacity: 480, vsm: "va", mos: { processName:'', author:'', taktTime:null, nbPieces:1, tasks: [], nc: [] } },
-        { id: 2, type: "stock", label: "Encours Brut", x: 260, y: 150, qty: 50, vsm: "nva", mos: { processName:'', author:'', taktTime:null, nbPieces:1, tasks: [], nc: [] } },
-        { id: 3, type: "work", label: "Tournage CNC", x: 480, y: 150, cycle: 180, ops: 1, capacity: 480, vsm: "va", mos: { processName:'', author:'', taktTime:null, nbPieces:1, tasks: [], nc: [] } },
-        { id: 4, type: "work", label: "Fraisage", x: 700, y: 150, cycle: 140, ops: 1, capacity: 480, vsm: "va", mos: { processName:'', author:'', taktTime:null, nbPieces:1, tasks: [], nc: [] } },
-        { id: 5, type: "control", label: "Contrôle Qualité", x: 920, y: 150, cycle: 60, ops: 1, capacity: 480, vsm: "nva", mos: { processName:'', author:'', taktTime:null, nbPieces:1, tasks: [], nc: [] } }
-      ],
-      connections: [ { from: 1, to: 2 }, { from: 2, to: 3 }, { from: 3, to: 4 }, { from: 4, to: 5 } ]
-    }
-  };
+  // Groupement par Usine > Atelier
+  const tree = {};
+  fluxList.forEach(f => {
+    const u = f.usine || 'Site Principal';
+    const a = f.atelier || 'Atelier Général';
+    if (!tree[u]) tree[u] = {};
+    if (!tree[u][a]) tree[u][a] = [];
+    tree[u][a].push(f);
+  });
 
-  window.createFlux = async function() {
-    if (!currentUser) return;
-    const btn = document.getElementById('btnCreateFlux');
-    btn.disabled = true; btn.innerHTML = '<span class="spinner"></span>Création…';
+  let html = '';
 
-    const nom = document.getElementById('newFluxName').value.trim() || 'Nouveau flux';
-    const templateData = TEMPLATES_DATA[currentTemplate];
-
-    const { data, error } = await supabaseClient.from('flux').insert({
-      user_id: currentUser.id,
-      nom: nom,
-      nodes: templateData.nodes,
-      connections: templateData.connections,
-      takt_time_cible: templateData.takt_time_cible
-    }).select('id').single();
-
-    if (error) {
-      alert("Erreur lors de la création : " + error.message);
-      btn.disabled = false; btn.textContent = 'Créer et modéliser →';
-    } else {
-      window.location.href = '/editor?id=' + data.id;
-    }
-  }
-
-  // ─── INITIALISATION DU DASHBOARD ─────────────────────────────────────────────
-  async function init() {
-    currentUser = await requireAuth();
-    if(!currentUser) return;
-
-    // UI Setup
-    const meta = currentUser.user_metadata || {};
-    document.getElementById('userName').textContent = (meta.first_name + ' ' + meta.last_name).trim() || currentUser.email;
-    document.getElementById('userAvatar').textContent = ((meta.first_name?.[0]||'') + (meta.last_name?.[0]||'')).toUpperCase() || 'U';
-    document.getElementById('userRole').textContent = meta.company || 'Mon entreprise';
-    document.getElementById('companyTitle').textContent = `— ${meta.company || 'Mon entreprise'}`;
-
-    // Load Data
-    const { data } = await supabaseClient.from('flux').select('*').eq('user_id', currentUser.id).order('updated_at', { ascending: false });
+  for (const [usine, ateliers]] of Object.entries(tree)) {
+    html += `<div class="usine-section"><h2 class="usine-title">${usine}</h2>`;
     
-    if(!data || data.length === 0) {
-      document.getElementById('fluxGrid').innerHTML = `<div class="flux-card" style="border-style:dashed;display:flex;align-items:center;justify-content:center;min-height:190px;grid-column:1/-1;" onclick="openModal()"><div style="text-align:center;color:var(--muted2);"><div style="font-size:2.5rem;">✚</div><div style="font-weight:600;">Aucun flux pour le moment</div><div style="font-size:0.8rem;margin-top:0.4rem;">Cliquez ici pour créer votre première cartographie</div></div></div>`;
-      document.getElementById('summaryFlux').textContent = '0';
-      document.getElementById('summaryPostes').textContent = '0';
-      return;
-    }
-
-    document.getElementById('summaryFlux').textContent = data.length;
-    
-    let totalNodes = 0;
-    const grid = document.getElementById('fluxGrid');
-    
-    grid.innerHTML = data.map(flux => {
-      const nodes = Array.isArray(flux.nodes) ? flux.nodes : JSON.parse(flux.nodes || '[]');
-      totalNodes += nodes.length;
-
-      const miniFlow = nodes.slice(0,3).map(n => `<div class="mini-block ok">${n.label.substring(0,10)}</div>`).join(' <span style="color:var(--border2);font-size:0.8rem">→</span> ');
+    for (const [atelier, fluxArr] of Object.entries(ateliers)) {
+      html += `<div class="atelier-section"><h3 class="atelier-title">${atelier}</h3><div class="flux-grid">`;
       
-      return `
-        <div class="flux-card" onclick="window.location.href='/editor?id=${flux.id}'">
-          <div class="flux-preview"><div class="mini-flow">${miniFlow || '<span style="color:var(--muted2);font-size:0.8rem;">Flux vide</span>'}</div></div>
-          <div class="flux-body">
-            <div class="flux-name">${flux.nom}</div>
-            <div class="flux-meta">${nodes.length} blocs modélisés</div>
-          </div>
-        </div>
-      `;
-    }).join('');
+      fluxArr.forEach(f => {
+        const stats = analyzeFlux(f);
+        const date = new Date(f.updated_at).toLocaleDateString('fr-FR', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
+        
+        let statusHtml = `<span class="status-badge status-empty">En cours</span>`;
+        if (stats.status === 'ok') statusHtml = `<span class="status-badge status-ok">Stable</span>`;
+        if (stats.status === 'warn') statusHtml = `<span class="status-badge status-warn">Goulot</span>`;
 
-    // Nouvelle carte d'ajout rapide à la fin de la grille
-    grid.innerHTML += `<div class="flux-card" style="border-style:dashed;display:flex;align-items:center;justify-content:center;min-height:160px;opacity:0.5;transition:opacity 0.2s;" onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='0.5'" onclick="openModal()"><div style="text-align:center;color:var(--muted2);"><div style="font-size:2rem;margin-bottom:0.5rem">✚</div><div style="font-size:0.88rem;font-weight:500">Nouveau flux</div></div></div>`;
-
-    document.getElementById('summaryPostes').textContent = totalNodes;
+        html += `
+          <a href="/editor?id=${f.id}" class="flux-card">
+            <div class="card-header">
+              <div>
+                <div class="card-title">${f.nom}</div>
+                <div class="card-date">Modifié le ${date}</div>
+              </div>
+              ${statusHtml}
+            </div>
+            
+            <div class="card-kpis">
+              <div class="ckpi">
+                <div class="ckpi-label">Takt Net</div>
+                <div class="ckpi-val ${stats.takt > 0 ? 'accent' : ''}">${stats.takt > 0 ? stats.takt+'s' : '—'}</div>
+              </div>
+              <div class="ckpi">
+                <div class="ckpi-label">Cycle Max</div>
+                <div class="ckpi-val ${stats.status === 'warn' ? 'warn' : (stats.status === 'ok' ? 'ok' : '')}">${stats.maxCycle > 0 ? stats.maxCycle+'s' : '—'}</div>
+              </div>
+              <div class="ckpi">
+                <div class="ckpi-label">Lead Time</div>
+                <div class="ckpi-val">${formatLT(stats.leadTime)}</div>
+              </div>
+              <div class="ckpi">
+                <div class="ckpi-label">Rendement</div>
+                <div class="ckpi-val">${stats.rendement > 0 ? stats.rendement+'%' : '—'}</div>
+              </div>
+            </div>
+            
+            <div class="goulot-line">
+              <span>⚠ Limité par :</span> <span class="goulot-name">${stats.goulot}</span>
+            </div>
+          </a>
+        `;
+      });
+      html += `</div></div>`; // Close grid & atelier
+    }
+    html += `</div>`; // Close usine
   }
 
-  init();
+  container.innerHTML = html;
+}
+
+// ─── MODAL CREATION ───
+window.openNewFluxModal = () => document.getElementById('newFluxModal').classList.add('open');
+window.closeNewFluxModal = () => document.getElementById('newFluxModal').classList.remove('open');
+
+window.createNewFlux = async () => {
+  const nom = document.getElementById('nfNom').value || 'Nouvelle Ligne';
+  const usine = document.getElementById('nfUsine').value || 'Site Principal';
+  const atelier = document.getElementById('nfAtelier').value || 'Atelier Général';
+  
+  // Note: Si les colonnes usine et atelier ne sont pas encore dans Supabase, 
+  // l'insert va planter. On les envoie, si ça plante il faut prévenir l'utilisateur.
+  const { data, error } = await supabaseClient.from('flux').insert({
+    user_id: currentUser.id,
+    nom: nom,
+    usine: usine,
+    atelier: atelier,
+    nodes: [],
+    connections: []
+  }).select().single();
+
+  if (error) {
+    alert("Erreur de création. Avez-vous bien ajouté les colonnes 'usine' (text) et 'atelier' (text) dans votre table Supabase ?");
+    console.error(error);
+  } else {
+    window.location.href = '/editor?id=' + data.id;
+  }
+};
+
+loadDashboard();
 </script>
 </body>
 </html>
