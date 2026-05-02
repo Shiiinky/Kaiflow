@@ -686,15 +686,15 @@ document.querySelectorAll('.block-template').forEach(el => {
     let isDragging = false, ghost = null;
     const startX = e.clientX, startY = e.clientY;
 
-    function onMove(ev) {
-      if (!isDragging && Math.hypot(ev.clientX - startX, ev.clientY - startY) > LIB_THRESHOLD) {
-        isDragging = true; ghost = libCreateGhost(label, ev.clientX, ev.clientY);
-      }
-      if (ghost) {
-        ghost.style.left = (ev.clientX - 60) + 'px'; ghost.style.top = (ev.clientY - 20) + 'px';
-        const r = canvas.getBoundingClientRect();
-        canvas.style.outline = (ev.clientX >= r.left && ev.clientX <= r.right && ev.clientY >= r.top && ev.clientY <= r.bottom) ? '2px solid rgba(0,229,255,0.35)' : '';
-      }
+      function onMove(ev) {
+      if (!isDraggingNode) return;
+      const r = canvas.getBoundingClientRect(); 
+      node.x = (ev.clientX - r.left) / scale - dragOffsetX; 
+      node.y = (ev.clientY - r.top) / scale - dragOffsetY;
+      // Correction : application du scale sur le rendu physique
+      el.style.left = (node.x * scale) + 'px'; 
+      el.style.top = (node.y * scale) + 'px';
+      renderConnections(); markDirty();
     }
     function onUp(ev) {
       el.removeEventListener('pointermove', onMove); el.removeEventListener('pointerup', onUp); el.releasePointerCapture(e.pointerId);
@@ -715,19 +715,27 @@ function toggleLinkMode() {
 
 canvas.addEventListener('pointermove', e => {
   if (!isLinkMode || !linkSourceId) return;
-  const portEl = document.getElementById(`port-out-${linkSourceId}`); if (!portEl) return;
+  const portEl = document.getElementById(`port-out-${linkSourceId}`); 
+  if (!portEl) return;
   const rect = portEl.getBoundingClientRect(), cr = canvas.getBoundingClientRect();
-  const startX = (rect.left + rect.width/2 - cr.left) / scale, startY = (rect.top + rect.height/2 - cr.top) / scale;
-  const mx = (e.clientX - cr.left) / scale, my = (e.clientY - cr.top) / scale;
+  
+  // Correction : utilisation des coordonnées physiques directes
+  const startX = (rect.left + rect.width / 2 - cr.left);
+  const startY = (rect.top + rect.height / 2 - cr.top);
+  const mx = (e.clientX - cr.left); 
+  const my = (e.clientY - cr.top);
 
   if (!drawingPath) {
     drawingPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
-    drawingPath.setAttribute('fill', 'none'); drawingPath.setAttribute('stroke', 'rgba(0,229,255,0.5)');
-    drawingPath.setAttribute('stroke-width', '2'); drawingPath.setAttribute('stroke-dasharray', '6,3');
+    drawingPath.setAttribute('fill', 'none'); 
+    drawingPath.setAttribute('stroke', 'rgba(0,229,255,0.5)');
+    drawingPath.setAttribute('stroke-width', '2'); 
+    drawingPath.setAttribute('stroke-dasharray', '6,3');
     drawingSvg.appendChild(drawingPath);
   }
   drawingPath.setAttribute('d', makeCurve(startX, startY, mx, my));
 });
+
 
 // ─── GESTION DES NOEUDS ───────────────────────────────────────────────────────
 function addNode(type, label, x, y) {
@@ -738,8 +746,18 @@ function addNode(type, label, x, y) {
 
 function renderNode(node) {
   const el = document.createElement('div');
-  el.className = 'flow-node'; el.id = `node-${node.id}`; el.style.left = node.x+'px'; el.style.top = node.y+'px';
-  el.innerHTML = buildNodeHTML(node); bindNodeEvents(el, node); canvas.appendChild(el);
+  el.className = 'flow-node'; 
+  el.id = `node-${node.id}`; 
+  // Correction : injection initiale avec le facteur d'échelle
+  el.style.left = (node.x * scale) + 'px'; 
+  el.style.top = (node.y * scale) + 'px';
+  if (scale !== 1) {
+    el.style.transform = `scale(${scale})`;
+    el.style.transformOrigin = 'top left';
+  }
+  el.innerHTML = buildNodeHTML(node); 
+  bindNodeEvents(el, node); 
+  canvas.appendChild(el);
 }
 
 function bindNodeEvents(el, node) {
@@ -907,8 +925,14 @@ function showProps(id) {
 // ─── CONNECTIONS RENDERING ────────────────────────────────────────────────────
 function makeCurve(x1,y1,x2,y2) { const cx=(x1+x2)/2; return `M ${x1} ${y1} C ${cx} ${y1}, ${cx} ${y2}, ${x2} ${y2}`; }
 function getPortPos(nodeId, portType) {
-  const portEl=document.getElementById(`port-${portType}-${nodeId}`); if(!portEl)return null;
-  const rect=portEl.getBoundingClientRect(), r=canvas.getBoundingClientRect(); return {x:(rect.left+rect.width/2-r.left)/scale, y:(rect.top+rect.height/2-r.top)/scale};
+  const portEl = document.getElementById(`port-${portType}-${nodeId}`); 
+  if (!portEl) return null;
+  const rect = portEl.getBoundingClientRect(), r = canvas.getBoundingClientRect();
+  // Correction : suppression de "/ scale"
+  return {
+    x: (rect.left + rect.width / 2 - r.left), 
+    y: (rect.top + rect.height / 2 - r.top)
+  };
 }
 function renderConnections() {
   svg.innerHTML='';
