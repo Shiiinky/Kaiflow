@@ -32,7 +32,7 @@
   .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem; gap: 1.5rem; }
   .page-title { font-family: 'Syne', sans-serif; font-size: 2.2rem; font-weight: 800; letter-spacing: -0.02em; margin: 0; }
   
-  /* BOUTON NOUVELLE LIGNE FIXÉ */
+  /* BOUTON FIXÉ */
   .btn-primary { 
     background: var(--accent); 
     color: #000; 
@@ -78,6 +78,25 @@
   .modal-overlay.open { opacity: 1; pointer-events: all; }
   .modal-content { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; width: 100%; max-width: 500px; padding: 2rem; }
   
+  /* TEMPLATES GRID */
+  .template-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.8rem; margin-bottom: 1.5rem; }
+  .template-card { border: 1px solid var(--border); border-radius: 8px; padding: 1rem 0.5rem; text-align: center; cursor: pointer; transition: all 0.2s; background: var(--bg); }
+  .template-card:hover { border-color: var(--accent); background: rgba(0,229,255,0.05); }
+  .template-card.selected { border-color: var(--accent); background: rgba(0,229,255,0.1); box-shadow: 0 0 0 1px var(--accent); }
+  .template-icon { font-size: 1.4rem; margin-bottom: 0.4rem; }
+  .template-name { font-size: 0.75rem; font-weight: 600; color: var(--text); }
+
+  /* INPUTS & ACTIONS */
+  .input-group { margin-bottom: 1rem; }
+  .input-group label { display: block; font-size: 0.75rem; color: var(--muted); margin-bottom: 0.3rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
+  .input-group input { width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 0.6rem 0.8rem; border-radius: 6px; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; outline: none; transition: border-color 0.2s; }
+  .input-group input:focus { border-color: var(--accent); }
+  
+  .modal-actions { display: flex; gap: 1rem; margin-top: 2rem; }
+  .btn-cancel { flex: 1; background: transparent; border: 1px solid var(--border); color: var(--text); padding: 0.6rem; border-radius: 6px; cursor: pointer; font-weight: 500; font-family: 'DM Sans', sans-serif; }
+  .btn-submit { flex: 2; background: var(--accent); border: none; color: #000; font-weight: 600; padding: 0.6rem; border-radius: 6px; cursor: pointer; font-family: 'DM Sans', sans-serif; }
+  
+  /* PAYWALL */
   .paywall-content { text-align: center; }
   .btn-upgrade { display: block; width: 100%; background: var(--accent); color: #000; padding: 1rem; border-radius: 8px; font-weight: 700; text-decoration: none; margin-top: 2rem; }
 </style>
@@ -112,6 +131,48 @@
   </main>
 </div>
 
+<div class="modal-overlay" id="newFluxModal">
+  <div class="modal-content">
+    <h2 style="font-family: 'Syne', sans-serif; font-size: 1.2rem; margin-top:0; margin-bottom: 1.5rem;">Créer une ligne de production</h2>
+    
+    <label style="display:block; font-size:0.75rem; color:var(--muted); margin-bottom:0.5rem; font-weight:500; text-transform:uppercase;">Modèle de départ</label>
+    <div class="template-grid">
+      <div class="template-card selected" onclick="selectTemplate('blank')" id="tpl-blank">
+        <div class="template-icon">📄</div>
+        <div class="template-name">Flux Vierge</div>
+      </div>
+      <div class="template-card" onclick="selectTemplate('usinage')" id="tpl-usinage">
+        <div class="template-icon">⚙️</div>
+        <div class="template-name">Usinage Série</div>
+      </div>
+      <div class="template-card" onclick="selectTemplate('assemblage')" id="tpl-assemblage">
+        <div class="template-icon">📦</div>
+        <div class="template-name">Assemblage</div>
+      </div>
+    </div>
+
+    <div class="input-group">
+      <label>Nom de la ligne / flux</label>
+      <input type="text" id="nfNom" placeholder="ex: Ligne Assemblage Stylos">
+    </div>
+    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
+      <div class="input-group">
+        <label>Usine / Site</label>
+        <input type="text" id="nfUsine" placeholder="ex: Usine Nord">
+      </div>
+      <div class="input-group">
+        <label>Atelier</label>
+        <input type="text" id="nfAtelier" placeholder="ex: Menuiserie">
+      </div>
+    </div>
+    
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeNewFluxModal()">Annuler</button>
+      <button class="btn-submit" onclick="createNewFlux()">Créer la ligne →</button>
+    </div>
+  </div>
+</div>
+
 <div class="modal-overlay" id="paywallModal">
   <div class="modal-content paywall-content">
     <div style="font-size:3rem;">🚀</div>
@@ -126,6 +187,14 @@
 import { supabaseClient, requireAuth } from '/js/supabase-client.js';
 
 let currentUser = null;
+let currentTemplate = 'blank';
+
+// GESTION TEMPLATES
+window.selectTemplate = (tpl) => {
+  currentTemplate = tpl;
+  document.querySelectorAll('.template-card').forEach(el => el.classList.remove('selected'));
+  document.getElementById('tpl-' + tpl).classList.add('selected');
+};
 
 // RENOMMAGE DES USINES
 window.renameUsine = async (oldName) => {
@@ -145,6 +214,7 @@ window.renameUsine = async (oldName) => {
   }
 };
 
+// CHARGEMENT DU DASHBOARD
 window.loadDashboard = async () => {
   currentUser = await requireAuth();
   document.getElementById('userEmail').textContent = currentUser.email;
@@ -220,15 +290,62 @@ window.checkQuotaAndOpenModal = async () => {
     document.querySelector('.btn-upgrade').href = link;
     document.getElementById('paywallModal').classList.add('open');
   } else {
-    const nom = prompt("Nom de la nouvelle ligne :");
-    if (nom) {
-      const { data } = await supabaseClient
-        .from('flux')
-        .insert({ user_id: currentUser.id, nom: nom })
-        .select()
-        .single();
-      window.location.href = '/editor?id=' + data.id;
-    }
+    // ON OUVRE LA MODALE COMPLÈTE
+    selectTemplate('blank'); 
+    document.getElementById('nfNom').value = '';
+    document.getElementById('nfUsine').value = '';
+    document.getElementById('nfAtelier').value = '';
+    document.getElementById('newFluxModal').classList.add('open');
+  }
+};
+
+window.closeNewFluxModal = () => {
+  document.getElementById('newFluxModal').classList.remove('open');
+};
+
+// CRÉATION AVEC TEMPLATE
+window.createNewFlux = async () => {
+  const nom = document.getElementById('nfNom').value || 'Nouvelle Ligne';
+  const usine = document.getElementById('nfUsine').value || 'Site Principal';
+  const atelier = document.getElementById('nfAtelier').value || 'Atelier Général';
+  
+  let prefillNodes = [];
+  let prefillConns = [];
+
+  if (currentTemplate === 'usinage') {
+    prefillNodes = [
+      { id:1, type:'stock', label:'Encours brut', x:50, y:200, qty:100, vsm:'nva', mos:{tasks:[], nc:[]} },
+      { id:2, type:'work', label:'Tournage CNC', x:300, y:200, cycle:180, ops:1, machines:1, dispo:100, rebut:0, vsm:'va', mos:{tasks:[], nc:[]} },
+      { id:3, type:'work', label:'Fraisage', x:550, y:200, cycle:140, ops:1, machines:1, dispo:100, rebut:0, vsm:'va', mos:{tasks:[], nc:[]} },
+      { id:4, type:'control', label:'Contrôle final', x:800, y:200, cycle:45, ops:1, machines:1, dispo:100, rebut:0, vsm:'va', mos:{tasks:[], nc:[]} }
+    ];
+    prefillConns = [ {from:1, to:2}, {from:2, to:3}, {from:3, to:4} ];
+  } else if (currentTemplate === 'assemblage') {
+    prefillNodes = [
+      { id:1, type:'stock', label:'Composants', x:50, y:200, qty:50, vsm:'nva', mos:{tasks:[], nc:[]} },
+      { id:2, type:'work', label:'Assemblage 1', x:300, y:200, cycle:55, ops:2, machines:1, dispo:100, rebut:0, vsm:'va', mos:{tasks:[], nc:[]} },
+      { id:3, type:'work', label:'Assemblage 2', x:550, y:200, cycle:60, ops:1, machines:1, dispo:100, rebut:0, vsm:'va', mos:{tasks:[], nc:[]} },
+      { id:4, type:'transport', label:'Transfert Logistique', x:800, y:200, cycle:120, vsm:'nva', mos:{tasks:[], nc:[]} }
+    ];
+    prefillConns = [ {from:1, to:2}, {from:2, to:3}, {from:3, to:4} ];
+  }
+
+  const payload = { 
+    user_id: currentUser.id, 
+    nom: nom, 
+    usine: usine,
+    atelier: atelier,
+    nodes: prefillNodes, 
+    connections: prefillConns 
+  };
+
+  const { data, error } = await supabaseClient.from('flux').insert(payload).select().single();
+
+  if (error) {
+    alert("Erreur lors de la création.");
+    console.error(error);
+  } else {
+    window.location.href = '/editor?id=' + data.id;
   }
 };
 
