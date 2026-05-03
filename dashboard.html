@@ -218,7 +218,7 @@
       <li>Support prioritaire 7j/7</li>
     </ul>
 
-    <a href="https://buy.stripe.com/test_14AeVddh535K6fJ3jU9bO00" class="btn-upgrade">Débloquer Kaiflow Pro — 99€/mois</a>
+    <a href="#" class="btn-upgrade">Débloquer Kaiflow Pro — 49€/mois</a>
     <div style="font-size:0.75rem; color:var(--muted); margin-top:1rem;">Paiement sécurisé par Stripe</div>
   </div>
 </div>
@@ -416,27 +416,46 @@ window.loadDashboard = async () => {
   }
 };
 
-// ─── LE PAYWALL (LE PÉAGE) ───
+// ─── LE PAYWALL (LE PÉAGE) AVEC VERIFICATION PREMIUM ───
 window.checkQuotaAndOpenModal = async () => {
   document.getElementById('btnSpinner').style.display = 'inline';
   
-  // On compte combien de flux possède le client
-  const { count, error } = await supabaseClient
+  // 1. On vérifie le statut Premium de l'utilisateur
+  // (Adapte 'profiles' si ta table s'appelle 'users')
+  const { data: profile, error: profErr } = await supabaseClient
+    .from('profiles') 
+    .select('premium') 
+    .eq('id', currentUser.id)
+    .single();
+
+  if (profErr && profErr.code !== 'PGRST116') {
+      console.error("Erreur lecture profil:", profErr);
+  }
+
+  // 2. On compte le nombre de flux
+  const { count, error: countErr } = await supabaseClient
     .from('flux')
     .select('*', { count: 'exact', head: true })
     .eq('user_id', currentUser.id);
     
   document.getElementById('btnSpinner').style.display = 'none';
 
-  if (error) {
-    console.error(error);
+  if (countErr) {
+    console.error("Erreur comptage flux:", countErr);
     return;
   }
 
-  // Pour la démo / MVP : bloqué à 1 flux max
-  if (count >= 1) {
+  // LOGIQUE STRATÉGIQUE : S'il n'est PAS premium et qu'il a déjà >= 1 flux -> PAIEMENT
+  if (!profile?.premium && count >= 1) {
+    const stripeLink = "https://buy.stripe.com/test_14AeVddh535K6fJ3jU9bO00";
+    
+    // ON INJECTE TON ID POUR QUE STRIPE TE RECONNAISSE
+    const dynamicLink = `${stripeLink}?client_reference_id=${currentUser.id}`;
+    
+    document.querySelector('.btn-upgrade').href = dynamicLink;
     document.getElementById('paywallModal').classList.add('open');
   } else {
+    // S'il est premium OU qu'il n'a pas encore atteint sa limite
     selectTemplate('blank'); 
     document.getElementById('nfNom').value = '';
     document.getElementById('newFluxModal').classList.add('open');
