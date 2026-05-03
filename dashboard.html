@@ -1,217 +1,34 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kaiflow — Dashboard</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/css/globals.css">
-<style>
-  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; overflow: hidden; margin: 0; }
-  .app-layout { display: flex; height: 100vh; width: 100vw; }
-  .sidebar { width: 260px; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; z-index: 50; }
-  .sidebar-header { height: 70px; display: flex; align-items: center; padding: 0 1.5rem; border-bottom: 1px solid var(--border); }
-  .logo { font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 800; letter-spacing: -0.02em; color: var(--text); text-decoration: none; }
-  .logo span { color: var(--accent); }
-  .sidebar-nav { flex: 1; padding: 1.5rem 1rem; display: flex; flex-direction: column; gap: 0.5rem; overflow-y: auto; }
-  .nav-item { display: flex; align-items: center; gap: 0.8rem; padding: 0.75rem 1rem; color: var(--muted); text-decoration: none; font-weight: 500; border-radius: 8px; transition: all 0.2s; }
-  .nav-item:hover { background: rgba(255,255,255,0.03); color: var(--text); }
-  .nav-item.active { background: rgba(0,229,255,0.1); color: var(--accent); }
-  .sidebar-footer { padding: 1.5rem 1.5rem; border-top: 1px solid var(--border); font-size: 0.8rem; }
-  .user-email { color: var(--text); font-weight: 600; margin-bottom: 0.5rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  .btn-logout { background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 0.5rem; border-radius: 6px; width: 100%; cursor: pointer; transition: all 0.2s; font-family: 'DM Sans', sans-serif; }
-  .btn-logout:hover { border-color: var(--warn); color: var(--warn); background: var(--warn-dim); }
-
-  .main-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--bg); position: relative; }
-  .content-scroll { flex: 1; overflow-y: auto; padding: 2.5rem 3rem; z-index: 1; }
-  
-  /* HEADER FIXÉ */
-  .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem; gap: 1.5rem; }
-  .page-title { font-family: 'Syne', sans-serif; font-size: 2.2rem; font-weight: 800; letter-spacing: -0.02em; margin: 0; }
-  
-  /* BOUTON FIXÉ */
-  .btn-primary { 
-    background: var(--accent); 
-    color: #000; 
-    border: none; 
-    padding: 0.6rem 1.4rem; 
-    border-radius: 6px; 
-    font-weight: 600; 
-    cursor: pointer; 
-    transition: all 0.2s; 
-    display: inline-flex; 
-    align-items: center; 
-    gap: 0.5rem; 
-    font-family: 'DM Sans', sans-serif; 
-    font-size: 0.9rem;
-    width: fit-content;
-    white-space: nowrap;
-    flex-shrink: 0;
-  }
-  .btn-primary:hover { box-shadow: 0 4px 15px rgba(0,229,255,0.25); transform: translateY(-1px); }
-
-  .usine-section { margin-bottom: 4rem; }
-  .usine-title { font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 700; color: var(--text); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.7rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
-  .btn-edit-inline { background: none; border: none; cursor: pointer; font-size: 1rem; opacity: 0.4; transition: opacity 0.2s; padding: 0 0.5rem; color: var(--text); }
-  .btn-edit-inline:hover { opacity: 1; color: var(--accent); }
-  
-  .atelier-section { margin-bottom: 2.5rem; padding-left: 1rem; border-left: 2px solid var(--border2); }
-  .atelier-title { font-size: 1rem; font-weight: 600; color: var(--muted); margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.05em; }
-
-  .flux-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; }
-  .flux-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.2rem; display: flex; flex-direction: column; transition: all 0.2s; text-decoration: none; color: inherit; }
-  .flux-card:hover { border-color: rgba(0,229,255,0.4); transform: translateY(-3px); }
-  .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.2rem; }
-  .card-title { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 700; }
-  .card-kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin-bottom: 1rem; }
-  .ckpi { background: var(--bg); border: 1px solid var(--border); padding: 0.6rem; border-radius: 6px; }
-  .ckpi-label { font-size: 0.58rem; color: var(--muted); text-transform: uppercase; }
-  .ckpi-val { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700; }
-
-  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
-  .modal-overlay.open { opacity: 1; pointer-events: all; }
-  .modal-content { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; width: 100%; max-width: 500px; padding: 2rem; }
-  
-  .paywall-content { text-align: center; }
-  .btn-upgrade { display: block; width: 100%; background: var(--accent); color: #000; padding: 1rem; border-radius: 8px; font-weight: 700; text-decoration: none; margin-top: 2rem; }
-</style>
-</head>
-<body>
-
-<div class="app-layout">
-  <aside class="sidebar">
-    <div class="sidebar-header">
-      <a href="/dashboard" class="logo">Kai<span>flow</span></a>
-    </div>
-    <nav class="sidebar-nav">
-      <a href="/dashboard" class="nav-item active">📊 Dashboard</a>
-      <a href="/account" class="nav-item">👤 Profil</a>
-    </nav>
-    <div class="sidebar-footer">
-      <div class="user-email" id="userEmail">Chargement...</div>
-      <button class="btn-logout" onclick="logout()">Déconnexion</button>
-    </div>
-  </aside>
-
-  <main class="main-area">
-    <div class="content-scroll">
-      <div class="page-header">
-        <h1 class="page-title">Dashboard</h1>
-        <button class="btn-primary" onclick="checkQuotaAndOpenModal()" id="newFluxBtn">
-          <span style="display:none;" id="btnSpinner">⏳</span> ✚ Nouvelle Ligne
-        </button>
-      </div>
-      <div id="dashboardContainer"></div>
-    </div>
-  </main>
-</div>
-
-<div class="modal-overlay" id="paywallModal">
-  <div class="modal-content paywall-content">
-    <div style="font-size:3rem;">🚀</div>
-    <h2 style="font-family:Syne;">Passez en Pro</h2>
-    <p style="color:var(--muted);">Débloquez la création illimitée de lignes de production.</p>
-    <a href="#" class="btn-upgrade">Débloquer Kaiflow Pro — 99€/mois</a>
-    <button class="btn-logout" style="margin-top:1rem; border:none;" onclick="document.getElementById('paywallModal').classList.remove('open')">Plus tard</button>
-  </div>
-</div>
-
-<script type="module">
-import { supabaseClient, requireAuth } from '/js/supabase-client.js';
-
-let currentUser = null;
-
-window.renameUsine = async (oldName) => {
-  const newName = prompt("Nouveau nom pour l'usine / site :", oldName);
-  if (!newName || newName === oldName) return;
-
-  const { error } = await supabaseClient
-    .from('flux')
-    .update({ usine: newName })
-    .eq('user_id', currentUser.id)
-    .eq('usine', oldName);
-
-  if (error) {
-    alert("Erreur lors du renommage.");
-  } else {
-    loadDashboard();
-  }
-};
-
-window.loadDashboard = async () => {
-  currentUser = await requireAuth();
-  document.getElementById('userEmail').textContent = currentUser.email;
-
-  const { data: fluxList } = await supabaseClient
-    .from('flux')
-    .select('*')
-    .eq('user_id', currentUser.id)
-    .order('updated_at', { ascending: false });
-
-  const container = document.getElementById('dashboardContainer');
-  if (!fluxList || fluxList.length === 0) {
-    container.innerHTML = `<div style="text-align:center; padding:5rem; opacity:0.5;">Aucun flux actif.</div>`;
-    return;
-  }
-
-  const tree = {};
-  fluxList.forEach(f => {
-    const u = f.usine || 'Site Principal';
-    const a = f.atelier || 'Général';
-    if (!tree[u]) tree[u] = {};
-    if (!tree[u][a]) tree[u][a] = [];
-    tree[u][a].push(f);
-  });
-
-  let html = '';
-  for (const [usine, ateliers] of Object.entries(tree)) {
-    html += `
-      <div class="usine-section">
-        <h2 class="usine-title">
-          🏭 ${usine} 
-          <button class="btn-edit-inline" title="Renommer le site" onclick="renameUsine('${usine.replace(/'/g, "\\'")}')">✏️</button>
-        </h2>`;
-    
-    for (const [atelier, fluxArr] of Object.entries(ateliers)) {
-      html += `<div class="atelier-section"><h3 class="atelier-title">${atelier}</h3><div class="flux-grid">`;
-      fluxArr.forEach(f => {
-        html += `
-          <a href="/editor?id=${f.id}" class="flux-card">
-            <div class="card-header"><div class="card-title">${f.nom}</div></div>
-            <div class="card-kpis">
-              <div class="ckpi"><div class="ckpi-label">Takt</div><div class="ckpi-val">${f.takt_time_cible || '—'}s</div></div>
-              <div class="ckpi"><div class="ckpi-label">Statut</div><div class="ckpi-val" style="color:var(--accent)">Actif</div></div>
-            </div>
-          </a>`;
-      });
-      html += `</div></div>`;
-    }
-    html += `</div>`;
-  }
-  container.innerHTML = html;
-};
-
 window.checkQuotaAndOpenModal = async () => {
   document.getElementById('btnSpinner').style.display = 'inline';
-  const { data: profile } = await supabaseClient.from('profiles').select('is_pro').eq('id', currentUser.id).single();
-  const { count } = await supabaseClient.from('flux').select('*', { count: 'exact', head: true }).eq('user_id', currentUser.id);
+  
+  // CORRECTION : On pointe bien vers la colonne 'premium'
+  const { data: profile } = await supabaseClient
+    .from('profiles')
+    .select('premium') 
+    .eq('id', currentUser.id)
+    .single();
+    
+  const { count } = await supabaseClient
+    .from('flux')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', currentUser.id);
+    
   document.getElementById('btnSpinner').style.display = 'none';
 
-  if (!profile?.is_pro && count >= 1) {
+  // CORRECTION : On vérifie la variable 'premium'
+  if (!profile?.premium && count >= 1) {
     const link = `https://buy.stripe.com/test_14AeVddh535K6fJ3jU9bO00?client_reference_id=${currentUser.id}`;
     document.querySelector('.btn-upgrade').href = link;
     document.getElementById('paywallModal').classList.add('open');
   } else {
     const nom = prompt("Nom de la nouvelle ligne :");
     if (nom) {
-      const { data } = await supabaseClient.from('flux').insert({ user_id: currentUser.id, nom: nom }).select().single();
+      const { data } = await supabaseClient
+        .from('flux')
+        .insert({ user_id: currentUser.id, nom: nom })
+        .select()
+        .single();
       window.location.href = '/editor?id=' + data.id;
     }
   }
 };
-
-window.logout = async () => { await supabaseClient.auth.signOut(); window.location.href = '/login'; };
-loadDashboard();
-</script>
-</body>
-</html>
