@@ -8,121 +8,54 @@
 <link rel="stylesheet" href="/css/globals.css">
 <style>
   html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; overflow: hidden; margin: 0; }
-
-  /* APP LAYOUT */
   .app-layout { display: flex; height: 100vh; width: 100vw; }
-
-  /* SIDEBAR */
   .sidebar { width: 260px; background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; z-index: 50; }
   .sidebar-header { height: 70px; display: flex; align-items: center; padding: 0 1.5rem; border-bottom: 1px solid var(--border); }
   .logo { font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 800; letter-spacing: -0.02em; color: var(--text); text-decoration: none; }
   .logo span { color: var(--accent); }
-  
   .sidebar-nav { flex: 1; padding: 1.5rem 1rem; display: flex; flex-direction: column; gap: 0.5rem; overflow-y: auto; }
   .nav-item { display: flex; align-items: center; gap: 0.8rem; padding: 0.75rem 1rem; color: var(--muted); text-decoration: none; font-weight: 500; border-radius: 8px; transition: all 0.2s; }
   .nav-item:hover { background: rgba(255,255,255,0.03); color: var(--text); }
   .nav-item.active { background: rgba(0,229,255,0.1); color: var(--accent); }
-  
   .sidebar-footer { padding: 1.5rem 1.5rem; border-top: 1px solid var(--border); font-size: 0.8rem; }
   .user-email { color: var(--text); font-weight: 600; margin-bottom: 0.5rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .btn-logout { background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 0.5rem; border-radius: 6px; width: 100%; cursor: pointer; transition: all 0.2s; font-family: 'DM Sans', sans-serif; }
   .btn-logout:hover { border-color: var(--warn); color: var(--warn); background: var(--warn-dim); }
 
-  /* MAIN CONTENT */
   .main-area { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: var(--bg); position: relative; }
-  .main-area::before { content: ''; position: absolute; inset: 0; background-image: radial-gradient(circle at 50% 0%, rgba(0,229,255,0.03) 0%, transparent 50%); pointer-events: none; z-index: 0; }
-
   .content-scroll { flex: 1; overflow-y: auto; padding: 2.5rem 3rem; z-index: 1; }
-
   .page-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3rem; flex-wrap: wrap; gap: 1.5rem; }
-  .page-title { font-family: 'Syne', sans-serif; font-size: 2.2rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.2rem; margin-top: 0; }
-  .page-sub { color: var(--muted); font-size: 0.95rem; margin: 0; }
+  .page-title { font-family: 'Syne', sans-serif; font-size: 2.2rem; font-weight: 800; letter-spacing: -0.02em; margin: 0; }
+  .btn-primary { background: var(--accent); color: #000; border: none; padding: 0.6rem 1.4rem; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; gap: 0.5rem; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; }
 
-  .btn-primary { background: var(--accent); color: #000; border: none; padding: 0.6rem 1.4rem; border-radius: 6px; font-weight: 600; cursor: pointer; transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; width: fit-content; white-space: nowrap; flex: 0 0 auto;}
-  .btn-primary:hover { box-shadow: 0 4px 15px rgba(0,229,255,0.25); transform: translateY(-1px); }
-
-  /* GROUPEMENT (USINE / ATELIER) */
+  /* GROUPEMENT USINE */
   .usine-section { margin-bottom: 4rem; }
   .usine-title { font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 700; color: var(--text); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.7rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
-  .usine-title::before { content: '🏭'; font-size: 1.2rem; }
+  .btn-edit-inline { background: none; border: none; cursor: pointer; font-size: 1rem; opacity: 0.4; transition: opacity 0.2s; padding: 0 0.5rem; color: var(--text); }
+  .btn-edit-inline:hover { opacity: 1; color: var(--accent); }
   
   .atelier-section { margin-bottom: 2.5rem; padding-left: 1rem; border-left: 2px solid var(--border2); }
-  .atelier-title { font-size: 1rem; font-weight: 600; color: var(--muted); margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 0.5rem; }
+  .atelier-title { font-size: 1rem; font-weight: 600; color: var(--muted); margin-bottom: 1rem; text-transform: uppercase; letter-spacing: 0.05em; }
 
   /* GRID & CARDS */
   .flux-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1.5rem; }
-  
-  .flux-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.2rem; display: flex; flex-direction: column; transition: all 0.2s; position: relative; text-decoration: none; color: inherit; }
-  .flux-card:hover { border-color: rgba(0,229,255,0.4); transform: translateY(-3px); box-shadow: 0 12px 30px rgba(0,0,0,0.4); }
-  
+  .flux-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.2rem; display: flex; flex-direction: column; transition: all 0.2s; text-decoration: none; color: inherit; }
+  .flux-card:hover { border-color: rgba(0,229,255,0.4); transform: translateY(-3px); }
   .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.2rem; }
-  .card-title-group { flex: 1; padding-right: 1rem; }
-  .card-title { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 700; margin-bottom: 0.2rem; word-break: break-word; }
-  .card-date { font-size: 0.7rem; color: var(--muted2); }
-  
-  .card-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem; }
-  .btn-edit-flux { background: var(--surface2); border: 1px solid var(--border); color: var(--muted); border-radius: 6px; padding: 0.3rem 0.6rem; font-size: 0.75rem; cursor: pointer; transition: all 0.2s; z-index: 10; position: relative; }
-  .btn-edit-flux:hover { border-color: var(--accent); color: var(--text); background: rgba(0,229,255,0.1); }
-
-  /* STATUS BADGE */
-  .status-badge { font-size: 0.65rem; font-weight: 700; padding: 0.25rem 0.6rem; border-radius: 100px; text-transform: uppercase; letter-spacing: 0.05em; border: 1px solid transparent; }
-  .status-ok { background: var(--ok-dim); color: var(--ok); border-color: rgba(34,211,160,0.2); }
-  .status-warn { background: var(--warn-dim); color: var(--warn); border-color: rgba(255,107,53,0.2); }
-  .status-empty { background: var(--surface2); color: var(--muted); border-color: var(--border); }
-
-  /* KPI GRID INSIDE CARD */
-  .card-kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin-bottom: 1.5rem; }
+  .card-title { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 700; }
+  .card-kpis { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; margin-bottom: 1rem; }
   .ckpi { background: var(--bg); border: 1px solid var(--border); padding: 0.6rem; border-radius: 6px; }
-  .ckpi-label { font-size: 0.58rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.2rem; }
+  .ckpi-label { font-size: 0.58rem; color: var(--muted); text-transform: uppercase; }
   .ckpi-val { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700; }
-  .ckpi-val.accent { color: var(--accent); }
-  .ckpi-val.warn { color: var(--warn); }
-  .ckpi-val.ok { color: var(--ok); }
-  
-  .goulot-line { font-size: 0.75rem; color: var(--muted); display: flex; align-items: center; gap: 0.4rem; background: var(--bg); padding: 0.5rem; border-radius: 6px; border: 1px solid var(--border); }
-  .goulot-name { font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
   /* MODALS */
   .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); display: flex; justify-content: center; align-items: center; z-index: 200; opacity: 0; pointer-events: none; transition: opacity 0.2s; }
   .modal-overlay.open { opacity: 1; pointer-events: all; }
-  .modal-content { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; width: 100%; max-width: 500px; padding: 2rem; transform: translateY(20px); transition: transform 0.2s; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
-  .modal-overlay.open .modal-content { transform: translateY(0); }
-  .modal-title { font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 700; margin-bottom: 1.5rem; }
+  .modal-content { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; width: 100%; max-width: 500px; padding: 2rem; }
   
-  /* TEMPLATES GRID */
-  .template-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.8rem; margin-bottom: 1.5rem; }
-  .template-card { border: 1px solid var(--border); border-radius: 8px; padding: 1rem 0.5rem; text-align: center; cursor: pointer; transition: all 0.2s; background: var(--bg); }
-  .template-card:hover { border-color: var(--accent); background: rgba(0,229,255,0.05); }
-  .template-card.selected { border-color: var(--accent); background: rgba(0,229,255,0.1); box-shadow: 0 0 0 1px var(--accent); }
-  .template-icon { font-size: 1.4rem; margin-bottom: 0.4rem; }
-  .template-name { font-size: 0.75rem; font-weight: 600; color: var(--text); }
-
-  /* INPUTS */
-  .input-group { margin-bottom: 1rem; }
-  .input-group label { display: block; font-size: 0.75rem; color: var(--muted); margin-bottom: 0.3rem; font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; }
-  .input-group input { width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 0.6rem 0.8rem; border-radius: 6px; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; outline: none; transition: border-color 0.2s; }
-  .input-group input:focus { border-color: var(--accent); }
-  
-  .modal-actions { display: flex; gap: 1rem; margin-top: 2rem; }
-  .btn-cancel { flex: 1; background: transparent; border: 1px solid var(--border); color: var(--text); padding: 0.6rem; border-radius: 6px; cursor: pointer; font-weight: 500; font-family: 'DM Sans', sans-serif; transition: background 0.2s; }
-  .btn-cancel:hover { background: var(--surface2); }
-  .btn-submit { flex: 2; background: var(--accent); border: none; color: #000; font-weight: 600; padding: 0.6rem; border-radius: 6px; cursor: pointer; font-family: 'DM Sans', sans-serif; transition: transform 0.2s; }
-  .btn-submit:hover { transform: translateY(-1px); }
-
-  /* EMPTY STATE */
-  .empty-state { text-align: center; padding: 6rem 2rem; background: var(--surface); border: 1px dashed var(--border2); border-radius: 12px; }
-  .empty-icon { font-size: 3.5rem; opacity: 0.5; margin-bottom: 1rem; }
-
-  /* MODAL PAYWALL */
-  .paywall-content { text-align: center; padding: 3rem 2rem; }
-  .paywall-icon { font-size: 4rem; margin-bottom: 1rem; }
-  .paywall-title { font-family: 'Syne', sans-serif; font-size: 1.6rem; font-weight: 800; color: var(--accent); margin-bottom: 1rem; }
-  .paywall-text { color: var(--muted); margin-bottom: 2rem; font-size: 0.95rem; line-height: 1.6; }
-  .premium-list { list-style: none; padding: 0; margin-bottom: 2rem; text-align: left; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 1.5rem; }
-  .premium-list li { margin-bottom: 0.8rem; display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem; color: var(--text); }
-  .premium-list li::before { content: '✓'; color: var(--accent); font-weight: bold; }
-  .btn-upgrade { display: block; width: 100%; background: var(--accent); color: #000; padding: 1rem; border-radius: 8px; font-weight: 700; font-size: 1.1rem; text-decoration: none; transition: transform 0.2s; font-family: 'DM Sans', sans-serif; }
-  .btn-upgrade:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,229,255,0.3); }
+  /* PAYWALL */
+  .paywall-content { text-align: center; }
+  .btn-upgrade { display: block; width: 100%; background: var(--accent); color: #000; padding: 1rem; border-radius: 8px; font-weight: 700; text-decoration: none; margin-top: 2rem; }
 </style>
 </head>
 <body>
@@ -134,8 +67,7 @@
     </div>
     <nav class="sidebar-nav">
       <a href="/dashboard" class="nav-item active">📊 Dashboard</a>
-      <a href="#" class="nav-item">👤 Profil (Bientôt)</a>
-      <a href="#" class="nav-item">⚙️ Paramètres usine</a>
+      <a href="/account" class="nav-item">👤 Profil</a>
     </nav>
     <div class="sidebar-footer">
       <div class="user-email" id="userEmail">Chargement...</div>
@@ -148,103 +80,23 @@
       <div class="page-header">
         <div>
           <h1 class="page-title">Dashboard</h1>
-          <p class="page-sub">Pilotage de la performance industrielle multi-sites.</p>
         </div>
         <button class="btn-primary" onclick="checkQuotaAndOpenModal()" id="newFluxBtn">
           <span style="display:none;" id="btnSpinner">⏳</span> ✚ Nouvelle Ligne
         </button>
       </div>
-
-      <div id="dashboardContainer">
-        <div style="text-align:center; padding:3rem; color:var(--muted)">Analyse des flux en cours...</div>
-      </div>
+      <div id="dashboardContainer"></div>
     </div>
   </main>
 </div>
 
-<div class="modal-overlay" id="newFluxModal">
-  <div class="modal-content">
-    <div class="modal-title">Créer une ligne de production</div>
-    
-    <label style="display:block; font-size:0.75rem; color:var(--muted); margin-bottom:0.5rem; font-weight:500; text-transform:uppercase;">Modèle de départ</label>
-    <div class="template-grid">
-      <div class="template-card selected" onclick="selectTemplate('blank')" id="tpl-blank">
-        <div class="template-icon">📄</div>
-        <div class="template-name">Flux Vierge</div>
-      </div>
-      <div class="template-card" onclick="selectTemplate('usinage')" id="tpl-usinage">
-        <div class="template-icon">⚙️</div>
-        <div class="template-name">Usinage Série</div>
-      </div>
-      <div class="template-card" onclick="selectTemplate('assemblage')" id="tpl-assemblage">
-        <div class="template-icon">📦</div>
-        <div class="template-name">Assemblage</div>
-      </div>
-    </div>
-
-    <div class="input-group">
-      <label>Nom de la ligne / flux</label>
-      <input type="text" id="nfNom" placeholder="ex: Ligne Assemblage Stylos">
-    </div>
-    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
-      <div class="input-group">
-        <label>Usine / Site</label>
-        <input type="text" id="nfUsine" placeholder="ex: Usine Nord">
-      </div>
-      <div class="input-group">
-        <label>Atelier</label>
-        <input type="text" id="nfAtelier" placeholder="ex: Menuiserie">
-      </div>
-    </div>
-    
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeNewFluxModal()">Annuler</button>
-      <button class="btn-submit" onclick="createNewFlux()">Créer la ligne →</button>
-    </div>
-  </div>
-</div>
-
 <div class="modal-overlay" id="paywallModal">
   <div class="modal-content paywall-content">
-    <button class="mos-close" style="position:absolute; top: 1rem; right: 1rem; background:transparent; border:none; color:var(--muted); cursor:pointer; font-size:1.2rem;" onclick="document.getElementById('paywallModal').classList.remove('open')">✕</button>
-    <div class="paywall-icon">🚀</div>
-    <div class="paywall-title">Passez à la vitesse supérieure</div>
-    <p class="paywall-text">Vous avez atteint la limite de votre plan gratuit (1 ligne de production). Débloquez la puissance complète de Kaiflow pour toute votre usine.</p>
-    
-    <ul class="premium-list">
-      <li>Création de lignes et flux illimités</li>
-      <li>Structuration multi-usines et ateliers</li>
-      <li>Export des rapports PDF complets</li>
-      <li>Support prioritaire 7j/7</li>
-    </ul>
-
-    <a href="#" class="btn-upgrade">Débloquer Kaiflow Pro — 49€/mois</a>
-    <div style="font-size:0.75rem; color:var(--muted); margin-top:1rem;">Paiement sécurisé par Stripe</div>
-  </div>
-</div>
-
-<div class="modal-overlay" id="editFluxModal">
-  <div class="modal-content">
-    <div class="modal-title">Propriétés de la ligne</div>
-    <input type="hidden" id="efId">
-    <div class="input-group">
-      <label>Nom de la ligne</label>
-      <input type="text" id="efNom">
-    </div>
-    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:1rem;">
-      <div class="input-group">
-        <label>Déplacer vers Usine</label>
-        <input type="text" id="efUsine">
-      </div>
-      <div class="input-group">
-        <label>Déplacer vers Atelier</label>
-        <input type="text" id="efAtelier">
-      </div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn-cancel" onclick="closeEditFluxModal()">Annuler</button>
-      <button class="btn-submit" onclick="updateFluxLocation()">💾 Enregistrer</button>
-    </div>
+    <div style="font-size:3rem;">🚀</div>
+    <h2 style="font-family:Syne;">Passez en Pro</h2>
+    <p style="color:var(--muted);">Débloquez la création illimitée de lignes de production.</p>
+    <a href="#" class="btn-upgrade">Débloquer Kaiflow Pro — 99€/mois</a>
+    <button class="btn-logout" style="margin-top:1rem; border:none;" onclick="document.getElementById('paywallModal').classList.remove('open')">Plus tard</button>
   </div>
 </div>
 
@@ -252,302 +104,98 @@
 import { supabaseClient, requireAuth } from '/js/supabase-client.js';
 
 let currentUser = null;
-let currentTemplate = 'blank';
 
-// ─── GESTION TEMPLATES ───
-window.selectTemplate = (tpl) => {
-  currentTemplate = tpl;
-  document.querySelectorAll('.template-card').forEach(el => el.classList.remove('selected'));
-  document.getElementById('tpl-' + tpl).classList.add('selected');
-};
+// LOGIQUE DE RENOMMAGE DE L'USINE (GROUPÉ)
+window.renameUsine = async (oldName) => {
+  const newName = prompt("Nouveau nom pour l'usine / site :", oldName);
+  if (!newName || newName === oldName) return;
 
-// ─── LOGIQUE METIER DEPORTEE ───
-function getEffectiveCycle(node) {
-  if (!node) return 0; let rawCycle = node.cycle || 0;
-  if (node.mos && node.mos.tasks && node.mos.tasks.length > 0) {
-    const sum = node.mos.tasks.reduce((s,t) => s + (parseFloat(t.manual)||0) + (parseFloat(t.move)||0) + (parseFloat(t.wait)||0), 0);
-    if (sum > 0) rawCycle = sum;
-  }
-  const mach = parseInt(node.machines) || 1;
-  const dispo = node.dispo !== undefined ? parseFloat(node.dispo) / 100 : 1;
-  const rebut = node.rebut !== undefined ? parseFloat(node.rebut) / 100 : 0;
-  const den = mach * dispo * (1 - rebut);
-  return den <= 0 ? Infinity : Math.round(rawCycle / den);
-}
-
-function analyzeFlux(fluxData) {
-  const nodes = Array.isArray(fluxData.nodes) ? fluxData.nodes : JSON.parse(fluxData.nodes || '[]');
-  const takt = fluxData.takt_time_cible || 0;
-  if (nodes.length === 0) return { status: 'empty', takt: 0, maxCycle: 0, goulot: 'Aucun bloc', leadTime: 0, rendement: 0 };
-
-  const workNodes = nodes.filter(n => n.type === 'work' || n.type === 'control');
-  let maxCycle = 0; let goulotName = "Aucun goulot identifié";
-
-  workNodes.forEach(n => {
-    const c = getEffectiveCycle(n);
-    if (c !== Infinity && c > maxCycle) { maxCycle = c; goulotName = n.label; }
-  });
-
-  const isOk = maxCycle > 0 && maxCycle <= takt;
-  const rendement = maxCycle > 0 ? Math.round((takt / maxCycle) * 100) : 0;
-  let status = 'empty'; if (workNodes.length > 0) { status = isOk ? 'ok' : 'warn'; }
-
-  let estimatedLT = 0; const cadence = Math.max(takt, maxCycle);
-  nodes.forEach(n => {
-    if (n.type === 'stock') estimatedLT += (n.qty || 0) * cadence;
-    else if (n.type === 'work' || n.type === 'control') estimatedLT += getEffectiveCycle(n);
-  });
-
-  return { takt, maxCycle, goulot: goulotName, leadTime: estimatedLT, rendement, status };
-}
-
-function formatLT(sec) {
-  if (sec === 0 || sec === Infinity) return "—";
-  if (sec > 86400) return Math.floor(sec/86400) + 'j';
-  if (sec > 3600) return Math.floor(sec/3600) + 'h ' + Math.floor((sec%3600)/60) + 'm';
-  if (sec > 60) return Math.floor(sec/60) + 'm';
-  return sec + 's';
-}
-
-// ─── RENDU DU DASHBOARD ───
-window.loadDashboard = async () => {
-  try {
-    currentUser = await requireAuth();
-    if (!currentUser) return;
-    document.getElementById('userEmail').textContent = currentUser.email;
-
-    const { data: fluxList, error } = await supabaseClient
-      .from('flux')
-      .select('*')
-      .eq('user_id', currentUser.id)
-      .order('updated_at', { ascending: false });
-
-    const container = document.getElementById('dashboardContainer');
-
-    if (error) {
-      console.error(error);
-      container.innerHTML = `<div style="text-align:center; padding:3rem; color:var(--warn); border:1px solid var(--warn-dim); border-radius:12px;">⚠ Erreur de base de données. Détail : ${error.message}</div>`;
-      return;
-    }
-
-    if (!fluxList || fluxList.length === 0) {
-      container.innerHTML = `
-        <div class="empty-state">
-          <div class="empty-icon">🏭</div>
-          <h2>Votre parc est vide</h2>
-          <p style="color:var(--muted); margin-bottom: 2rem;">Commencez par cartographier votre première ligne de production.</p>
-          <button class="btn-primary" onclick="checkQuotaAndOpenModal()">✚ Nouvelle Ligne</button>
-        </div>`;
-      return;
-    }
-
-    const tree = {};
-    fluxList.forEach(f => {
-      const u = f.usine || 'Site Principal';
-      const a = f.atelier || 'Atelier Général';
-      if (!tree[u]) tree[u] = {};
-      if (!tree[u][a]) tree[u][a] = [];
-      tree[u][a].push(f);
-    });
-
-    let html = '';
-
-    for (const [usine, ateliers] of Object.entries(tree)) {
-      html += `<div class="usine-section"><h2 class="usine-title">${usine}</h2>`;
-      
-      for (const [atelier, fluxArr] of Object.entries(ateliers)) {
-        html += `<div class="atelier-section"><h3 class="atelier-title">${atelier}</h3><div class="flux-grid">`;
-        
-        fluxArr.forEach(f => {
-          const stats = analyzeFlux(f);
-          const date = new Date(f.updated_at).toLocaleDateString('fr-FR', { day:'numeric', month:'short', hour:'2-digit', minute:'2-digit' });
-          
-          let statusHtml = `<span class="status-badge status-empty">En cours</span>`;
-          if (stats.status === 'ok') statusHtml = `<span class="status-badge status-ok">Stable</span>`;
-          if (stats.status === 'warn') statusHtml = `<span class="status-badge status-warn">Goulot</span>`;
-
-          html += `
-            <a href="/editor?id=${f.id}" class="flux-card">
-              <div class="card-header">
-                <div class="card-title-group">
-                  <div class="card-title">${f.nom}</div>
-                  <div class="card-date">Modifié le ${date}</div>
-                </div>
-                <div class="card-actions">
-                  ${statusHtml}
-                  <button class="btn-edit-flux" onclick="event.preventDefault(); openEditFluxModal('${f.id}', '${f.nom.replace(/'/g, "\\'")}', '${(f.usine || '').replace(/'/g, "\\'")}', '${(f.atelier || '').replace(/'/g, "\\'")}')">✏️ Config.</button>
-                </div>
-              </div>
-              
-              <div class="card-kpis">
-                <div class="ckpi">
-                  <div class="ckpi-label">Takt Net</div>
-                  <div class="ckpi-val ${stats.takt > 0 ? 'accent' : ''}">${stats.takt > 0 ? stats.takt+'s' : '—'}</div>
-                </div>
-                <div class="ckpi">
-                  <div class="ckpi-label">Cycle Max</div>
-                  <div class="ckpi-val ${stats.status === 'warn' ? 'warn' : (stats.status === 'ok' ? 'ok' : '')}">${stats.maxCycle > 0 ? stats.maxCycle+'s' : '—'}</div>
-                </div>
-                <div class="ckpi">
-                  <div class="ckpi-label">Lead Time</div>
-                  <div class="ckpi-val">${formatLT(stats.leadTime)}</div>
-                </div>
-                <div class="ckpi">
-                  <div class="ckpi-label">Rendement</div>
-                  <div class="ckpi-val">${stats.rendement > 0 ? stats.rendement+'%' : '—'}</div>
-                </div>
-              </div>
-              
-              <div class="goulot-line">
-                <span>⚠ Limité par :</span> <span class="goulot-name">${stats.goulot}</span>
-              </div>
-            </a>
-          `;
-        });
-        html += `</div></div>`;
-      }
-      html += `</div>`;
-    }
-
-    container.innerHTML = html;
-  } catch (err) {
-    console.error(err);
-    document.getElementById('dashboardContainer').innerHTML = `<div style="text-align:center; padding:3rem; color:var(--warn)">Une erreur inattendue s'est produite.</div>`;
-  }
-};
-
-// ─── LE PAYWALL (LE PÉAGE) AVEC VERIFICATION PREMIUM ───
-window.checkQuotaAndOpenModal = async () => {
-  document.getElementById('btnSpinner').style.display = 'inline';
-  
-  // 1. On vérifie le statut Premium de l'utilisateur
-  // (Adapte 'profiles' si ta table s'appelle 'users')
-  const { data: profile, error: profErr } = await supabaseClient
-    .from('profiles') 
-    .select('premium') 
-    .eq('id', currentUser.id)
-    .single();
-
-  if (profErr && profErr.code !== 'PGRST116') {
-      console.error("Erreur lecture profil:", profErr);
-  }
-
-  // 2. On compte le nombre de flux
-  const { count, error: countErr } = await supabaseClient
+  const { error } = await supabaseClient
     .from('flux')
-    .select('*', { count: 'exact', head: true })
-    .eq('user_id', currentUser.id);
-    
-  document.getElementById('btnSpinner').style.display = 'none';
-
-  if (countErr) {
-    console.error("Erreur comptage flux:", countErr);
-    return;
-  }
-
-  // LOGIQUE STRATÉGIQUE : S'il n'est PAS premium et qu'il a déjà >= 1 flux -> PAIEMENT
-  if (!profile?.premium && count >= 1) {
-    const stripeLink = "https://buy.stripe.com/test_14AeVddh535K6fJ3jU9bO00";
-    
-    // ON INJECTE TON ID POUR QUE STRIPE TE RECONNAISSE
-    const dynamicLink = `${stripeLink}?client_reference_id=${currentUser.id}`;
-    
-    document.querySelector('.btn-upgrade').href = dynamicLink;
-    document.getElementById('paywallModal').classList.add('open');
-  } else {
-    // S'il est premium OU qu'il n'a pas encore atteint sa limite
-    selectTemplate('blank'); 
-    document.getElementById('nfNom').value = '';
-    document.getElementById('newFluxModal').classList.add('open');
-  }
-};
-
-
-window.closeNewFluxModal = () => document.getElementById('newFluxModal').classList.remove('open');
-
-window.createNewFlux = async () => {
-  const nom = document.getElementById('nfNom').value || 'Nouvelle Ligne';
-  const usine = document.getElementById('nfUsine').value || 'Site Principal';
-  const atelier = document.getElementById('nfAtelier').value || 'Atelier Général';
-  
-  let prefillNodes = [];
-  let prefillConns = [];
-
-  if (currentTemplate === 'usinage') {
-    prefillNodes = [
-      { id:1, type:'stock', label:'Encours brut', x:50, y:200, qty:100, vsm:'nva', mos:{tasks:[], nc:[]} },
-      { id:2, type:'work', label:'Tournage CNC', x:300, y:200, cycle:180, ops:1, machines:1, dispo:100, rebut:0, vsm:'va', mos:{tasks:[], nc:[]} },
-      { id:3, type:'work', label:'Fraisage', x:550, y:200, cycle:140, ops:1, machines:1, dispo:100, rebut:0, vsm:'va', mos:{tasks:[], nc:[]} },
-      { id:4, type:'control', label:'Contrôle final', x:800, y:200, cycle:45, ops:1, machines:1, dispo:100, rebut:0, vsm:'va', mos:{tasks:[], nc:[]} }
-    ];
-    prefillConns = [ {from:1, to:2}, {from:2, to:3}, {from:3, to:4} ];
-  } else if (currentTemplate === 'assemblage') {
-    prefillNodes = [
-      { id:1, type:'stock', label:'Composants', x:50, y:200, qty:50, vsm:'nva', mos:{tasks:[], nc:[]} },
-      { id:2, type:'work', label:'Assemblage 1', x:300, y:200, cycle:55, ops:2, machines:1, dispo:100, rebut:0, vsm:'va', mos:{tasks:[], nc:[]} },
-      { id:3, type:'work', label:'Assemblage 2', x:550, y:200, cycle:60, ops:1, machines:1, dispo:100, rebut:0, vsm:'va', mos:{tasks:[], nc:[]} },
-      { id:4, type:'transport', label:'Transfert Logistique', x:800, y:200, cycle:120, vsm:'nva', mos:{tasks:[], nc:[]} }
-    ];
-    prefillConns = [ {from:1, to:2}, {from:2, to:3}, {from:3, to:4} ];
-  }
-
-  const payload = { 
-    user_id: currentUser.id, 
-    nom: nom, 
-    nodes: prefillNodes, 
-    connections: prefillConns 
-  };
-  try { payload.usine = usine; payload.atelier = atelier; } catch(e) {}
-
-  const { data, error } = await supabaseClient.from('flux').insert(payload).select().single();
+    .update({ usine: newName })
+    .eq('user_id', currentUser.id)
+    .eq('usine', oldName);
 
   if (error) {
-    alert("⚠ Pensez à ajouter les colonnes 'usine' (text) et 'atelier' (text) dans Supabase pour classer vos lignes.");
-    console.error(error);
+    alert("Erreur lors du renommage.");
   } else {
-    window.location.href = '/editor?id=' + data.id;
-  }
-};
-
-// ─── EDITION EMPLACEMENT ───
-window.openEditFluxModal = (id, nom, usine, atelier) => {
-  document.getElementById('efId').value = id;
-  document.getElementById('efNom').value = nom;
-  document.getElementById('efUsine').value = usine === 'null' ? '' : usine;
-  document.getElementById('efAtelier').value = atelier === 'null' ? '' : atelier;
-  document.getElementById('editFluxModal').classList.add('open');
-};
-
-window.closeEditFluxModal = () => document.getElementById('editFluxModal').classList.remove('open');
-
-window.updateFluxLocation = async () => {
-  const id = document.getElementById('efId').value;
-  const nom = document.getElementById('efNom').value;
-  const usine = document.getElementById('efUsine').value;
-  const atelier = document.getElementById('efAtelier').value;
-
-  const payload = { nom: nom };
-  if(usine) payload.usine = usine;
-  if(atelier) payload.atelier = atelier;
-
-  const { error } = await supabaseClient.from('flux').update(payload).eq('id', id);
-
-  if (error) {
-    alert("Erreur lors de la mise à jour. (Avez-vous créé les colonnes usine et atelier dans Supabase ?)");
-    console.error(error);
-  } else {
-    closeEditFluxModal();
-    document.getElementById('dashboardContainer').innerHTML = `<div style="text-align:center; padding:3rem; color:var(--muted)">Actualisation...</div>`;
     loadDashboard();
   }
 };
 
-window.logout = async () => {
-  await supabaseClient.auth.signOut();
-  window.location.href = '/login';
+window.loadDashboard = async () => {
+  currentUser = await requireAuth();
+  document.getElementById('userEmail').textContent = currentUser.email;
+
+  const { data: fluxList } = await supabaseClient
+    .from('flux')
+    .select('*')
+    .eq('user_id', currentUser.id)
+    .order('updated_at', { ascending: false });
+
+  const container = document.getElementById('dashboardContainer');
+  if (!fluxList || fluxList.length === 0) {
+    container.innerHTML = `<div style="text-align:center; padding:5rem; opacity:0.5;">Aucun flux actif.</div>`;
+    return;
+  }
+
+  const tree = {};
+  fluxList.forEach(f => {
+    const u = f.usine || 'Site Principal';
+    const a = f.atelier || 'Général';
+    if (!tree[u]) tree[u] = {};
+    if (!tree[u][a]) tree[u][a] = [];
+    tree[u][a].push(f);
+  });
+
+  let html = '';
+  for (const [usine, ateliers] of Object.entries(tree)) {
+    html += `
+      <div class="usine-section">
+        <h2 class="usine-title">
+          🏭 ${usine} 
+          <button class="btn-edit-inline" title="Renommer le site" onclick="renameUsine('${usine.replace(/'/g, "\\'")}')">✏️</button>
+        </h2>`;
+    
+    for (const [atelier, fluxArr] of Object.entries(ateliers)) {
+      html += `<div class="atelier-section"><h3 class="atelier-title">${atelier}</h3><div class="flux-grid">`;
+      fluxArr.forEach(f => {
+        html += `
+          <a href="/editor?id=${f.id}" class="flux-card">
+            <div class="card-header"><div class="card-title">${f.nom}</div></div>
+            <div class="card-kpis">
+              <div class="ckpi"><div class="ckpi-label">Takt</div><div class="ckpi-val">${f.takt_time_cible || '—'}s</div></div>
+              <div class="ckpi"><div class="ckpi-label">Statut</div><div class="ckpi-val" style="color:var(--accent)">Actif</div></div>
+            </div>
+          </a>`;
+      });
+      html += `</div></div>`;
+    }
+    html += `</div>`;
+  }
+  container.innerHTML = html;
 };
 
-// Lancement
+window.checkQuotaAndOpenModal = async () => {
+  document.getElementById('btnSpinner').style.display = 'inline';
+  const { data: profile } = await supabaseClient.from('profiles').select('is_pro').eq('id', currentUser.id).single();
+  const { count } = await supabaseClient.from('flux').select('*', { count: 'exact', head: true }).eq('user_id', currentUser.id);
+  document.getElementById('btnSpinner').style.display = 'none';
+
+  if (!profile?.is_pro && count >= 1) {
+    const link = `https://buy.stripe.com/test_14AeVddh535K6fJ3jU9bO00?client_reference_id=${currentUser.id}`;
+    document.querySelector('.btn-upgrade').href = link;
+    document.getElementById('paywallModal').classList.add('open');
+  } else {
+    const nom = prompt("Nom de la nouvelle ligne :");
+    if (nom) {
+      const { data } = await supabaseClient.from('flux').insert({ user_id: currentUser.id, nom: nom }).select().single();
+      window.location.href = '/editor?id=' + data.id;
+    }
+  }
+};
+
+window.logout = async () => { await supabaseClient.auth.signOut(); window.location.href = '/login'; };
 loadDashboard();
 </script>
 </body>
