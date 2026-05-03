@@ -4,151 +4,216 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kaiflow — Mon compte</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/css/globals.css">
 <style>
-/* NAV */
-nav { height: 54px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 2rem; gap: 1rem; }
-.nav-spacer { flex: 1; }
-.nav-link { font-size: 0.85rem; color: var(--muted2); text-decoration: none; padding: 0.4rem 0.8rem; border-radius: 6px; transition: all 0.15s; }
-.nav-link:hover { background: var(--surface2); color: var(--text); }
-.logout-btn { font-size: 0.82rem; color: var(--warn); background: transparent; border: 1px solid rgba(255,107,53,0.3); border-radius: 7px; padding: 0.4rem 0.9rem; cursor: pointer; transition: all 0.15s; }
-.logout-btn:hover { background: var(--warn-dim); }
+  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; margin: 0; }
+  
+  /* NAVBAR */
+  .navbar { display: flex; justify-content: space-between; align-items: center; padding: 1rem 2rem; border-bottom: 1px solid var(--border); background: var(--surface); }
+  .logo { font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 800; letter-spacing: -0.02em; color: var(--text); text-decoration: none; }
+  .logo span { color: var(--accent); }
+  .nav-links { display: flex; gap: 1.5rem; align-items: center; }
+  .nav-link { color: var(--muted); text-decoration: none; font-size: 0.9rem; transition: color 0.2s; }
+  .nav-link:hover { color: var(--text); }
+  .btn-logout { background: transparent; border: 1px solid var(--border); color: var(--warn); padding: 0.4rem 1rem; border-radius: 6px; cursor: pointer; transition: all 0.2s; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; }
+  .btn-logout:hover { background: var(--warn-dim); }
 
-/* CONTENT */
-.content { padding: 2.5rem 2rem; max-width: 780px; margin: 0 auto; width: 100%; }
-.page-title { font-family: 'Syne', sans-serif; font-size: 1.6rem; font-weight: 800; margin-bottom: 0.3rem; }
-.page-sub { font-size: 0.9rem; color: var(--muted2); margin-bottom: 2rem; }
+  /* MAIN CONTENT */
+  .container { max-width: 800px; margin: 4rem auto; padding: 0 2rem; }
+  .page-title { font-family: 'Syne', sans-serif; font-size: 2.2rem; font-weight: 800; margin-bottom: 0.2rem; }
+  .page-sub { color: var(--muted); margin-bottom: 3rem; }
 
-/* SECTIONS */
-.section { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; margin-bottom: 1.5rem; overflow: hidden; }
-.section-header { padding: 1.1rem 1.5rem; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
-.section-title { font-family: 'Syne', sans-serif; font-size: 0.92rem; font-weight: 700; }
-.section-body { padding: 1.3rem 1.5rem; }
+  /* CARDS */
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 2rem; margin-bottom: 2rem; }
+  .card-header-title { font-size: 1rem; font-weight: 700; margin-bottom: 1.5rem; color: var(--text); border-bottom: 1px solid var(--border); padding-bottom: 1rem; }
 
-/* PROFILE */
-.profile-avatar { width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), #0077aa); display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.3rem; color: #000; margin-bottom: 1.2rem; flex-shrink: 0; }
-.profile-top { display: flex; align-items: center; gap: 1.2rem; margin-bottom: 1.5rem; }
-.profile-name { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 700; }
-.profile-email { font-size: 0.85rem; color: var(--muted2); margin-top: 0.2rem; }
-.profile-badge { display: inline-flex; align-items: center; gap: 0.3rem; margin-top: 0.4rem; background: var(--accent-dim); border: 1px solid rgba(0,229,255,0.2); color: var(--accent); font-size: 0.7rem; font-weight: 600; padding: 0.2rem 0.6rem; border-radius: 100px; text-transform: uppercase; letter-spacing: 0.06em; }
-.fields-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  /* PROFILE HEADER */
+  .profile-header { display: flex; align-items: center; gap: 1.5rem; margin-bottom: 2.5rem; }
+  .avatar { width: 64px; height: 64px; background: var(--accent); color: #000; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Syne', sans-serif; font-size: 1.5rem; font-weight: 800; }
+  .profile-info h3 { margin: 0 0 0.3rem 0; font-size: 1.2rem; }
+  .profile-email { color: var(--muted); font-size: 0.9rem; margin-bottom: 0.5rem; }
+  
+  .badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.7rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; }
+  .badge.starter { background: var(--surface2); color: var(--muted); border: 1px solid var(--border); }
+  .badge.pro { background: var(--accent); color: #000; }
 
-.plan-card { display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.3rem; border: 1px solid var(--border); border-radius: 10px; background: var(--bg); }
-.plan-name-big { font-family: 'Syne', sans-serif; font-size: 1rem; font-weight: 700; }
-.plan-details { font-size: 0.8rem; color: var(--muted2); margin-top: 0.2rem; }
+  /* FORM GRID */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin-bottom: 2rem; }
+  .input-group label { display: block; font-size: 0.75rem; color: var(--muted); margin-bottom: 0.4rem; font-weight: 600; text-transform: uppercase; }
+  .input-group input, .input-group select { width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--text); padding: 0.8rem; border-radius: 6px; font-family: 'DM Sans', sans-serif; font-size: 0.95rem; outline: none; transition: border-color 0.2s; box-sizing: border-box; }
+  .input-group input:focus, .input-group select:focus { border-color: var(--accent); }
 
-.danger-btn { background: transparent; border: 1px solid rgba(255,107,53,0.3); color: var(--warn); padding: 0.6rem 1.2rem; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.85rem; cursor: pointer; transition: all 0.15s; }
-.danger-btn:hover { background: var(--warn-dim); border-color: var(--warn); }
+  .btn-submit { background: var(--accent); color: #000; border: none; padding: 0.8rem 2rem; border-radius: 6px; font-weight: 700; cursor: pointer; transition: transform 0.2s; font-family: 'DM Sans', sans-serif; }
+  .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 4px 15px rgba(0,229,255,0.25); }
+
+  /* SUBSCRIPTION CARD */
+  .sub-flex { display: flex; justify-content: space-between; align-items: center; }
+  .sub-title { font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 700; margin-bottom: 0.3rem; }
+  .sub-desc { color: var(--muted); font-size: 0.9rem; }
+  
+  .btn-upgrade { background: transparent; border: 1px solid var(--accent); color: var(--accent); padding: 0.6rem 1.5rem; border-radius: 6px; text-decoration: none; font-weight: 600; transition: all 0.2s; }
+  .btn-upgrade:hover { background: var(--accent); color: #000; }
+
 </style>
 </head>
 <body>
 
-<nav>
-  <div class="logo">Kai<em>flow</em></div>
-  <div class="nav-spacer"></div>
-  <a href="/dashboard" class="nav-link">← Dashboard</a>
-  <button class="logout-btn" onclick="logout()">Se déconnecter</button>
+<nav class="navbar">
+  <a href="/dashboard" class="logo">Kai<span>flow</span></a>
+  <div class="nav-links">
+    <a href="/dashboard" class="nav-link">← Dashboard</a>
+    <button class="btn-logout" onclick="logout()">Se déconnecter</button>
+  </div>
 </nav>
 
-<div class="content">
-  <div class="page-title">Mon compte</div>
-  <div class="page-sub" id="pageSubtitle">Chargement…</div>
+<div class="container">
+  <h1 class="page-title">Mon compte</h1>
+  <p class="page-sub" id="welcomeText">Chargement...</p>
 
-  <div class="section">
-    <div class="section-header"><div class="section-title">Informations personnelles</div></div>
-    <div class="section-body">
-      <div class="profile-top">
-        <div class="profile-avatar" id="avatarEl">?</div>
-        <div>
-          <div class="profile-name" id="profileName">—</div>
-          <div class="profile-email" id="profileEmail">—</div>
-          <div class="profile-badge" id="profilePlan">Starter</div>
-        </div>
+  <div class="card">
+    <div class="card-header-title">Informations personnelles</div>
+    
+    <div class="profile-header">
+      <div class="avatar" id="userInitials">--</div>
+      <div class="profile-info">
+        <h3 id="displayFullName">--</h3>
+        <div class="profile-email" id="displayEmail">--</div>
+        <span class="badge starter" id="planBadge">STARTER</span>
       </div>
-      <div id="alertMsg" class="alert"></div>
-
-      <div class="fields-grid">
-        <div class="field"><label>Prénom</label><input id="firstName" type="text"></div>
-        <div class="field"><label>Nom</label><input id="lastName" type="text"></div>
-        <div class="field"><label>Entreprise</label><input id="company" type="text"></div>
-        <div class="field">
-          <label>Secteur</label>
-          <select id="sector">
-            <option value="">Sélectionnez…</option>
-            <option value="automobile">Automobile</option>
-            <option value="aeronautique">Aéronautique</option>
-            <option value="logistique">Logistique</option>
-            <option value="autre">Autre</option>
-          </select>
-        </div>
-      </div>
-      <button class="btn-primary" style="width: auto; padding: 0.65rem 1.5rem;" onclick="saveProfile()">Enregistrer</button>
     </div>
+
+    <div class="form-grid">
+      <div class="input-group">
+        <label>Prénom</label>
+        <input type="text" id="inpPrenom" placeholder="Ex: Lucita">
+      </div>
+      <div class="input-group">
+        <label>Nom</label>
+        <input type="text" id="inpNom" placeholder="Ex: Joly">
+      </div>
+      <div class="input-group">
+        <label>Entreprise</label>
+        <input type="text" id="inpEntreprise" placeholder="Nom de l'usine / entité">
+      </div>
+      <div class="input-group">
+        <label>Secteur</label>
+        <select id="inpSecteur">
+          <option value="">Sélectionnez...</option>
+          <option value="usinage">Usinage / Mécanique</option>
+          <option value="assemblage">Assemblage</option>
+          <option value="logistique">Logistique</option>
+          <option value="autre">Autre</option>
+        </select>
+      </div>
+    </div>
+    
+    <button class="btn-submit" onclick="saveProfile()" id="btnSave">
+      Enregistrer
+    </button>
   </div>
 
-  <div class="section">
-    <div class="section-header"><div class="section-title">Mon abonnement</div></div>
-    <div class="section-body">
-      <div class="plan-card">
-        <div>
-          <div class="plan-name-big" id="planName">Starter</div>
-          <div class="plan-details" id="planDetails">Gratuit · 1 flux de production</div>
-        </div>
-        <button class="btn-primary" style="width: auto; padding: 0.6rem 1.2rem; margin:0;" onclick="window.location.href='/signup'">Passer au Pro →</button>
+  <div class="card">
+    <div class="card-header-title">Mon abonnement</div>
+    <div class="sub-flex">
+      <div>
+        <div class="sub-title" id="subTitle">Starter</div>
+        <div class="sub-desc" id="subDesc">Gratuit - 1 flux de production</div>
       </div>
+      <a href="#" class="btn-upgrade" id="btnUpgrade">Passer au Pro →</a>
     </div>
   </div>
 </div>
 
 <script type="module">
-  import { supabaseClient, requireAuth, logoutUser } from '/js/supabase-client.js';
+import { supabaseClient, requireAuth } from '/js/supabase-client.js';
 
-  window.logout = logoutUser;
-  let currentUser = null;
+let currentUser = null;
 
-  async function init() {
-    currentUser = await requireAuth();
-    if (!currentUser) return;
-    
-    const meta = currentUser.user_metadata || {};
-    const firstName = meta.first_name || '';
-    const lastName = meta.last_name || '';
-    
-    document.getElementById('avatarEl').textContent = ((firstName[0]||'') + (lastName[0]||'')).toUpperCase() || 'U';
-    document.getElementById('profileName').textContent = (firstName + ' ' + lastName).trim() || 'Utilisateur';
-    document.getElementById('profileEmail').textContent = currentUser.email;
-    document.getElementById('pageSubtitle').textContent = 'Bienvenue, ' + (firstName || 'utilisateur') + ' !';
-    
-    document.getElementById('firstName').value = firstName;
-    document.getElementById('lastName').value = lastName;
-    document.getElementById('company').value = meta.company || '';
-    document.getElementById('sector').value = meta.sector || '';
+window.loadAccount = async () => {
+  currentUser = await requireAuth();
+  
+  // On récupère le profil de l'utilisateur, et surtout sa colonne 'premium'
+  const { data: profile } = await supabaseClient
+    .from('profiles')
+    .select('*')
+    .eq('id', currentUser.id)
+    .single();
 
-    const plan = meta.plan || 'free';
-    document.getElementById('profilePlan').textContent = plan === 'pro' ? '⚡ Pro' : 'Starter';
-    document.getElementById('planName').textContent = plan === 'pro' ? 'Pro' : 'Starter';
-    document.getElementById('planDetails').textContent = plan === 'pro' ? '49€ / mois · Flux illimités' : 'Gratuit · 1 flux de production';
+  const email = currentUser.email;
+  const prenom = profile?.first_name || '';
+  const nom = profile?.last_name || '';
+  const isPremium = profile?.premium === true;
+
+  // Remplissage de l'en-tête
+  document.getElementById('displayEmail').textContent = email;
+  document.getElementById('displayFullName').textContent = prenom || nom ? `${prenom} ${nom}` : email;
+  document.getElementById('welcomeText').textContent = prenom ? `Bienvenue, ${prenom} !` : "Gérez vos informations et votre abonnement.";
+  
+  // Initiales
+  let initials = email.substring(0, 2).toUpperCase();
+  if (prenom && nom) initials = `${prenom.charAt(0)}${nom.charAt(0)}`.toUpperCase();
+  document.getElementById('userInitials').textContent = initials;
+
+  // Remplissage du formulaire
+  document.getElementById('inpPrenom').value = prenom;
+  document.getElementById('inpNom').value = nom;
+  document.getElementById('inpEntreprise').value = profile?.company || '';
+  document.getElementById('inpSecteur').value = profile?.sector || '';
+
+  // GESTION DU STATUT PREMIUM
+  const badge = document.getElementById('planBadge');
+  const subTitle = document.getElementById('subTitle');
+  const subDesc = document.getElementById('subDesc');
+  const btnUpgrade = document.getElementById('btnUpgrade');
+
+  if (isPremium) {
+    badge.textContent = 'PRO';
+    badge.className = 'badge pro';
+    subTitle.textContent = 'Kaiflow Pro';
+    subTitle.style.color = 'var(--accent)';
+    subDesc.textContent = 'Création de lignes et flux illimitée';
+    btnUpgrade.style.display = 'none'; // On cache le bouton d'achat si déjà Pro
+  } else {
+    // Si Starter, on injecte le lien Stripe avec l'ID pour le paiement
+    const stripeLink = `https://buy.stripe.com/test_14AeVddh535K6fJ3jU9bO00?client_reference_id=${currentUser.id}`;
+    btnUpgrade.href = stripeLink;
   }
+};
 
-  window.saveProfile = async function() {
-    const el = document.getElementById('alertMsg');
-    const { error } = await supabaseClient.auth.updateUser({
-      data: {
-        first_name: document.getElementById('firstName').value,
-        last_name: document.getElementById('lastName').value,
-        company: document.getElementById('company').value,
-        sector: document.getElementById('sector').value,
-      }
-    });
-    
-    el.className = 'alert ' + (error ? 'error' : 'success');
-    el.textContent = error ? '⚠ Erreur lors de la sauvegarde.' : '✓ Profil mis à jour.';
-    el.style.display = 'block';
-    setTimeout(() => el.style.display = 'none', 3000);
+window.saveProfile = async () => {
+  const btn = document.getElementById('btnSave');
+  btn.textContent = 'Sauvegarde...';
+  
+  const payload = {
+    first_name: document.getElementById('inpPrenom').value,
+    last_name: document.getElementById('inpNom').value,
+    company: document.getElementById('inpEntreprise').value,
+    sector: document.getElementById('inpSecteur').value
+  };
+
+  const { error } = await supabaseClient
+    .from('profiles')
+    .update(payload)
+    .eq('id', currentUser.id);
+
+  if (error) {
+    alert("Erreur lors de la sauvegarde.");
+    console.error(error);
+  } else {
+    btn.textContent = 'Enregistré ✓';
+    setTimeout(() => { btn.textContent = 'Enregistrer'; }, 2000);
+    // On recharge pour mettre à jour les initiales et le titre
+    loadAccount();
   }
+};
 
-  init();
+window.logout = async () => {
+  await supabaseClient.auth.signOut();
+  window.location.href = '/login';
+};
+
+loadAccount();
 </script>
 </body>
 </html>
