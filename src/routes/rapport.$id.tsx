@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { BrandMark } from "@/components/brand";
-import { HydrateGate } from "@/components/hydrate-gate";
+import { RequireAuth } from "@/components/require-auth";
 import { Button } from "@/components/ui/button";
 import { Yamazumi } from "@/components/editor/yamazumi";
 import { analyzeFlow, formatDuration, formatSeconds, getEffectiveCycle } from "@/lib/flow/engine";
@@ -8,9 +8,9 @@ import { useFlowStore } from "@/lib/flow/store";
 
 export const Route = createFileRoute("/rapport/$id")({
   component: () => (
-    <HydrateGate>
+    <RequireAuth>
       <Report />
-    </HydrateGate>
+    </RequireAuth>
   ),
 });
 

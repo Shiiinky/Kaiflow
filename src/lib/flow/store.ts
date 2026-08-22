@@ -1,7 +1,6 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
 import { createNode, normalizeMos, uid } from "./engine";
-import { makeLigneA, makeUsinage } from "./templates";
+import { removeFlow, saveFlow } from "./api";
 import type { Connection, FlowDoc, FlowNode, JohnsonJob, LineSettings, NodeType } from "./types";
 
 type Snapshot = Pick<
@@ -15,7 +14,7 @@ interface FlowState {
   past: Record<string, Snapshot[]>;
   future: Record<string, Snapshot[]>;
   setHydrated: () => void;
-  seedIfEmpty: () => void;
+  loadAll: (docs: FlowDoc[]) => void;
   getFlow: (id: string) => FlowDoc | undefined;
   createFrom: (doc: FlowDoc, meta?: Partial<Pick<FlowDoc, "nom" | "usine" | "atelier">>) => string;
   deleteFlow: (id: string) => void;
@@ -68,189 +67,208 @@ function applySnap(doc: FlowDoc, s: Snapshot): FlowDoc {
 }
 
 const MAX_HIST = 40;
+const saveTimers: Record<string, number> = {};
 
-export const useFlowStore = create<FlowState>()(
-  persist(
-    (set, get) => ({
-      flows: [],
-      hydrated: false,
-      past: {},
-      future: {},
-      setHydrated: () => set({ hydrated: true }),
-      seedIfEmpty: () => {
-        if (get().flows.length > 0) {
-          set({ flows: get().flows.map(migrateDoc) });
-          return;
-        }
-        set({ flows: [makeLigneA(), makeUsinage()] });
-      },
-      getFlow: (id) => get().flows.find((f) => f.id === id),
-      createFrom: (doc, meta) => {
-        const next = migrateDoc({
-          ...doc,
-          ...meta,
-          id: uid("flow"),
-          updatedAt: Date.now(),
-        });
-        set({ flows: [next, ...get().flows] });
-        return next.id;
-      },
-      deleteFlow: (id) => set({ flows: get().flows.filter((f) => f.id !== id) }),
-      renameMeta: (id, patch) =>
-        set({
-          flows: get().flows.map((f) => (f.id === id ? { ...f, ...patch, updatedAt: Date.now() } : f)),
-        }),
-      updateSettings: (id, settings) => {
-        get().commitHistory(id);
-        set({
-          flows: get().flows.map((f) => (f.id === id ? { ...f, settings, updatedAt: Date.now() } : f)),
-        });
-      },
-      addNode: (id, type, label, x, y) => {
-        get().commitHistory(id);
-        const node = createNode(type, label, x, y);
-        set({
-          flows: get().flows.map((f) =>
-            f.id === id ? { ...f, nodes: [...f.nodes, node], updatedAt: Date.now() } : f,
-          ),
-        });
-        return node.id;
-      },
-      patchNode: (flowId, nodeId, patch) => {
-        get().commitHistory(flowId);
-        set({
-          flows: get().flows.map((f) =>
-            f.id === flowId
-              ? {
-                  ...f,
-                  updatedAt: Date.now(),
-                  nodes: f.nodes.map((n) =>
-                    n.id === nodeId
-                      ? { ...n, ...patch, mos: patch.mos ? normalizeMos(patch.mos) : n.mos }
-                      : n,
-                  ),
-                }
-              : f,
-          ),
-        });
-      },
-      moveNode: (flowId, nodeId, x, y) => {
-        set({
-          flows: get().flows.map((f) =>
-            f.id === flowId
-              ? { ...f, nodes: f.nodes.map((n) => (n.id === nodeId ? { ...n, x, y } : n)) }
-              : f,
-          ),
-        });
-      },
-      removeNode: (flowId, nodeId) => {
-        get().commitHistory(flowId);
-        set({
-          flows: get().flows.map((f) =>
-            f.id === flowId
-              ? {
-                  ...f,
-                  updatedAt: Date.now(),
-                  nodes: f.nodes.filter((n) => n.id !== nodeId),
-                  connections: f.connections.filter((c) => c.from !== nodeId && c.to !== nodeId),
-                }
-              : f,
-          ),
-        });
-      },
-      toggleLink: (flowId, from, to) => {
-        if (from === to) return;
-        get().commitHistory(flowId);
-        set({
-          flows: get().flows.map((f) => {
-            if (f.id !== flowId) return f;
-            const existing = f.connections.find((c) => c.from === from && c.to === to);
-            const connections: Connection[] = existing
-              ? f.connections.filter((c) => c.id !== existing.id)
-              : [...f.connections, { id: uid("c"), from, to }];
-            return { ...f, connections, updatedAt: Date.now() };
-          }),
-        });
-      },
-      setJohnsonJobs: (flowId, jobs) => {
-        set({
-          flows: get().flows.map((f) =>
-            f.id === flowId ? { ...f, johnsonJobs: jobs, updatedAt: Date.now() } : f,
-          ),
-        });
-      },
-      commitHistory: (flowId) => {
-        const doc = get().flows.find((f) => f.id === flowId);
-        if (!doc) return;
-        const past = { ...get().past };
-        const list = [...(past[flowId] ?? []), snap(doc)].slice(-MAX_HIST);
-        past[flowId] = list;
-        const future = { ...get().future, [flowId]: [] };
-        set({ past, future });
-      },
-      undo: (flowId) => {
-        const pastList = get().past[flowId] ?? [];
-        if (!pastList.length) return;
-        const doc = get().flows.find((f) => f.id === flowId);
-        if (!doc) return;
-        const prev = pastList[pastList.length - 1];
-        const past = { ...get().past, [flowId]: pastList.slice(0, -1) };
-        const future = { ...get().future, [flowId]: [snap(doc), ...(get().future[flowId] ?? [])] };
-        set({
-          past,
-          future,
-          flows: get().flows.map((f) => (f.id === flowId ? applySnap(f, prev) : f)),
-        });
-      },
-      redo: (flowId) => {
-        const futureList = get().future[flowId] ?? [];
-        if (!futureList.length) return;
-        const doc = get().flows.find((f) => f.id === flowId);
-        if (!doc) return;
-        const next = futureList[0];
-        const future = { ...get().future, [flowId]: futureList.slice(1) };
-        const past = { ...get().past, [flowId]: [...(get().past[flowId] ?? []), snap(doc)] };
-        set({
-          past,
-          future,
-          flows: get().flows.map((f) => (f.id === flowId ? applySnap(f, next) : f)),
-        });
-      },
-      replaceFlow: (doc) => {
-        set({
-          flows: get().flows.map((f) => (f.id === doc.id ? { ...doc, updatedAt: Date.now() } : f)),
-        });
-      },
-      importJson: (raw) => {
-        try {
-          const parsed = JSON.parse(raw) as FlowDoc;
-          if (!parsed.nodes || !parsed.settings) return null;
-          const id = uid("flow");
-          const next = migrateDoc({
-            ...parsed,
-            id,
-            nom: parsed.nom || "Import",
-            updatedAt: Date.now(),
-          });
-          set({ flows: [next, ...get().flows] });
-          return id;
-        } catch {
-          return null;
-        }
-      },
-      duplicate: (id) => {
-        const doc = get().flows.find((f) => f.id === id);
-        if (!doc) return null;
-        return get().createFrom({ ...doc, nom: `${doc.nom} (copie)` });
-      },
-    }),
-    {
-      name: "kaiflow-flows-v3",
-      partialize: (s) => ({ flows: s.flows }),
-      onRehydrateStorage: () => (state) => {
-        state?.seedIfEmpty();
-        state?.setHydrated();
-      },
-    },
-  ),
-);
+function persistNow(doc: FlowDoc) {
+  void saveFlow({ data: doc }).catch(() => {
+    /* keep local copy if network fails */
+  });
+}
+
+function persistSoon(getDoc: () => FlowDoc | undefined, id: string) {
+  if (typeof window === "undefined") {
+    const doc = getDoc();
+    if (doc) persistNow(doc);
+    return;
+  }
+  window.clearTimeout(saveTimers[id]);
+  saveTimers[id] = window.setTimeout(() => {
+    const doc = getDoc();
+    if (doc) persistNow(doc);
+  }, 450);
+}
+
+export const useFlowStore = create<FlowState>()((set, get) => ({
+  flows: [],
+  hydrated: false,
+  past: {},
+  future: {},
+  setHydrated: () => set({ hydrated: true }),
+  loadAll: (docs) => set({ flows: docs.map(migrateDoc), hydrated: true, past: {}, future: {} }),
+  getFlow: (id) => get().flows.find((f) => f.id === id),
+  createFrom: (doc, meta) => {
+    const next = migrateDoc({
+      ...doc,
+      ...meta,
+      id: uid("flow"),
+      updatedAt: Date.now(),
+    });
+    set({ flows: [next, ...get().flows] });
+    persistNow(next);
+    return next.id;
+  },
+  deleteFlow: (id) => {
+    set({ flows: get().flows.filter((f) => f.id !== id) });
+    void removeFlow({ data: id }).catch(() => undefined);
+  },
+  renameMeta: (id, patch) => {
+    set({
+      flows: get().flows.map((f) => (f.id === id ? { ...f, ...patch, updatedAt: Date.now() } : f)),
+    });
+    persistSoon(() => get().getFlow(id), id);
+  },
+  updateSettings: (id, settings) => {
+    get().commitHistory(id);
+    set({
+      flows: get().flows.map((f) => (f.id === id ? { ...f, settings, updatedAt: Date.now() } : f)),
+    });
+    persistSoon(() => get().getFlow(id), id);
+  },
+  addNode: (id, type, label, x, y) => {
+    get().commitHistory(id);
+    const node = createNode(type, label, x, y);
+    set({
+      flows: get().flows.map((f) =>
+        f.id === id ? { ...f, nodes: [...f.nodes, node], updatedAt: Date.now() } : f,
+      ),
+    });
+    persistSoon(() => get().getFlow(id), id);
+    return node.id;
+  },
+  patchNode: (flowId, nodeId, patch) => {
+    get().commitHistory(flowId);
+    set({
+      flows: get().flows.map((f) =>
+        f.id === flowId
+          ? {
+              ...f,
+              updatedAt: Date.now(),
+              nodes: f.nodes.map((n) =>
+                n.id === nodeId
+                  ? { ...n, ...patch, mos: patch.mos ? normalizeMos(patch.mos) : n.mos }
+                  : n,
+              ),
+            }
+          : f,
+      ),
+    });
+    persistSoon(() => get().getFlow(flowId), flowId);
+  },
+  moveNode: (flowId, nodeId, x, y) => {
+    set({
+      flows: get().flows.map((f) =>
+        f.id === flowId
+          ? { ...f, nodes: f.nodes.map((n) => (n.id === nodeId ? { ...n, x, y } : n)) }
+          : f,
+      ),
+    });
+    persistSoon(() => get().getFlow(flowId), flowId);
+  },
+  removeNode: (flowId, nodeId) => {
+    get().commitHistory(flowId);
+    set({
+      flows: get().flows.map((f) =>
+        f.id === flowId
+          ? {
+              ...f,
+              updatedAt: Date.now(),
+              nodes: f.nodes.filter((n) => n.id !== nodeId),
+              connections: f.connections.filter((c) => c.from !== nodeId && c.to !== nodeId),
+            }
+          : f,
+      ),
+    });
+    persistSoon(() => get().getFlow(flowId), flowId);
+  },
+  toggleLink: (flowId, from, to) => {
+    if (from === to) return;
+    get().commitHistory(flowId);
+    set({
+      flows: get().flows.map((f) => {
+        if (f.id !== flowId) return f;
+        const existing = f.connections.find((c) => c.from === from && c.to === to);
+        const connections: Connection[] = existing
+          ? f.connections.filter((c) => c.id !== existing.id)
+          : [...f.connections, { id: uid("c"), from, to }];
+        return { ...f, connections, updatedAt: Date.now() };
+      }),
+    });
+    persistSoon(() => get().getFlow(flowId), flowId);
+  },
+  setJohnsonJobs: (flowId, jobs) => {
+    set({
+      flows: get().flows.map((f) =>
+        f.id === flowId ? { ...f, johnsonJobs: jobs, updatedAt: Date.now() } : f,
+      ),
+    });
+    persistSoon(() => get().getFlow(flowId), flowId);
+  },
+  commitHistory: (flowId) => {
+    const doc = get().flows.find((f) => f.id === flowId);
+    if (!doc) return;
+    const past = { ...get().past };
+    const list = [...(past[flowId] ?? []), snap(doc)].slice(-MAX_HIST);
+    past[flowId] = list;
+    const future = { ...get().future, [flowId]: [] };
+    set({ past, future });
+  },
+  undo: (flowId) => {
+    const pastList = get().past[flowId] ?? [];
+    if (!pastList.length) return;
+    const doc = get().flows.find((f) => f.id === flowId);
+    if (!doc) return;
+    const prev = pastList[pastList.length - 1];
+    const past = { ...get().past, [flowId]: pastList.slice(0, -1) };
+    const future = { ...get().future, [flowId]: [snap(doc), ...(get().future[flowId] ?? [])] };
+    set({
+      past,
+      future,
+      flows: get().flows.map((f) => (f.id === flowId ? applySnap(f, prev) : f)),
+    });
+    persistSoon(() => get().getFlow(flowId), flowId);
+  },
+  redo: (flowId) => {
+    const futureList = get().future[flowId] ?? [];
+    if (!futureList.length) return;
+    const doc = get().flows.find((f) => f.id === flowId);
+    if (!doc) return;
+    const next = futureList[0];
+    const future = { ...get().future, [flowId]: futureList.slice(1) };
+    const past = { ...get().past, [flowId]: [...(get().past[flowId] ?? []), snap(doc)] };
+    set({
+      past,
+      future,
+      flows: get().flows.map((f) => (f.id === flowId ? applySnap(f, next) : f)),
+    });
+    persistSoon(() => get().getFlow(flowId), flowId);
+  },
+  replaceFlow: (doc) => {
+    set({
+      flows: get().flows.map((f) => (f.id === doc.id ? { ...doc, updatedAt: Date.now() } : f)),
+    });
+    persistSoon(() => get().getFlow(doc.id), doc.id);
+  },
+  importJson: (raw) => {
+    try {
+      const parsed = JSON.parse(raw) as FlowDoc;
+      if (!parsed.nodes || !parsed.settings) return null;
+      const id = uid("flow");
+      const next = migrateDoc({
+        ...parsed,
+        id,
+        nom: parsed.nom || "Import",
+        updatedAt: Date.now(),
+      });
+      set({ flows: [next, ...get().flows] });
+      persistNow(next);
+      return id;
+    } catch {
+      return null;
+    }
+  },
+  duplicate: (id) => {
+    const doc = get().flows.find((f) => f.id === id);
+    if (!doc) return null;
+    return get().createFrom({ ...doc, nom: `${doc.nom} (copie)` });
+  },
+}));

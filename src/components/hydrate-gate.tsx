@@ -1,20 +1,22 @@
 import { useEffect, type ReactNode } from "react";
+import { listFlows } from "@/lib/flow/api";
 import { useFlowStore } from "@/lib/flow/store";
 
 export function HydrateGate({ children }: { children: ReactNode }) {
   const hydrated = useFlowStore((s) => s.hydrated);
 
   useEffect(() => {
-    const finish = () => {
-      useFlowStore.getState().seedIfEmpty();
-      useFlowStore.getState().setHydrated();
-    };
-    const unsub = useFlowStore.persist.onFinishHydration(finish);
-    if (useFlowStore.persist.hasHydrated()) finish();
-    const t = window.setTimeout(finish, 80);
+    let cancelled = false;
+    useFlowStore.setState({ hydrated: false, flows: [] });
+    listFlows()
+      .then((docs) => {
+        if (!cancelled) useFlowStore.getState().loadAll(docs);
+      })
+      .catch(() => {
+        if (!cancelled) useFlowStore.getState().loadAll([]);
+      });
     return () => {
-      unsub();
-      window.clearTimeout(t);
+      cancelled = true;
     };
   }, []);
 

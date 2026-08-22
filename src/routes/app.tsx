@@ -2,7 +2,8 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Copy, Download, FileJson, Plus, Trash2, X } from "lucide-react";
 import { useState } from "react";
 import { BrandMark } from "@/components/brand";
-import { HydrateGate } from "@/components/hydrate-gate";
+import { AccountChip } from "@/components/account-chip";
+import { RequireAuth } from "@/components/require-auth";
 import { Button } from "@/components/ui/button";
 import { analyzeFlow, formatSeconds } from "@/lib/flow/engine";
 import { useFlowStore } from "@/lib/flow/store";
@@ -11,9 +12,9 @@ import type { FlowDoc } from "@/lib/flow/types";
 
 export const Route = createFileRoute("/app")({
   component: () => (
-    <HydrateGate>
+    <RequireAuth>
       <Dashboard />
-    </HydrateGate>
+    </RequireAuth>
   ),
 });
 
@@ -56,6 +57,7 @@ function Dashboard() {
       <header className="flex items-center justify-between border-b border-border bg-surface px-4 py-3 md:px-8">
         <BrandMark to="/" />
         <div className="flex items-center gap-2">
+          <AccountChip />
           <label className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-sm border border-border px-3 text-sm text-muted hover:text-fg">
             <FileJson className="size-4" />
             <span className="hidden sm:inline">Importer</span>

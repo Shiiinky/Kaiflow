@@ -13,7 +13,7 @@ npm install
 npm run dev
 ```
 
-Ouvre l’éditeur sur le port 8080. Les flux sont stockés dans le navigateur (localStorage). Aucun compte requis.
+Ouvre le site sur le port 8080. Connexion Google, X ou email. Les flux sont liés au compte.
 
 ```bash
 npm run build      # production (Nitro / Vercel)
@@ -25,11 +25,10 @@ npm run typecheck
 | Route | Description |
 |---|---|
 | `/` | Landing |
+| `/login` | Connexion / création de compte |
 | `/app` | Atelier (liste des flux) |
 | `/editor/$id` | Canvas drag & drop, KPIs, MOS, Johnson |
 | `/rapport/$id` | Rapport imprimable / PDF |
-
-Anciennes URLs (`/dashboard`, `/editor`, `/login`) redirigent vers `/app`.
 
 ## Fonctionnalités
 

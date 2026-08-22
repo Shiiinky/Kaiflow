@@ -5,8 +5,7 @@
   "redirects": [
     { "source": "/dashboard", "destination": "/app", "permanent": false },
     { "source": "/editor", "destination": "/app", "permanent": false },
-    { "source": "/login", "destination": "/app", "permanent": false },
-    { "source": "/signup", "destination": "/app", "permanent": false },
+    { "source": "/signup", "destination": "/login?mode=signup", "permanent": false },
     { "source": "/account", "destination": "/app", "permanent": false }
   ]
 }

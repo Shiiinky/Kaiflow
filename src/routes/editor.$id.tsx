@@ -20,7 +20,7 @@ import { KpiBar } from "@/components/editor/kpi-bar";
 import { MosDialog } from "@/components/editor/mos-dialog";
 import { Chrono, KpiGrid, PropsForm, Recs, WhatIf } from "@/components/editor/side-rail";
 import { Yamazumi } from "@/components/editor/yamazumi";
-import { HydrateGate } from "@/components/hydrate-gate";
+import { RequireAuth } from "@/components/require-auth";
 import { Button } from "@/components/ui/button";
 import { BLOCKS } from "@/lib/flow/blocks";
 import { analyzeFlow } from "@/lib/flow/engine";
@@ -30,9 +30,9 @@ import { cn } from "@/lib/cn";
 
 export const Route = createFileRoute("/editor/$id")({
   component: () => (
-    <HydrateGate>
+    <RequireAuth>
       <EditorPage />
-    </HydrateGate>
+    </RequireAuth>
   ),
 });
 
@@ -135,7 +135,7 @@ function EditorPage() {
         />
         <span className="hidden items-center gap-1.5 text-[11px] text-ok md:inline-flex">
           <span className="size-1.5 rounded-full bg-ok" />
-          Local
+          Compte
         </span>
         <div className="flex items-center gap-1">
           <Button variant="ghost" size="icon" onClick={() => undo(id)} aria-label="Annuler">

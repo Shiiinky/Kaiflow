@@ -4,13 +4,13 @@ import {
   ChartColumn,
   Clock3,
   FileText,
-  GitBranch,
   ScanSearch,
   Workflow,
 } from "lucide-react";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { BrandMark } from "@/components/brand";
 import { Button } from "@/components/ui/button";
+import { SignedIn, SignedOut } from "@/lib/auth/gates";
 import { analyzeFlow, formatSeconds } from "@/lib/flow/engine";
 import { makeLigneA } from "@/lib/flow/templates";
 import type { FlowDoc } from "@/lib/flow/types";
@@ -41,13 +41,23 @@ function Home() {
             </a>
           </div>
           <div className="flex items-center gap-3">
-            <span className="hidden items-center gap-2 font-mono text-[10px] uppercase tracking-widest text-ok sm:inline-flex">
-              <span className="size-1.5 rounded-full bg-ok shadow-[0_0_8px_#22d3a0]" />
-              sys.online
-            </span>
-            <Button asChild size="sm">
-              <Link to="/app">Ouvrir l'atelier</Link>
-            </Button>
+            <SignedOut>
+              <Button asChild variant="ghost" size="sm">
+                <Link to="/login" search={{ mode: "signin" }}>
+                  Connexion
+                </Link>
+              </Button>
+              <Button asChild size="sm">
+                <Link to="/login" search={{ mode: "signup" }}>
+                  Créer un compte
+                </Link>
+              </Button>
+            </SignedOut>
+            <SignedIn>
+              <Button asChild size="sm">
+                <Link to="/app">Ouvrir l'atelier</Link>
+              </Button>
+            </SignedIn>
           </div>
         </div>
       </nav>
@@ -65,23 +75,25 @@ function Home() {
             </h1>
             <p className="mt-6 max-w-lg text-base leading-relaxed text-muted-2 md:text-lg">
               Cartographiez un flux, calculez takt net et TRS, voyez où la capacité se brise.
-              Pas de tableur. Pas de compte.
+              Un compte par usine, pour vendre et piloter Kaiflow en équipe.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Button asChild size="lg">
-                <Link to="/app">
-                  Lancer la cartographie
+                <Link to="/login" search={{ mode: "signup" }}>
+                  Créer un compte
                   <ArrowRight className="size-4" />
                 </Link>
               </Button>
               <Button asChild variant="secondary" size="lg">
-                <a href="#demo">Manipuler le goulot</a>
+                <Link to="/login" search={{ mode: "signin" }}>
+                  Se connecter
+                </Link>
               </Button>
             </div>
             <div className="mt-10 grid grid-cols-3 gap-px overflow-hidden rounded-sm border border-border bg-border">
               <HeroStat k="latence" v="3 min" d="1re ligne" />
               <HeroStat k="moteur" v="100%" d="auto" />
-              <HeroStat k="accès" v="0 login" d="local" />
+              <HeroStat k="offre" v="SaaS" d="abonnement" />
             </div>
           </div>
           <LiveDemo />
@@ -197,16 +209,16 @@ function Home() {
 
       <section className="relative px-4 py-20 md:px-6">
         <div className="hud-corners mx-auto max-w-6xl overflow-hidden rounded-lg border border-accent/20 bg-card/80 px-6 py-14 text-center md:px-16">
-          <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-accent">ready · local</p>
+          <p className="font-mono text-[11px] uppercase tracking-[0.22em] text-accent">bêta · comptes</p>
           <h2 className="mt-3 font-display text-3xl font-extrabold md:text-5xl">
-            La démo Ligne A est déjà chargée.
+            Créez le compte de votre usine.
           </h2>
           <p className="mx-auto mt-4 max-w-md text-muted-2">
-            Changez un cycle. Le goulot bouge. Rien n'est envoyé sur un serveur.
+            Flux, takt et goulots restent liés à votre équipe. L'abonnement se branche ensuite.
           </p>
           <Button asChild size="lg" className="mt-8">
-            <Link to="/app">
-              Ouvrir l'atelier
+            <Link to="/login" search={{ mode: "signup" }}>
+              Créer un compte
               <ArrowRight className="size-4" />
             </Link>
           </Button>
