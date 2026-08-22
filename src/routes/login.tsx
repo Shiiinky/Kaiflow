@@ -26,6 +26,23 @@ function Login() {
 
   const goApp = () => navigate({ to: "/app" });
 
+  const onSocial = async (providerId: string) => {
+    setError(null);
+    setBusy(true);
+    try {
+      await signIn(providerId, { callbackURL: "/app", errorCallbackURL: "/login" });
+    } catch (err) {
+      const raw = err instanceof Error ? err.message : "Connexion sociale impossible";
+      setError(
+        /popup/i.test(raw)
+          ? "Autorisez les pop-ups pour Google / X, ou créez un compte par email."
+          : "Google / X ne sont pas encore branchés sur kaiflow.fr. Créez un compte par email.",
+      );
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const onEmail = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -45,7 +62,12 @@ function Login() {
       }
       goApp();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Échec de connexion");
+      const raw = err instanceof Error ? err.message : "Échec de connexion";
+      setError(
+        /invalid origin/i.test(raw)
+          ? "Domaine non autorisé. Réessayez dans une minute (mise à jour en cours)."
+          : raw,
+      );
     } finally {
       setBusy(false);
     }
@@ -77,7 +99,8 @@ function Login() {
                   type="button"
                   variant="secondary"
                   className="w-full"
-                  onClick={() => void signIn(p.providerId, { callbackURL: "/app" })}
+                  onClick={() => void onSocial(p.providerId)}
+                  disabled={busy}
                 >
                   Continuer avec {p.label}
                 </Button>
@@ -167,7 +190,7 @@ function Field({
         required={required}
         autoComplete={autoComplete}
         onChange={(e) => onChange(e.target.value)}
-        className="mt-1 h-11 w-full rounded-sm border border-border bg-surface px-3 text-fg outline-none focus:border-accent"
+        className="mt-1 h-11 w-full rounded-sm border border-border bg-surface px-3 text-fg outline-none [color-scheme:dark] focus:border-accent"
       />
     </label>
   );
