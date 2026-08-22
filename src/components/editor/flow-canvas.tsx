@@ -73,7 +73,7 @@ export function FlowCanvas({
       const mx = e.clientX - r.left;
       const my = e.clientY - r.top;
       const prev = scaleRef.current;
-      const next = Math.min(1.8, Math.max(0.35, prev * (e.deltaY < 0 ? 1.08 : 1 / 1.08)));
+      const next = Math.min(2.2, Math.max(0.28, prev * (e.deltaY < 0 ? 1.08 : 1 / 1.08)));
       if (next === prev) return;
       const p = panRef.current;
       setPan({
@@ -110,7 +110,7 @@ export function FlowCanvas({
       const midX = (t0.clientX + t1.clientX) / 2 - r.left;
       const midY = (t0.clientY + t1.clientY) / 2 - r.top;
       const prev = pinch.current.scale;
-      const next = Math.min(1.8, Math.max(0.35, prev * (d / Math.max(1, pinch.current.dist))));
+      const next = Math.min(2.2, Math.max(0.28, prev * (d / Math.max(1, pinch.current.dist))));
       const worldX = (pinch.current.midX - pinch.current.panX) / prev;
       const worldY = (pinch.current.midY - pinch.current.panY) / prev;
       setPan({

@@ -36,7 +36,7 @@ export function NodeCard({
       data-node-id={node.id}
       onPointerDown={onPointerDown}
       className={cn(
-        "absolute select-none touch-manipulation rounded-md border bg-card shadow-[0_10px_30px_rgba(0,0,0,0.35)]",
+        "absolute select-none touch-none rounded-md border bg-card shadow-[0_10px_30px_rgba(0,0,0,0.35)]",
         selected ? "border-accent" : "border-border",
         bottleneck && "border-warn shadow-[0_0_24px_rgba(255,107,53,0.22)]",
         linkSource && "ring-2 ring-accent",
