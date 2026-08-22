@@ -15,7 +15,7 @@ export const Route = createRootRoute({
       {
         name: "description",
         content:
-          "Kaiflow — modélisez vos flux de production, détectez les goulots et pilotez takt, TRS et Yamazumi.",
+          "Kaiflow — optimisez vos systèmes de production, trouvez les goulots, pilotez takt, TRS et Yamazumi.",
       },
     ],
     links: [

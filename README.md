@@ -1,6 +1,6 @@
 # Kaiflow
 
-**Modélisez vos flux. Pilotez votre performance.**
+**Optimisez vos systèmes. Trouvez les goulots.**
 
 Outil no-code pour responsables de production : cartographie VSM, takt time, TRS, goulot, Yamazumi, MOS et séquençage de Johnson.
 

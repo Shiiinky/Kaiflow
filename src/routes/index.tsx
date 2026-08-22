@@ -18,7 +18,7 @@ import type { FlowDoc } from "@/lib/flow/types";
 export const Route = createFileRoute("/")({
   component: Home,
   head: () => ({
-    meta: [{ title: "Kaiflow — Modélisez vos flux. Pilotez votre performance." }],
+    meta: [{ title: "Kaiflow — Optimisez vos systèmes, trouvez les goulots" }],
   }),
 });
 
@@ -59,12 +59,9 @@ function Home() {
               <span className="size-1.5 animate-[kai-pulse_1.8s_ease-in-out_infinite] rounded-full bg-accent shadow-[0_0_10px_#00e5ff]" />
               moteur vsm · temps réel
             </p>
-            <h1 className="mt-5 font-display text-[2.55rem] font-extrabold leading-[1.02] tracking-[-0.03em] md:text-6xl lg:text-7xl">
-              La ligne,
-              <span className="block text-fg">comme un système.</span>
-              <span className="mt-1 block bg-gradient-to-r from-accent to-ok bg-clip-text text-transparent">
-                Le goulot, nommé.
-              </span>
+            <h1 className="mt-5 font-display text-[2.55rem] font-extrabold leading-[1.05] tracking-[-0.03em] md:text-6xl lg:text-7xl">
+              Optimisez vos systèmes.
+              <span className="mt-1 block text-accent">Trouvez les goulots.</span>
             </h1>
             <p className="mt-6 max-w-lg text-base leading-relaxed text-muted-2 md:text-lg">
               Cartographiez un flux, calculez takt net et TRS, voyez où la capacité se brise.
