@@ -5,14 +5,14 @@
   --font-display: "Syne", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
 
-  --color-bg: #0a0d12;
-  --color-surface: #111620;
-  --color-surface-2: #161d2b;
-  --color-card: #131927;
+  --color-bg: #07090d;
+  --color-surface: #0d121a;
+  --color-surface-2: #131a26;
+  --color-card: #101722;
   --color-fg: #e8edf5;
   --color-muted: #6b7a96;
   --color-muted-2: #8b9bb8;
-  --color-border: #1e2736;
+  --color-border: #1c2533;
   --color-border-2: #2a364a;
   --color-accent: #00e5ff;
   --color-accent-fg: #041016;
@@ -70,6 +70,85 @@
     linear-gradient(rgba(0, 229, 255, 0.045) 1px, transparent 1px),
     linear-gradient(90deg, rgba(0, 229, 255, 0.045) 1px, transparent 1px);
   background-color: var(--color-bg);
+}
+
+.landing-shell {
+  position: relative;
+  isolation: isolate;
+  background: #06080c;
+}
+
+.landing-shell::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background:
+    radial-gradient(1100px 620px at 88% -8%, rgba(0, 229, 255, 0.16), transparent 58%),
+    radial-gradient(820px 520px at -10% 108%, rgba(255, 107, 53, 0.1), transparent 52%),
+    radial-gradient(700px 480px at 40% 30%, rgba(0, 229, 255, 0.045), transparent 62%);
+}
+
+.landing-mesh {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image:
+    linear-gradient(rgba(0, 229, 255, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 229, 255, 0.055) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(ellipse 90% 70% at 50% 18%, #000 12%, transparent 78%);
+}
+
+.landing-scan {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: repeating-linear-gradient(
+    180deg,
+    transparent 0,
+    transparent 3px,
+    rgba(0, 0, 0, 0.12) 4px
+  );
+  opacity: 0.25;
+  mix-blend-mode: overlay;
+}
+
+.hud-corners {
+  position: relative;
+}
+.hud-corners::before,
+.hud-corners::after {
+  content: "";
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-color: color-mix(in srgb, var(--color-accent) 55%, transparent);
+  border-style: solid;
+  pointer-events: none;
+}
+.hud-corners::before {
+  top: -1px;
+  left: -1px;
+  border-width: 1px 0 0 1px;
+}
+.hud-corners::after {
+  right: -1px;
+  bottom: -1px;
+  border-width: 0 1px 1px 0;
+}
+
+@keyframes kai-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.35;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
