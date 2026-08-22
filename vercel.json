@@ -1,9 +1,12 @@
 {
-  "rewrites": [
-    { "source": "/dashboard", "destination": "/dashboard.html" },
-    { "source": "/editor", "destination": "/editor.html" },
-    { "source": "/login", "destination": "/login.html" },
-    { "source": "/signup", "destination": "/signup.html" },
-    { "source": "/account", "destination": "/account.html" }
+  "framework": null,
+  "buildCommand": "npm run build",
+  "installCommand": "npm install",
+  "redirects": [
+    { "source": "/dashboard", "destination": "/app", "permanent": false },
+    { "source": "/editor", "destination": "/app", "permanent": false },
+    { "source": "/login", "destination": "/app", "permanent": false },
+    { "source": "/signup", "destination": "/app", "permanent": false },
+    { "source": "/account", "destination": "/app", "permanent": false }
   ]
 }

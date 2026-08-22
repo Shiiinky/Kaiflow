@@ -1,37 +1,60 @@
-# Kaiflow 🏭
+# Kaiflow
 
 **Modélisez vos flux. Pilotez votre performance.**
 
-Kaiflow est un outil SaaS no-code destiné aux responsables de production industrielle. Il permet de modéliser visuellement les flux de production et d'obtenir automatiquement les indicateurs clés de performance.
+Outil no-code pour responsables de production : cartographie VSM, takt time, TRS, goulot, Yamazumi, MOS et séquençage de Johnson.
+
+Live : [kaiflow.fr](https://kaiflow.fr/)
+
+## Démarrer
+
+```bash
+npm install
+npm run dev
+```
+
+Ouvre l’éditeur sur le port 8080. Les flux sont stockés dans le navigateur (localStorage). Aucun compte requis.
+
+```bash
+npm run build      # production (Nitro / Vercel)
+npm run typecheck
+```
 
 ## Pages
 
-| Page | URL | Description |
-|------|-----|-------------|
-| Landing page | `/` | Page d'accueil et présentation |
-| Dashboard | `/dashboard` | Vue d'ensemble des flux |
-| Éditeur | `/editor` | Éditeur de flux drag & drop |
+| Route | Description |
+|---|---|
+| `/` | Landing |
+| `/app` | Atelier (liste des flux) |
+| `/editor/$id` | Canvas drag & drop, KPIs, MOS, Johnson |
+| `/rapport/$id` | Rapport imprimable / PDF |
 
-## Fonctionnalités V1
+Anciennes URLs (`/dashboard`, `/editor`, `/login`) redirigent vers `/app`.
 
-- ✅ Éditeur de flux drag & drop (tactile + souris)
-- ✅ Mode Opératoire Standard (MOS) par poste
-- ✅ Calcul automatique : Takt Time, Lead Time, Rendement
-- ✅ Détection des goulots d'étranglement
-- ✅ Analyse VA / NVA (Valeur Ajoutée / Non Valeur Ajoutée)
-- ✅ Taux de charge par poste
-- ✅ Dashboard multi-flux
+## Fonctionnalités
 
-## Stack technique
+- Éditeur visuel (postes, stocks, contrôles, transports)
+- Takt net, temps utile TRS (dispo × rebuts × machines)
+- Postes parallèles fusionnés, goulot, lead time (chemin critique)
+- Yamazumi + ETP, VA / NVA
+- MOS : chrono terrain, Gantt, activités non cyclées
+- Séquençage de Johnson (n jobs, 2 machines)
+- Recommandations + simulation « +1 machine »
+- Import / export JSON
 
-- **Frontend** : HTML / CSS / JavaScript vanilla
-- **Hébergement** : Vercel
-- **Domaine** : kaiflow.fr
+## Stack
 
-## Roadmap
+React 19 · TanStack Start · Tailwind v4 · Zustand · Vite · Nitro (preset Vercel)
 
-- [ ] Authentification utilisateurs (Supabase Auth)
-- [ ] Sauvegarde des flux en base de données
-- [ ] Fiche KPIs exportable PDF
-- [ ] Monétisation (Stripe)
-- [ ] Algorithme de Johnson (séquençage 2 machines)
+## Déploiement
+
+Le build génère la sortie Vercel (`.vercel/output`). Sur Vercel :
+
+- Framework : Other
+- Build command : `npm run build`
+- Node 22+
+- Variable : `VITE_AUTH_ENABLED=false` (déjà dans `.env`)
+
+## Licence
+
+Usage privé / produit Kaiflow — © 2026
