@@ -59,7 +59,7 @@ function Home() {
               <span className="size-1.5 animate-[kai-pulse_1.8s_ease-in-out_infinite] rounded-full bg-accent shadow-[0_0_10px_#00e5ff]" />
               moteur vsm · temps réel
             </p>
-            <h1 className="mt-5 font-display text-[2.6rem] font-extrabold leading-[0.95] tracking-tight md:text-7xl">
+            <h1 className="mt-5 font-display text-[2.55rem] font-extrabold leading-[1.02] tracking-[-0.03em] md:text-6xl lg:text-7xl">
               La ligne,
               <span className="block text-fg">comme un système.</span>
               <span className="mt-1 block bg-gradient-to-r from-accent to-ok bg-clip-text text-transparent">
