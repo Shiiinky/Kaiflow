@@ -66,6 +66,9 @@
 }
 
 .canvas-grid {
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
   background-image:
     linear-gradient(rgba(0, 229, 255, 0.045) 1px, transparent 1px),
     linear-gradient(90deg, rgba(0, 229, 255, 0.045) 1px, transparent 1px);
