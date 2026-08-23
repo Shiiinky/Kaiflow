@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { authMiddleware } from "@/lib/auth/middleware";
 import { getSql } from "@/lib/db";
+import { sendOrgInviteEmail } from "@/lib/email/send";
 import { planOf, type MemberRole } from "./plans";
 import { isPlatformAdmin, newId as id } from "./org-helpers";
 
@@ -66,7 +67,27 @@ export const inviteMember = createServerFn({ method: "POST" })
        values ($1, $2, $3, $4, $5, $6, $7::timestamptz)`,
       [id(), data.orgId, data.email, data.role, token, context.userId, expires],
     );
-    return { mode: "invited" as const, token };
+
+    const orgMeta = await sql<{ name: string }>`
+      select name from organizations where id = ${data.orgId} limit 1
+    `;
+    const inviter = await sql<{ name: string; email: string }>`
+      select name, email from "user" where id = ${context.userId} limit 1
+    `;
+    const mail = await sendOrgInviteEmail({
+      to: data.email,
+      orgName: orgMeta[0]?.name || "équipe Kaiflow",
+      inviterName: inviter[0]?.name || inviter[0]?.email,
+      role: data.role,
+      token,
+    });
+
+    return {
+      mode: "invited" as const,
+      token,
+      emailSent: mail.ok,
+      emailError: mail.ok ? undefined : mail.error,
+    };
   });
 
 export const updateMemberRole = createServerFn({ method: "POST" })
