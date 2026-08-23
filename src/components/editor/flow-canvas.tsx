@@ -30,6 +30,7 @@ export function FlowCanvas({
   onSelect,
   onNodePointerDown,
   onDropBlock,
+  recenterToken = 0,
 }: {
   nodes: FlowNode[];
   connections: Connection[];
@@ -42,6 +43,8 @@ export function FlowCanvas({
   onSelect: (id: string | null) => void;
   onNodePointerDown: (e: React.PointerEvent, id: string) => void;
   onDropBlock: (type: string, label: string, x: number, y: number) => void;
+  /** Bump to re-center the camera on all nodes after fit/scale. */
+  recenterToken?: number;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [cursor, setCursor] = useState<{ x: number; y: number } | null>(null);
@@ -59,6 +62,31 @@ export function FlowCanvas({
   const panRef = useRef(pan);
   scaleRef.current = scale;
   panRef.current = pan;
+
+  // Re-center nodes in the visible area (mobile fit / "Ajuster")
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || nodes.length === 0) return;
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
+    for (const n of nodes) {
+      minX = Math.min(minX, n.x);
+      minY = Math.min(minY, n.y);
+      maxX = Math.max(maxX, n.x + NODE_W);
+      maxY = Math.max(maxY, n.y + NODE_H);
+    }
+    const bw = (maxX - minX) * scale;
+    const bh = (maxY - minY) * scale;
+    const pad = 12;
+    const vw = Math.max(0, el.clientWidth - pad * 2);
+    const vh = Math.max(0, el.clientHeight - pad * 2);
+    setPan({
+      x: pad + (vw - bw) / 2 - minX * scale,
+      y: pad + (vh - bh) / 2 - minY * scale,
+    });
+  }, [recenterToken, scale, nodes]);
 
   const sourceNode = nodes.find((n) => n.id === linkSource);
 
