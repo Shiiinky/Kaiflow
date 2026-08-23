@@ -13,9 +13,11 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as MentionsLegalesRouteImport } from './routes/mentions-legales'
 import { Route as ConfidentialiteRouteImport } from './routes/confidentialite'
 import { Route as CguRouteImport } from './routes/cgu'
+import { Route as GlossaireRouteImport } from './routes/glossaire'
 import { Route as EditorIdRouteImport } from './routes/editor.$id'
 import { Route as RapportIdRouteImport } from './routes/rapport.$id'
 import { Route as EntrepriseOrgIdRouteImport } from './routes/entreprise.$orgId'
+import { Route as InviteTokenRouteImport } from './routes/invite.$token'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
 const IndexRoute = IndexRouteImport.update({ id: '/', path: '/', getParentRoute: () => rootRouteImport } as any)
@@ -26,9 +28,11 @@ const AdminRoute = AdminRouteImport.update({ id: '/admin', path: '/admin', getPa
 const MentionsLegalesRoute = MentionsLegalesRouteImport.update({ id: '/mentions-legales', path: '/mentions-legales', getParentRoute: () => rootRouteImport } as any)
 const ConfidentialiteRoute = ConfidentialiteRouteImport.update({ id: '/confidentialite', path: '/confidentialite', getParentRoute: () => rootRouteImport } as any)
 const CguRoute = CguRouteImport.update({ id: '/cgu', path: '/cgu', getParentRoute: () => rootRouteImport } as any)
+const GlossaireRoute = GlossaireRouteImport.update({ id: '/glossaire', path: '/glossaire', getParentRoute: () => rootRouteImport } as any)
 const EditorIdRoute = EditorIdRouteImport.update({ id: '/editor/$id', path: '/editor/$id', getParentRoute: () => rootRouteImport } as any)
 const RapportIdRoute = RapportIdRouteImport.update({ id: '/rapport/$id', path: '/rapport/$id', getParentRoute: () => rootRouteImport } as any)
 const EntrepriseOrgIdRoute = EntrepriseOrgIdRouteImport.update({ id: '/entreprise/$orgId', path: '/entreprise/$orgId', getParentRoute: () => rootRouteImport } as any)
+const InviteTokenRoute = InviteTokenRouteImport.update({ id: '/invite/$token', path: '/invite/$token', getParentRoute: () => rootRouteImport } as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({ id: '/api/auth/$', path: '/api/auth/$', getParentRoute: () => rootRouteImport } as any)
 
 export interface FileRoutesByFullPath {
@@ -40,9 +44,11 @@ export interface FileRoutesByFullPath {
   '/mentions-legales': typeof MentionsLegalesRoute
   '/confidentialite': typeof ConfidentialiteRoute
   '/cgu': typeof CguRoute
+  '/glossaire': typeof GlossaireRoute
   '/editor/$id': typeof EditorIdRoute
   '/rapport/$id': typeof RapportIdRoute
   '/entreprise/$orgId': typeof EntrepriseOrgIdRoute
+  '/invite/$token': typeof InviteTokenRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesByTo {
@@ -54,9 +60,11 @@ export interface FileRoutesByTo {
   '/mentions-legales': typeof MentionsLegalesRoute
   '/confidentialite': typeof ConfidentialiteRoute
   '/cgu': typeof CguRoute
+  '/glossaire': typeof GlossaireRoute
   '/editor/$id': typeof EditorIdRoute
   '/rapport/$id': typeof RapportIdRoute
   '/entreprise/$orgId': typeof EntrepriseOrgIdRoute
+  '/invite/$token': typeof InviteTokenRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesById {
@@ -69,17 +77,19 @@ export interface FileRoutesById {
   '/mentions-legales': typeof MentionsLegalesRoute
   '/confidentialite': typeof ConfidentialiteRoute
   '/cgu': typeof CguRoute
+  '/glossaire': typeof GlossaireRoute
   '/editor/$id': typeof EditorIdRoute
   '/rapport/$id': typeof RapportIdRoute
   '/entreprise/$orgId': typeof EntrepriseOrgIdRoute
+  '/invite/$token': typeof InviteTokenRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/app' | '/login' | '/compte' | '/admin' | '/mentions-legales' | '/confidentialite' | '/cgu' | '/editor/$id' | '/rapport/$id' | '/entreprise/$orgId' | '/api/auth/$'
+  fullPaths: '/' | '/app' | '/login' | '/compte' | '/admin' | '/mentions-legales' | '/confidentialite' | '/cgu' | '/glossaire' | '/editor/$id' | '/rapport/$id' | '/entreprise/$orgId' | '/invite/$token' | '/api/auth/$'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/app' | '/login' | '/compte' | '/admin' | '/mentions-legales' | '/confidentialite' | '/cgu' | '/editor/$id' | '/rapport/$id' | '/entreprise/$orgId' | '/api/auth/$'
-  id: '__root__' | '/' | '/app' | '/login' | '/compte' | '/admin' | '/mentions-legales' | '/confidentialite' | '/cgu' | '/editor/$id' | '/rapport/$id' | '/entreprise/$orgId' | '/api/auth/$'
+  to: '/' | '/app' | '/login' | '/compte' | '/admin' | '/mentions-legales' | '/confidentialite' | '/cgu' | '/glossaire' | '/editor/$id' | '/rapport/$id' | '/entreprise/$orgId' | '/invite/$token' | '/api/auth/$'
+  id: '__root__' | '/' | '/app' | '/login' | '/compte' | '/admin' | '/mentions-legales' | '/confidentialite' | '/cgu' | '/glossaire' | '/editor/$id' | '/rapport/$id' | '/entreprise/$orgId' | '/invite/$token' | '/api/auth/$'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -91,9 +101,11 @@ export interface RootRouteChildren {
   MentionsLegalesRoute: typeof MentionsLegalesRoute
   ConfidentialiteRoute: typeof ConfidentialiteRoute
   CguRoute: typeof CguRoute
+  GlossaireRoute: typeof GlossaireRoute
   EditorIdRoute: typeof EditorIdRoute
   RapportIdRoute: typeof RapportIdRoute
   EntrepriseOrgIdRoute: typeof EntrepriseOrgIdRoute
+  InviteTokenRoute: typeof InviteTokenRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
 
@@ -107,9 +119,11 @@ declare module '@tanstack/react-router' {
     '/mentions-legales': { id: '/mentions-legales'; path: '/mentions-legales'; fullPath: '/mentions-legales'; preLoaderRoute: typeof MentionsLegalesRouteImport; parentRoute: typeof rootRouteImport }
     '/confidentialite': { id: '/confidentialite'; path: '/confidentialite'; fullPath: '/confidentialite'; preLoaderRoute: typeof ConfidentialiteRouteImport; parentRoute: typeof rootRouteImport }
     '/cgu': { id: '/cgu'; path: '/cgu'; fullPath: '/cgu'; preLoaderRoute: typeof CguRouteImport; parentRoute: typeof rootRouteImport }
+    '/glossaire': { id: '/glossaire'; path: '/glossaire'; fullPath: '/glossaire'; preLoaderRoute: typeof GlossaireRouteImport; parentRoute: typeof rootRouteImport }
     '/editor/$id': { id: '/editor/$id'; path: '/editor/$id'; fullPath: '/editor/$id'; preLoaderRoute: typeof EditorIdRouteImport; parentRoute: typeof rootRouteImport }
     '/rapport/$id': { id: '/rapport/$id'; path: '/rapport/$id'; fullPath: '/rapport/$id'; preLoaderRoute: typeof RapportIdRouteImport; parentRoute: typeof rootRouteImport }
     '/entreprise/$orgId': { id: '/entreprise/$orgId'; path: '/entreprise/$orgId'; fullPath: '/entreprise/$orgId'; preLoaderRoute: typeof EntrepriseOrgIdRouteImport; parentRoute: typeof rootRouteImport }
+    '/invite/$token': { id: '/invite/$token'; path: '/invite/$token'; fullPath: '/invite/$token'; preLoaderRoute: typeof InviteTokenRouteImport; parentRoute: typeof rootRouteImport }
     '/api/auth/$': { id: '/api/auth/$'; path: '/api/auth/$'; fullPath: '/api/auth/$'; preLoaderRoute: typeof ApiAuthSplatRouteImport; parentRoute: typeof rootRouteImport }
   }
 }
@@ -123,9 +137,11 @@ const rootRouteChildren: RootRouteChildren = {
   MentionsLegalesRoute,
   ConfidentialiteRoute,
   CguRoute,
+  GlossaireRoute,
   EditorIdRoute,
   RapportIdRoute,
   EntrepriseOrgIdRoute,
+  InviteTokenRoute,
   ApiAuthSplatRoute,
 }
 export const routeTree = rootRouteImport
