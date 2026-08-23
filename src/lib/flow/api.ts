@@ -67,14 +67,26 @@ export const listFlows = createServerFn({ method: "GET" })
   .middleware([authMiddleware])
   .handler(async ({ context }) => {
     const sql = await getSql();
-    const rows = await sql<{ doc: FlowDoc }>`
-      select doc from flows
-      where user_id = ${context.userId}
-      order by updated_at desc
+    // Own flows + flows of any organization the user belongs to (team sharing for Pro+)
+    const rows = await sql<{ doc: unknown; user_id: string; updated_at: string }>`
+      select f.doc, f.user_id, f.updated_at
+      from flows f
+      where f.user_id = ${context.userId}
+         or f.org_id in (
+           select org_id from organization_members where user_id = ${context.userId}
+         )
+      order by f.updated_at desc
     `;
-    return rows
-      .map((r) => asDoc(typeof r.doc === "string" ? JSON.parse(r.doc) : r.doc))
-      .filter((d): d is FlowDoc => d !== null);
+    const seen = new Set<string>();
+    const docs: FlowDoc[] = [];
+    for (const r of rows) {
+      const doc = asDoc(typeof r.doc === "string" ? JSON.parse(r.doc as string) : r.doc);
+      if (!doc || seen.has(doc.id)) continue;
+      seen.add(doc.id);
+      (doc as FlowDoc & { _isMine?: boolean })._isMine = r.user_id === context.userId;
+      docs.push(doc);
+    }
+    return docs;
   });
 
 export const saveFlow = createServerFn({ method: "POST" })
@@ -86,12 +98,13 @@ export const saveFlow = createServerFn({ method: "POST" })
   })
   .handler(async ({ context, data: doc }) => {
     const sql = await getSql();
-    const existing = await sql<{ id: string }>`
-      select id from flows where id = ${doc.id} and user_id = ${context.userId} limit 1
+    const existing = await sql<{ id: string; user_id: string; org_id: string | null }>`
+      select id, user_id, org_id from flows where id = ${doc.id} limit 1
     `;
     const isNew = !existing[0];
+
     if (isNew) {
-      const { plan } = await primaryOrgPlan(context.userId);
+      const { plan, orgId } = await primaryOrgPlan(context.userId);
       const p = planOf(plan);
       const used = await countFlows(context.userId);
       if (used >= p.maxFlows) {
@@ -99,20 +112,32 @@ export const saveFlow = createServerFn({ method: "POST" })
           `Limite du plan ${p.label} atteinte (${p.maxFlows} flux). Passez en Pro pour en créer davantage.`,
         );
       }
+      await sql.query(
+        `insert into flows (id, user_id, org_id, nom, usine, atelier, doc, updated_at)
+         values ($1, $2, $3, $4, $5, $6, $7::jsonb, now())`,
+        [doc.id, context.userId, orgId, doc.nom, doc.usine, doc.atelier, JSON.stringify(doc)],
+      );
+      return { ok: true as const };
     }
-    const { orgId } = await primaryOrgPlan(context.userId);
+
+    // Update: owner or any member of the flow's organization may edit
+    const row = existing[0];
+    let allowed = row.user_id === context.userId;
+    if (!allowed && row.org_id) {
+      const mem = await sql<{ id: string }>`
+        select id from organization_members
+        where org_id = ${row.org_id} and user_id = ${context.userId}
+        limit 1
+      `;
+      allowed = Boolean(mem[0]);
+    }
+    if (!allowed) throw new Error("Vous n'avez pas le droit de modifier ce flux");
+
     await sql.query(
-      `insert into flows (id, user_id, org_id, nom, usine, atelier, doc, updated_at)
-       values ($1, $2, $3, $4, $5, $6, $7::jsonb, now())
-       on conflict (id) do update set
-         nom = excluded.nom,
-         usine = excluded.usine,
-         atelier = excluded.atelier,
-         doc = excluded.doc,
-         org_id = coalesce(flows.org_id, excluded.org_id),
-         updated_at = now()
-       where flows.user_id = $2`,
-      [doc.id, context.userId, orgId, doc.nom, doc.usine, doc.atelier, JSON.stringify(doc)],
+      `update flows set
+         nom = $1, usine = $2, atelier = $3, doc = $4::jsonb, updated_at = now()
+       where id = $5`,
+      [doc.nom, doc.usine, doc.atelier, JSON.stringify(doc), doc.id],
     );
     return { ok: true as const };
   });
