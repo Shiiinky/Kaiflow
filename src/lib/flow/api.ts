@@ -10,11 +10,22 @@ function asDoc(raw: unknown): FlowDoc | null {
   return doc;
 }
 
+async function primaryOrgId(userId: string): Promise<string | null> {
+  const sql = await getSql();
+  const rows = await sql<{ org_id: string }> `
+    select org_id from organization_members
+    where user_id = ${userId}
+    order by created_at asc
+    limit 1
+  `;
+  return rows[0]?.org_id ?? null;
+}
+
 export const listFlows = createServerFn({ method: "GET" })
   .middleware([authMiddleware])
   .handler(async ({ context }) => {
     const sql = await getSql();
-    const rows = await sql<{ doc: FlowDoc }>`
+    const rows = await sql<{ doc: FlowDoc }> `
       select doc from flows
       where user_id = ${context.userId}
       order by updated_at desc
@@ -33,17 +44,19 @@ export const saveFlow = createServerFn({ method: "POST" })
   })
   .handler(async ({ context, data: doc }) => {
     const sql = await getSql();
+    const orgId = await primaryOrgId(context.userId);
     await sql.query(
-      `insert into flows (id, user_id, nom, usine, atelier, doc, updated_at)
-       values ($1, $2, $3, $4, $5, $6::jsonb, now())
+      `insert into flows (id, user_id, org_id, nom, usine, atelier, doc, updated_at)
+       values ($1, $2, $3, $4, $5, $6, $7::jsonb, now())
        on conflict (id) do update set
          nom = excluded.nom,
          usine = excluded.usine,
          atelier = excluded.atelier,
          doc = excluded.doc,
+         org_id = coalesce(flows.org_id, excluded.org_id),
          updated_at = now()
        where flows.user_id = $2`,
-      [doc.id, context.userId, doc.nom, doc.usine, doc.atelier, JSON.stringify(doc)],
+      [doc.id, context.userId, orgId, doc.nom, doc.usine, doc.atelier, JSON.stringify(doc)],
     );
     return { ok: true as const };
   });
