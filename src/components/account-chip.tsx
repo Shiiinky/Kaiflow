@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { Shield } from "lucide-react";
 import { useEffect, useState } from "react";
 import { signOut } from "@/lib/auth/client";
 import { useCurrentUser } from "@/lib/auth/use-current-user";
@@ -10,11 +11,13 @@ export function AccountChip() {
   const [signingOut, setSigningOut] = useState(false);
   const [planLabel, setPlanLabel] = useState<string | null>(null);
   const [isPaid, setIsPaid] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
 
   useEffect(() => {
     if (!user) return;
     void getMyAccount()
       .then((a) => {
+        setIsAdmin(a.isPlatformAdmin);
         const primary = a.orgs[0];
         if (primary) {
           setPlanLabel(primary.planLabel);
@@ -29,7 +32,15 @@ export function AccountChip() {
   if (!user) return null;
   const label = user.displayName ?? user.primaryEmail ?? "Compte";
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-1.5 sm:gap-2">
+      {isAdmin ? (
+        <Button variant="secondary" size="sm" asChild className="hidden sm:inline-flex">
+          <Link to="/admin">
+            <Shield className="mr-1 size-3.5" />
+            Admin
+          </Link>
+        </Button>
+      ) : null}
       <Link
         to="/compte"
         className="flex items-center gap-2 rounded-sm px-1 py-0.5 hover:bg-surface-2"

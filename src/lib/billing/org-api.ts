@@ -15,5 +15,8 @@ export {
 export {
   adminListOrgs,
   adminSetOrgPlan,
+  adminSetUserPlan,
+  adminSetPlatformRole,
+  adminSetOrgStatus,
   countMyFlows,
 } from "./org-admin";
