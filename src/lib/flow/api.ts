@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { authMiddleware } from "@/lib/auth/middleware";
+import { planOf, type PlanId } from "@/lib/billing/plans";
 import { getSql } from "@/lib/db";
 import type { FlowDoc } from "./types";
 
@@ -10,16 +11,57 @@ function asDoc(raw: unknown): FlowDoc | null {
   return doc;
 }
 
-async function primaryOrgId(userId: string): Promise<string | null> {
+async function primaryOrgPlan(userId: string): Promise<{ orgId: string | null; plan: PlanId }> {
   const sql = await getSql();
-  const rows = await sql<{ org_id: string }>`
-    select org_id from organization_members
-    where user_id = ${userId}
-    order by created_at asc
+  const rows = await sql<{ org_id: string; plan: string }>`
+    select om.org_id, o.plan
+    from organization_members om
+    join organizations o on o.id = om.org_id
+    where om.user_id = ${userId}
+    order by om.created_at asc
     limit 1
   `;
-  return rows[0]?.org_id ?? null;
+  if (!rows[0]) return { orgId: null, plan: "free" };
+  return { orgId: rows[0].org_id, plan: planOf(rows[0].plan).id };
 }
+
+async function countFlows(userId: string): Promise<number> {
+  const sql = await getSql();
+  const rows = await sql<{ c: string }>`
+    select count(*)::text as c from flows where user_id = ${userId}
+  `;
+  return Number(rows[0]?.c ?? 0);
+}
+
+export type QuotaInfo = {
+  plan: PlanId;
+  planLabel: string;
+  maxFlows: number;
+  used: number;
+  remaining: number;
+  canCreate: boolean;
+  isPaid: boolean;
+  orgId: string | null;
+};
+
+export const getQuota = createServerFn({ method: "GET" })
+  .middleware([authMiddleware])
+  .handler(async ({ context }): Promise<QuotaInfo> => {
+    const { orgId, plan } = await primaryOrgPlan(context.userId);
+    const p = planOf(plan);
+    const used = await countFlows(context.userId);
+    const remaining = Math.max(0, p.maxFlows - used);
+    return {
+      plan: p.id,
+      planLabel: p.label,
+      maxFlows: p.maxFlows,
+      used,
+      remaining,
+      canCreate: used < p.maxFlows,
+      isPaid: p.id === "pro" || p.id === "enterprise",
+      orgId,
+    };
+  });
 
 export const listFlows = createServerFn({ method: "GET" })
   .middleware([authMiddleware])
@@ -44,7 +86,21 @@ export const saveFlow = createServerFn({ method: "POST" })
   })
   .handler(async ({ context, data: doc }) => {
     const sql = await getSql();
-    const orgId = await primaryOrgId(context.userId);
+    const existing = await sql<{ id: string }>`
+      select id from flows where id = ${doc.id} and user_id = ${context.userId} limit 1
+    `;
+    const isNew = !existing[0];
+    if (isNew) {
+      const { plan } = await primaryOrgPlan(context.userId);
+      const p = planOf(plan);
+      const used = await countFlows(context.userId);
+      if (used >= p.maxFlows) {
+        throw new Error(
+          `Limite du plan ${p.label} atteinte (${p.maxFlows} flux). Passez en Pro pour en créer davantage.`,
+        );
+      }
+    }
+    const { orgId } = await primaryOrgPlan(context.userId);
     await sql.query(
       `insert into flows (id, user_id, org_id, nom, usine, atelier, doc, updated_at)
        values ($1, $2, $3, $4, $5, $6, $7::jsonb, now())
