@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Shield } from "lucide-react";
+import { LogOut, Shield } from "lucide-react";
 import { useEffect, useState } from "react";
 import { signOut } from "@/lib/auth/client";
 import { useCurrentUser } from "@/lib/auth/use-current-user";
@@ -32,7 +32,7 @@ export function AccountChip() {
   if (!user) return null;
   const label = user.displayName ?? user.primaryEmail ?? "Compte";
   return (
-    <div className="flex items-center gap-1.5 sm:gap-2">
+    <div className="flex items-center gap-1 sm:gap-2">
       {isAdmin ? (
         <Button variant="secondary" size="sm" asChild className="hidden sm:inline-flex">
           <Link to="/admin">
@@ -43,17 +43,23 @@ export function AccountChip() {
       ) : null}
       <Link
         to="/compte"
-        className="flex items-center gap-2 rounded-sm px-1 py-0.5 hover:bg-surface-2"
+        className="flex min-w-0 items-center gap-1.5 rounded-sm px-1 py-0.5 hover:bg-surface-2 sm:gap-2"
         title="Mon compte"
       >
         {user.profileImageUrl ? (
-          <img src={user.profileImageUrl} alt="" className="size-8 rounded-full object-cover" />
+          <img
+            src={user.profileImageUrl}
+            alt=""
+            className="size-8 shrink-0 rounded-full object-cover"
+          />
         ) : (
-          <span className="grid size-8 place-items-center rounded-full border border-accent/30 bg-accent/10 font-mono text-xs text-accent">
+          <span className="grid size-8 shrink-0 place-items-center rounded-full border border-accent/30 bg-accent/10 font-mono text-xs text-accent">
             {label.charAt(0).toUpperCase()}
           </span>
         )}
-        <span className="hidden max-w-[120px] truncate text-sm text-muted-2 sm:inline">{label}</span>
+        <span className="hidden max-w-[100px] truncate text-sm text-muted-2 md:inline">
+          {label}
+        </span>
         {planLabel ? (
           <span
             className={
@@ -69,7 +75,23 @@ export function AccountChip() {
       <Button
         type="button"
         variant="ghost"
+        size="icon"
+        className="shrink-0 sm:hidden"
+        disabled={signingOut}
+        aria-label="Déconnexion"
+        title="Déconnexion"
+        onClick={() => {
+          setSigningOut(true);
+          void signOut().catch(() => setSigningOut(false));
+        }}
+      >
+        {signingOut ? "…" : <LogOut className="size-4" />}
+      </Button>
+      <Button
+        type="button"
+        variant="ghost"
         size="sm"
+        className="hidden shrink-0 sm:inline-flex"
         disabled={signingOut}
         onClick={() => {
           setSigningOut(true);
