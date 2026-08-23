@@ -44,6 +44,8 @@ function OrgPage() {
     email: string;
     mode: "added" | "invited";
     link?: string;
+    emailSent?: boolean;
+    emailError?: string;
   } | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
@@ -87,6 +89,8 @@ function OrgPage() {
           email: email.trim(),
           mode: "invited",
           link: inviteUrl(res.token),
+          emailSent: res.emailSent,
+          emailError: res.emailError,
         });
       }
       setEmail("");
@@ -165,9 +169,8 @@ function OrgPage() {
                   Inviter un collaborateur
                 </h2>
                 <p className="mt-1 text-xs text-muted">
-                  S'il a déjà un compte Kaiflow, il est ajouté tout de suite. Sinon, un lien
-                  d'invitation est généré (valable 14 jours) — à partager manuellement (aucun email
-                  automatique pour l'instant).
+                  S'il a déjà un compte Kaiflow, il est ajouté tout de suite. Sinon, un email
+                  d'invitation est envoyé (lien valable 14 jours) — vous pouvez aussi copier le lien.
                 </p>
                 <div className="mt-3 flex flex-col gap-2 sm:flex-row">
                   <input
@@ -203,8 +206,17 @@ function OrgPage() {
                     ) : (
                       <div className="space-y-2">
                         <p>
-                          Invitation créée pour <strong>{lastInvite.email}</strong>. Envoyez-lui ce
-                          lien :
+                          Invitation créée pour <strong>{lastInvite.email}</strong>.
+                          {lastInvite.emailSent ? (
+                            <> Un email lui a été envoyé.</>
+                          ) : (
+                            <>
+                              {" "}
+                              Email non envoyé
+                              {lastInvite.emailError ? ` (${lastInvite.emailError})` : ""} — partagez
+                              le lien ci-dessous.
+                            </>
+                          )}
                         </p>
                         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
                           <code className="block flex-1 overflow-x-auto rounded border border-border bg-bg px-2 py-1.5 text-xs break-all">
@@ -294,7 +306,7 @@ function OrgPage() {
               <section className="mt-8">
                 <h2 className="font-display text-lg font-bold">Invitations en attente</h2>
                 <p className="mt-1 text-xs text-muted">
-                  Aucun email n'est envoyé automatiquement — partagez le lien avec le collaborateur.
+                  Vous pouvez renvoyer le lien manuellement si besoin.
                 </p>
                 <ul className="mt-3 divide-y divide-border rounded-md border border-border">
                   {detail.invites.map((i) => (
