@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { Copy, Download, FileJson, Lock, Plus, Sparkles, Trash2, X } from "lucide-react";
+import { BookOpen, Copy, Download, Lock, Plus, Sparkles, Trash2, X } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { BrandMark } from "@/components/brand";
 import { AccountChip } from "@/components/account-chip";
@@ -24,7 +24,6 @@ function Dashboard() {
   const createFrom = useFlowStore((s) => s.createFrom);
   const deleteFlow = useFlowStore((s) => s.deleteFlow);
   const duplicate = useFlowStore((s) => s.duplicate);
-  const importJson = useFlowStore((s) => s.importJson);
   const navigate = useNavigate();
   const [creating, setCreating] = useState<(typeof TEMPLATE_CARDS)[number] | null>(null);
   const [nom, setNom] = useState("");
@@ -73,19 +72,13 @@ function Dashboard() {
 
   const confirmCreate = () => {
     if (!creating) return;
-    const id = tryCreate(() => creating.build(), {
+    const id = tryCreate(creating.build, {
       nom: nom.trim() || creating.build().nom,
       usine: usine.trim() || creating.build().usine,
       atelier: atelier.trim() || creating.build().atelier,
     });
     setCreating(null);
-    if (id) void open(id);
-  };
-
-  const loadDemo = () => {
-    const demo = TEMPLATE_CARDS.find((t) => t.id === "ligne-a")!;
-    const id = tryCreate(() => demo.build());
-    if (id) void open(id);
+    if (id) open(id);
   };
 
   return (
@@ -105,36 +98,18 @@ function Dashboard() {
               {quota.planLabel} · {quota.used}/{quota.maxFlows} flux
             </span>
           ) : null}
-          <AccountChip />
-          <label
-            className={`inline-flex h-11 cursor-pointer items-center gap-2 rounded-sm border border-border px-3 text-sm text-muted hover:text-fg ${
-              atLimit ? "opacity-50" : ""
-            }`}
+          <Button
+            variant="ghost"
+            size="icon"
+            asChild
+            className="shrink-0"
+            title="Rappels Lean"
           >
-            <FileJson className="size-4" />
-            <span className="hidden sm:inline">Importer</span>
-            <input
-              type="file"
-              accept="application/json"
-              className="hidden"
-              disabled={atLimit}
-              onChange={async (e) => {
-                const file = e.target.files?.[0];
-                if (!file) return;
-                if (quota && !quota.canCreate) {
-                  setLimitMsg(
-                    `Limite atteinte (${quota.used}/${quota.maxFlows}). Supprimez un flux ou passez en Pro.`,
-                  );
-                  return;
-                }
-                const id = importJson(await file.text());
-                if (id) {
-                  refreshQuota();
-                  void open(id);
-                }
-              }}
-            />
-          </label>
+            <Link to="/glossaire" aria-label="Rappels Lean">
+              <BookOpen className="size-4" />
+            </Link>
+          </Button>
+          <AccountChip />
         </div>
       </header>
 
@@ -147,6 +122,13 @@ function Dashboard() {
               Vos flux sont synchronisés avec votre compte
               {quota ? ` · plan ${quota.planLabel}` : ""}.
             </p>
+            <Link
+              to="/glossaire"
+              className="mt-2 inline-flex items-center gap-1.5 text-xs text-accent hover:underline"
+            >
+              <BookOpen className="size-3.5" />
+              Rappels Lean — VSM, takt, Yamazumi…
+            </Link>
           </div>
         </div>
 
@@ -210,57 +192,28 @@ function Dashboard() {
             <h2 className="mt-3 font-display text-xl font-bold">Bienvenue sur Kaiflow</h2>
             <p className="mx-auto mt-2 max-w-md text-sm text-muted">
               Modélisez une ligne en quelques minutes, repérez le goulot et exportez un rapport PDF.
-              Commencez par la démo Assemblage (goulot à 78 s) ou un flux vierge.
+              Choisissez un modèle ci-dessus ou partez d’un flux vierge.
             </p>
-            <div className="mt-6 flex flex-wrap justify-center gap-3">
-              <Button onClick={loadDemo} disabled={atLimit}>
-                <Sparkles className="mr-1.5 size-4" />
-                Charger la démo Assemblage
-              </Button>
-              <Button
-                variant="secondary"
-                disabled={atLimit}
-                onClick={() => {
-                  const blank = TEMPLATE_CARDS.find((t) => t.id === "blank")!;
-                  setCreating(blank);
-                  setNom("");
-                  setUsine("");
-                  setAtelier("");
-                }}
-              >
-                Flux vierge
-              </Button>
-            </div>
-            <ol className="mx-auto mt-8 max-w-sm space-y-2 text-left text-xs text-muted">
-              <li>1. Ouvrez un poste et ajustez cycle, dispo, rebut</li>
-              <li>2. Lisez le Yamazumi et le takt dans la barre KPI</li>
-              <li>3. Exportez le rapport PDF pour votre réunion</li>
-            </ol>
           </section>
         ) : (
           <div className="mt-12 space-y-10">
             {[...byUsine.entries()].map(([usineName, list]) => (
               <section key={usineName}>
-                <h2 className="mb-4 font-display text-xl font-bold">{usineName}</h2>
-                <div className="grid gap-4 md:grid-cols-2">
+                <h2 className="mb-3 font-display text-xl font-bold">{usineName}</h2>
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                   {list.map((f) => (
                     <FlowCard
                       key={f.id}
                       flow={f}
                       onDuplicate={() => {
-                        if (quota && !quota.canCreate) {
-                          setLimitMsg(
-                            `Limite atteinte (${quota.used}/${quota.maxFlows}). Impossible de dupliquer.`,
-                          );
-                          return;
-                        }
                         const id = duplicate(f.id);
-                        refreshQuota();
-                        if (id) void open(id);
+                        if (id) open(id);
                       }}
                       onDelete={() => {
-                        deleteFlow(f.id);
-                        refreshQuota();
+                        if (confirm(`Supprimer « ${f.nom} » ?`)) {
+                          deleteFlow(f.id);
+                          refreshQuota();
+                        }
                       }}
                     />
                   ))}
@@ -273,42 +226,45 @@ function Dashboard() {
 
       {creating ? (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-4 sm:items-center">
-          <div className="w-full max-w-md rounded-lg border border-border bg-surface p-5 shadow-xl">
+          <div className="w-full max-w-md rounded-xl border border-border bg-surface p-5 shadow-xl">
             <div className="flex items-center justify-between">
-              <h3 className="font-display text-lg font-bold">Nouveau flux — {creating.title}</h3>
-              <button type="button" onClick={() => setCreating(null)} className="text-muted hover:text-fg">
-                <X className="size-5" />
-              </button>
+              <h2 className="font-display text-lg font-bold">Nouveau flux</h2>
+              <Button variant="ghost" size="icon" onClick={() => setCreating(null)}>
+                <X className="size-4" />
+              </Button>
             </div>
             <div className="mt-4 space-y-3">
-              <label className="block text-xs text-muted">
-                Nom
+              <label className="block text-sm">
+                <span className="text-muted">Nom</span>
                 <input
-                  className="mt-1 h-10 w-full rounded-sm border border-border bg-bg px-3 text-sm outline-none focus:border-accent"
+                  className="mt-1 w-full rounded-md border border-border bg-bg px-3 py-2 text-base"
                   value={nom}
                   onChange={(e) => setNom(e.target.value)}
-                  placeholder="Ex. Ligne packing"
+                  placeholder="Ligne A — Assemblage"
+                  autoFocus
                 />
               </label>
-              <label className="block text-xs text-muted">
-                Usine / site
+              <label className="block text-sm">
+                <span className="text-muted">Usine / site</span>
                 <input
-                  className="mt-1 h-10 w-full rounded-sm border border-border bg-bg px-3 text-sm outline-none focus:border-accent"
+                  className="mt-1 w-full rounded-md border border-border bg-bg px-3 py-2 text-base"
                   value={usine}
                   onChange={(e) => setUsine(e.target.value)}
+                  placeholder="Usine Nord"
                 />
               </label>
-              <label className="block text-xs text-muted">
-                Atelier
+              <label className="block text-sm">
+                <span className="text-muted">Atelier</span>
                 <input
-                  className="mt-1 h-10 w-full rounded-sm border border-border bg-bg px-3 text-sm outline-none focus:border-accent"
+                  className="mt-1 w-full rounded-md border border-border bg-bg px-3 py-2 text-base"
                   value={atelier}
                   onChange={(e) => setAtelier(e.target.value)}
+                  placeholder="Assemblage"
                 />
               </label>
             </div>
             <div className="mt-5 flex justify-end gap-2">
-              <Button variant="ghost" onClick={() => setCreating(null)}>
+              <Button variant="secondary" onClick={() => setCreating(null)}>
                 Annuler
               </Button>
               <Button onClick={confirmCreate}>Créer</Button>
