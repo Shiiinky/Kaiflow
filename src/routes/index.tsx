@@ -69,6 +69,9 @@ function Home() {
               <span className="size-1.5 animate-[kai-pulse_1.8s_ease-in-out_infinite] rounded-full bg-accent shadow-[0_0_10px_#00e5ff]" />
               moteur vsm · temps réel
             </p>
+            <p className="mt-4 inline-flex items-center gap-2 rounded-full border border-accent/30 bg-accent/10 px-3 py-1 font-mono text-[10px] uppercase tracking-[0.18em] text-accent">
+              Bêta privée · tests usine
+            </p>
             <h1 className="mt-5 font-display text-[2.55rem] font-extrabold leading-[1.05] tracking-[-0.03em] md:text-6xl lg:text-7xl">
               Optimisez vos systèmes.
               <span className="mt-1 block text-accent">Trouvez les goulots.</span>
@@ -226,11 +229,24 @@ function Home() {
       </section>
 
       <footer className="border-t border-border px-4 py-8 md:px-6">
-        <div className="mx-auto flex max-w-6xl flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
-          <BrandMark />
-          <p className="font-mono text-[11px] uppercase tracking-widest text-muted">
-            flux · takt · goulots · stockage navigateur
-          </p>
+        <div className="mx-auto flex max-w-6xl flex-col gap-4">
+          <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+            <BrandMark />
+            <p className="font-mono text-[11px] uppercase tracking-widest text-muted">
+              flux · takt · goulots · bêta privée
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-4 text-xs text-muted">
+            <Link to="/mentions-legales" className="hover:text-accent">
+              Mentions légales
+            </Link>
+            <Link to="/confidentialite" className="hover:text-accent">
+              Confidentialité
+            </Link>
+            <Link to="/cgu" className="hover:text-accent">
+              CGU
+            </Link>
+          </div>
         </div>
       </footer>
     </div>
@@ -395,7 +411,11 @@ function LiveDemo() {
         <div className="grid grid-cols-2 border-t border-border sm:grid-cols-4">
           <Kpi label="Takt" value={formatSeconds(a.takt)} />
           <Kpi label="Cycle" value={formatSeconds(a.maxCycle)} warn={over} />
-          <Kpi label="Rendement" value={a.rendement !== null ? `${a.rendement}%` : "—"} warn={(a.rendement ?? 100) < 85} />
+          <Kpi
+            label="Rendement"
+            value={a.rendement !== null ? `${a.rendement}%` : "—"}
+            warn={(a.rendement ?? 100) < 85}
+          />
           <Kpi label="Goulot" value={a.bottleneck?.label ?? "—"} warn={over} />
         </div>
       </div>
@@ -408,7 +428,9 @@ function Kpi({ label, value, warn }: { label: string; value: string; warn?: bool
     <div className="border-r border-border px-3 py-3 last:border-r-0">
       <div className="font-mono text-[9px] uppercase tracking-[0.16em] text-muted">{label}</div>
       <div
-        className={`truncate font-display text-lg font-extrabold tabular-nums ${warn ? "text-warn" : "text-accent"}`}
+        className={`truncate font-display text-lg font-extrabold tabular-nums ${
+          warn ? "text-warn" : "text-accent"
+        }`}
       >
         {value}
       </div>
