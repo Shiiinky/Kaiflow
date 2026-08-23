@@ -44,9 +44,19 @@ export const adminListOrgs = createServerFn({ method: "GET" })
       platform_role: string;
       created_at: string;
       flow_count: string;
+      primary_org_id: string | null;
+      primary_org_name: string | null;
+      primary_plan: string | null;
+      primary_status: string | null;
+      org_count: string;
     }>`
       select u.id, u.name, u.email, u.platform_role, u."createdAt" as created_at,
-        (select count(*)::text from flows f where f.user_id = u.id) as flow_count
+        (select count(*)::text from flows f where f.user_id = u.id) as flow_count,
+        (select om.org_id from organization_members om where om.user_id = u.id order by om.created_at asc limit 1) as primary_org_id,
+        (select o.name from organization_members om join organizations o on o.id = om.org_id where om.user_id = u.id order by om.created_at asc limit 1) as primary_org_name,
+        (select o.plan from organization_members om join organizations o on o.id = om.org_id where om.user_id = u.id order by om.created_at asc limit 1) as primary_plan,
+        (select o.status from organization_members om join organizations o on o.id = om.org_id where om.user_id = u.id order by om.created_at asc limit 1) as primary_status,
+        (select count(*)::text from organization_members om where om.user_id = u.id) as org_count
       from "user" u
       order by u."createdAt" desc
       limit 500
@@ -70,14 +80,24 @@ export const adminListOrgs = createServerFn({ method: "GET" })
         ownerName: o.owner_name,
         isPaid: o.plan === "pro" || o.plan === "enterprise",
       })),
-      users: users.map((u) => ({
-        id: u.id,
-        name: u.name,
-        email: u.email,
-        platformRole: u.platform_role,
-        createdAt: u.created_at,
-        flowCount: Number(u.flow_count),
-      })),
+      users: users.map((u) => {
+        const plan = planOf(u.primary_plan);
+        return {
+          id: u.id,
+          name: u.name,
+          email: u.email,
+          platformRole: u.platform_role,
+          createdAt: u.created_at,
+          flowCount: Number(u.flow_count),
+          orgCount: Number(u.org_count),
+          primaryOrgId: u.primary_org_id,
+          primaryOrgName: u.primary_org_name,
+          plan: plan.id,
+          planLabel: plan.label,
+          status: u.primary_status ?? "—",
+          isPaid: plan.id === "pro" || plan.id === "enterprise",
+        };
+      }),
       stats: {
         totalOrgs: orgs.length,
         paid: orgs.filter((o) => o.plan === "pro" || o.plan === "enterprise").length,
@@ -107,6 +127,69 @@ export const adminSetOrgPlan = createServerFn({ method: "POST" })
        where id = $5`,
       [data.plan, status, maxSeats, data.notes ?? null, data.orgId],
     );
+    return { ok: true as const };
+  });
+
+export const adminSetUserPlan = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .validator((data: { userId: string; plan: PlanId; status?: string }) => {
+    if (!data?.userId) throw new Error("userId requis");
+    if (data.plan !== "free" && data.plan !== "pro" && data.plan !== "enterprise") {
+      throw new Error("Plan invalide");
+    }
+    return data;
+  })
+  .handler(async ({ context, data }) => {
+    if (!(await isPlatformAdmin(context.userId))) throw new Error("Accès admin requis");
+    const sql = await getSql();
+    const memberships = await sql<{ org_id: string }>`
+      select org_id from organization_members
+      where user_id = ${data.userId}
+      order by created_at asc
+      limit 1
+    `;
+    if (!memberships[0]) throw new Error("Cet utilisateur n'a aucune organisation");
+    const plan = PLANS[data.plan];
+    const status = data.status ?? "active";
+    await sql.query(
+      `update organizations set plan = $1, status = $2, max_seats = $3, updated_at = now() where id = $4`,
+      [data.plan, status, plan.maxSeats, memberships[0].org_id],
+    );
+    return { ok: true as const, orgId: memberships[0].org_id };
+  });
+
+export const adminSetPlatformRole = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .validator((data: { userId: string; role: "user" | "platform_admin" }) => {
+    if (!data?.userId) throw new Error("userId requis");
+    if (data.role !== "user" && data.role !== "platform_admin") throw new Error("Rôle invalide");
+    return data;
+  })
+  .handler(async ({ context, data }) => {
+    if (!(await isPlatformAdmin(context.userId))) throw new Error("Accès admin requis");
+    if (data.userId === context.userId && data.role !== "platform_admin") {
+      throw new Error("Vous ne pouvez pas retirer votre propre rôle admin");
+    }
+    const sql = await getSql();
+    await sql.query(`update "user" set platform_role = $1 where id = $2`, [data.role, data.userId]);
+    return { ok: true as const };
+  });
+
+export const adminSetOrgStatus = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .validator((data: { orgId: string; status: string }) => {
+    if (!data?.orgId || !data?.status) throw new Error("Paramètres manquants");
+    const allowed = ["active", "trial", "past_due", "canceled"];
+    if (!allowed.includes(data.status)) throw new Error("Statut invalide");
+    return data;
+  })
+  .handler(async ({ context, data }) => {
+    if (!(await isPlatformAdmin(context.userId))) throw new Error("Accès admin requis");
+    const sql = await getSql();
+    await sql.query(`update organizations set status = $1, updated_at = now() where id = $2`, [
+      data.status,
+      data.orgId,
+    ]);
     return { ok: true as const };
   });
 
