@@ -12,7 +12,7 @@ function asDoc(raw: unknown): FlowDoc | null {
 
 async function primaryOrgId(userId: string): Promise<string | null> {
   const sql = await getSql();
-  const rows = await sql<{ org_id: string }> `
+  const rows = await sql<{ org_id: string }>`
     select org_id from organization_members
     where user_id = ${userId}
     order by created_at asc
@@ -25,7 +25,7 @@ export const listFlows = createServerFn({ method: "GET" })
   .middleware([authMiddleware])
   .handler(async ({ context }) => {
     const sql = await getSql();
-    const rows = await sql<{ doc: FlowDoc }> `
+    const rows = await sql<{ doc: FlowDoc }>`
       select doc from flows
       where user_id = ${context.userId}
       order by updated_at desc
