@@ -12,8 +12,11 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as CompteRouteImport } from './routes/compte'
+import { Route as AdminRouteImport } from './routes/admin'
 import { Route as EditorIdRouteImport } from './routes/editor.$id'
 import { Route as RapportIdRouteImport } from './routes/rapport.$id'
+import { Route as EntrepriseOrgIdRouteImport } from './routes/entreprise.$orgId'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
 const IndexRoute = IndexRouteImport.update({
@@ -31,6 +34,16 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CompteRoute = CompteRouteImport.update({
+  id: '/compte',
+  path: '/compte',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminRoute = AdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const EditorIdRoute = EditorIdRouteImport.update({
   id: '/editor/$id',
   path: '/editor/$id',
@@ -39,6 +52,11 @@ const EditorIdRoute = EditorIdRouteImport.update({
 const RapportIdRoute = RapportIdRouteImport.update({
   id: '/rapport/$id',
   path: '/rapport/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EntrepriseOrgIdRoute = EntrepriseOrgIdRouteImport.update({
+  id: '/entreprise/$orgId',
+  path: '/entreprise/$orgId',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
@@ -51,16 +69,22 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/app': typeof AppRoute
   '/login': typeof LoginRoute
+  '/compte': typeof CompteRoute
+  '/admin': typeof AdminRoute
   '/editor/$id': typeof EditorIdRoute
   '/rapport/$id': typeof RapportIdRoute
+  '/entreprise/$orgId': typeof EntrepriseOrgIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/app': typeof AppRoute
   '/login': typeof LoginRoute
+  '/compte': typeof CompteRoute
+  '/admin': typeof AdminRoute
   '/editor/$id': typeof EditorIdRoute
   '/rapport/$id': typeof RapportIdRoute
+  '/entreprise/$orgId': typeof EntrepriseOrgIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRoutesById {
@@ -68,23 +92,46 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/app': typeof AppRoute
   '/login': typeof LoginRoute
+  '/compte': typeof CompteRoute
+  '/admin': typeof AdminRoute
   '/editor/$id': typeof EditorIdRoute
   '/rapport/$id': typeof RapportIdRoute
+  '/entreprise/$orgId': typeof EntrepriseOrgIdRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/app' | '/login' | '/editor/$id' | '/rapport/$id' | '/api/auth/$'
+    | '/'
+    | '/app'
+    | '/login'
+    | '/compte'
+    | '/admin'
+    | '/editor/$id'
+    | '/rapport/$id'
+    | '/entreprise/$orgId'
+    | '/api/auth/$'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/app' | '/login' | '/editor/$id' | '/rapport/$id' | '/api/auth/$'
+  to:
+    | '/'
+    | '/app'
+    | '/login'
+    | '/compte'
+    | '/admin'
+    | '/editor/$id'
+    | '/rapport/$id'
+    | '/entreprise/$orgId'
+    | '/api/auth/$'
   id:
     | '__root__'
     | '/'
     | '/app'
     | '/login'
+    | '/compte'
+    | '/admin'
     | '/editor/$id'
     | '/rapport/$id'
+    | '/entreprise/$orgId'
     | '/api/auth/$'
   fileRoutesById: FileRoutesById
 }
@@ -92,8 +139,11 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AppRoute: typeof AppRoute
   LoginRoute: typeof LoginRoute
+  CompteRoute: typeof CompteRoute
+  AdminRoute: typeof AdminRoute
   EditorIdRoute: typeof EditorIdRoute
   RapportIdRoute: typeof RapportIdRoute
+  EntrepriseOrgIdRoute: typeof EntrepriseOrgIdRoute
   ApiAuthSplatRoute: typeof ApiAuthSplatRoute
 }
 
@@ -120,6 +170,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LoginRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/compte': {
+      id: '/compte'
+      path: '/compte'
+      fullPath: '/compte'
+      preLoaderRoute: typeof CompteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin': {
+      id: '/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/editor/$id': {
       id: '/editor/$id'
       path: '/editor/$id'
@@ -132,6 +196,13 @@ declare module '@tanstack/react-router' {
       path: '/rapport/$id'
       fullPath: '/rapport/$id'
       preLoaderRoute: typeof RapportIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/entreprise/$orgId': {
+      id: '/entreprise/$orgId'
+      path: '/entreprise/$orgId'
+      fullPath: '/entreprise/$orgId'
+      preLoaderRoute: typeof EntrepriseOrgIdRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/auth/$': {
@@ -148,8 +219,11 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AppRoute: AppRoute,
   LoginRoute: LoginRoute,
+  CompteRoute: CompteRoute,
+  AdminRoute: AdminRoute,
   EditorIdRoute: EditorIdRoute,
   RapportIdRoute: RapportIdRoute,
+  EntrepriseOrgIdRoute: EntrepriseOrgIdRoute,
   ApiAuthSplatRoute: ApiAuthSplatRoute,
 }
 export const routeTree = rootRouteImport
