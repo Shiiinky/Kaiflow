@@ -1,4 +1,10 @@
-export type NodeType = "work" | "stock" | "transport" | "control";
+export type PhysicalNodeType = "work" | "stock" | "transport" | "control";
+/** Processus admin / logigramme */
+export type AdminNodeType = "step" | "decision" | "queue" | "startend";
+export type NodeType = PhysicalNodeType | AdminNodeType;
+
+export type FlowMode = "physical" | "admin";
+
 export type VsmKind = "va" | "nva";
 
 export interface MosTask {
@@ -32,16 +38,20 @@ export interface FlowNode {
   label: string;
   x: number;
   y: number;
+  /** Temps de cycle (s) — ou temps de traitement pour une étape admin */
   cycle: number;
   ops: number;
   machines: number;
   dispo: number;
+  /** % rebut (physique) ou % rework (admin) */
   rebut: number;
   qty: number;
   stockMax: number;
   dist: number;
   vsm: VsmKind;
   mos: Mos;
+  /** Rôle / service (flux admin) */
+  role?: string;
 }
 
 export interface Connection {
@@ -69,6 +79,8 @@ export interface FlowDoc {
   usine: string;
   atelier: string;
   updatedAt: number;
+  /** physical = VSM atelier · admin = processus / logigramme */
+  mode?: FlowMode;
   settings: LineSettings;
   nodes: FlowNode[];
   connections: Connection[];
@@ -107,4 +119,21 @@ export interface FlowAnalysis {
   groups: StationGroup[];
   recommendations: Recommendation[];
   stationCount: number;
+  /** KPI spécifiques mode admin */
+  decisionCount?: number;
+  stepCount?: number;
+  queueItems?: number;
+  avgRework?: number | null;
+}
+
+export function isAdminMode(doc: Pick<FlowDoc, "mode"> | null | undefined): boolean {
+  return doc?.mode === "admin";
+}
+
+export function isAdminNodeType(t: NodeType): boolean {
+  return t === "step" || t === "decision" || t === "queue" || t === "startend";
+}
+
+export function isPhysicalNodeType(t: NodeType): boolean {
+  return t === "work" || t === "stock" || t === "transport" || t === "control";
 }
