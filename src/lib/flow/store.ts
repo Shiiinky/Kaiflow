@@ -37,6 +37,7 @@ interface FlowState {
 function migrateDoc(doc: FlowDoc): FlowDoc {
   return {
     ...doc,
+    mode: doc.mode === "admin" ? "admin" : "physical",
     johnsonJobs: doc.johnsonJobs ?? [],
     nodes: doc.nodes.map((n) => ({ ...n, mos: normalizeMos(n.mos) })),
   };
