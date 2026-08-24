@@ -1,7 +1,6 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ArrowLeft,
-  Download,
   Gauge,
   Link2,
   ListOrdered,
@@ -12,7 +11,7 @@ import {
   Undo2,
   Redo2,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { FlowCanvas } from "@/components/editor/flow-canvas";
 import { JohnsonPanel } from "@/components/editor/johnson-panel";
 import { KpiBar } from "@/components/editor/kpi-bar";
@@ -26,11 +25,9 @@ import {
 } from "@/components/editor/side-rail";
 import { Yamazumi } from "@/components/editor/yamazumi";
 import { Button } from "@/components/ui/button";
-import { BrandMark } from "@/components/brand";
 import { blocksFor, NODE_H, NODE_W } from "@/lib/flow/blocks";
 import { isAdminMode } from "@/lib/flow/types";
 import { analyzeFlow } from "@/lib/flow/engine";
-import { exportPdf } from "@/lib/pdf/export";
 import { useFlowStore } from "@/lib/flow/store";
 import { cn } from "@/lib/cn";
 import type { FlowNode, NodeType } from "@/lib/flow/types";
@@ -43,7 +40,6 @@ type SheetTab = "blocks" | "props" | "kpis" | "yamazumi" | "johnson" | "settings
 
 function EditorPage() {
   const { id } = Route.useParams();
-  const navigate = useNavigate();
   const doc = useFlowStore((s) => s.getFlow(id));
   const patchNode = useFlowStore((s) => s.patchNode);
   const moveNode = useFlowStore((s) => s.moveNode);
@@ -187,16 +183,6 @@ function EditorPage() {
           </Button>
           {menuOpen ? (
             <div className="absolute right-0 top-full z-30 mt-1 w-48 rounded-md border border-border bg-card py-1 shadow-xl">
-              <button
-                type="button"
-                className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-surface"
-                onClick={() => {
-                  setMenuOpen(false);
-                  void exportPdf(doc);
-                }}
-              >
-                <Download className="size-3.5" /> Export PDF
-              </button>
               <button
                 type="button"
                 className="flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-surface"
@@ -447,12 +433,7 @@ function SheetBody({
   }
 
   if (tab === "johnson" && !isAdminMode(doc)) {
-    return (
-      <JohnsonPanel
-        jobs={doc.johnsonJobs}
-        onChange={onJohnson}
-      />
-    );
+    return <JohnsonPanel jobs={doc.johnsonJobs} onChange={onJohnson} />;
   }
 
   if (tab === "settings") {
