@@ -25,22 +25,38 @@ const inputClass =
 
 export function KpiGrid({ doc }: { doc: FlowDoc }) {
   const a = analyzeFlow(doc);
-  const items = [
-    { k: "Takt", v: formatSeconds(a.takt), warn: false },
-    { k: "Cycle goulot", v: formatSeconds(a.maxCycle), warn: a.rendement !== null && a.rendement < 100 },
-    { k: "Rendement", v: a.rendement !== null ? `${a.rendement}%` : "—", warn: (a.rendement ?? 100) < 85 },
-    { k: "Lead time", v: formatDuration(a.leadTime), warn: false },
-    { k: "VA", v: a.vaPercent !== null ? `${a.vaPercent}%` : "—", warn: (a.vaPercent ?? 100) < 60 },
-    { k: "Charge moy.", v: a.charge !== null ? `${a.charge}%` : "—", warn: (a.charge ?? 0) > 100 },
-    { k: "Débit", v: a.throughputPerHour !== null ? `${a.throughputPerHour}/h` : "—", warn: false },
-    { k: "ETP", v: a.etp !== null ? `${a.etp}` : "—", warn: false },
-  ];
+  const admin = doc.mode === "admin";
+  const items = admin
+    ? [
+        { k: "Lead time", v: formatDuration(a.leadTime), warn: false },
+        { k: "Étape max", v: formatSeconds(a.maxCycle), warn: (a.rendement ?? 100) < 100 },
+        { k: "Étapes", v: String(a.stepCount ?? 0), warn: false },
+        { k: "Décisions", v: String(a.decisionCount ?? 0), warn: (a.decisionCount ?? 0) >= 4 },
+        { k: "File", v: String(a.queueItems ?? 0), warn: (a.queueItems ?? 0) > 20 },
+        {
+          k: "Rework moy.",
+          v: a.avgRework != null ? `${a.avgRework}%` : "—",
+          warn: (a.avgRework ?? 0) > 15,
+        },
+        { k: "Cible", v: formatSeconds(a.takt), warn: false },
+        { k: "Blocs", v: String(a.stationCount), warn: false },
+      ]
+    : [
+        { k: "Takt", v: formatSeconds(a.takt), warn: false },
+        { k: "Cycle goulot", v: formatSeconds(a.maxCycle), warn: a.rendement !== null && a.rendement < 100 },
+        { k: "Rendement", v: a.rendement !== null ? `${a.rendement}%` : "—", warn: (a.rendement ?? 100) < 85 },
+        { k: "Lead time", v: formatDuration(a.leadTime), warn: false },
+        { k: "VA", v: a.vaPercent !== null ? `${a.vaPercent}%` : "—", warn: (a.vaPercent ?? 100) < 60 },
+        { k: "Charge moy.", v: a.charge !== null ? `${a.charge}%` : "—", warn: (a.charge ?? 0) > 100 },
+        { k: "Débit", v: a.throughputPerHour !== null ? `${a.throughputPerHour}/h` : "—", warn: false },
+        { k: "ETP", v: a.etp !== null ? `${a.etp}` : "—", warn: false },
+      ];
   return (
     <div className="grid grid-cols-2 gap-2">
       {items.map((it) => (
-        <div key={it.k} className="rounded-md border border-border bg-surface p-2.5">
+        <div key={it.k} className="rounded-md border border-border bg-card px-2.5 py-2">
           <div className="text-[10px] uppercase tracking-wider text-muted">{it.k}</div>
-          <div className={cn("font-display text-lg font-semibold tabular-nums", it.warn ? "text-warn" : "text-fg")}>
+          <div className={cn("font-display text-lg font-bold tabular-nums", it.warn && "text-warn")}>
             {it.v}
           </div>
         </div>
@@ -50,50 +66,52 @@ export function KpiGrid({ doc }: { doc: FlowDoc }) {
 }
 
 export function Recs({ doc }: { doc: FlowDoc }) {
-  const recs = analyzeFlow(doc).recommendations;
+  const a = analyzeFlow(doc);
+  if (!a.recommendations.length) return null;
   return (
-    <div className="space-y-2">
-      {recs.map((r) => (
-        <div key={r.id} className="rounded-md border border-border bg-surface p-3">
+    <ul className="space-y-2">
+      {a.recommendations.map((r) => (
+        <li
+          key={r.id}
+          className={cn(
+            "rounded-md border px-3 py-2 text-sm",
+            r.severity === "critical" && "border-danger/40 bg-danger/10",
+            r.severity === "warn" && "border-warn/40 bg-warn/10",
+            r.severity === "info" && "border-border bg-surface",
+          )}
+        >
           <div className="flex items-start gap-2">
-            {r.severity === "critical" ? (
-              <AlertTriangle className="mt-0.5 size-4 text-warn" />
+            {r.severity === "info" ? (
+              <Lightbulb className="mt-0.5 size-3.5 shrink-0 text-accent" />
             ) : (
-              <Lightbulb className="mt-0.5 size-4 text-accent" />
+              <AlertTriangle className="mt-0.5 size-3.5 shrink-0 text-warn" />
             )}
             <div>
-              <div className="text-sm font-medium">{r.title}</div>
-              <p className="mt-1 text-xs leading-relaxed text-muted-2">{r.detail}</p>
+              <div className="font-medium">{r.title}</div>
+              <p className="mt-0.5 text-xs text-muted">{r.detail}</p>
             </div>
           </div>
-        </div>
+        </li>
       ))}
-    </div>
+    </ul>
   );
 }
 
 export function WhatIf({ doc }: { doc: FlowDoc }) {
   const a = analyzeFlow(doc);
-  const bnId = a.bottleneck?.ids[0];
-  if (!bnId) return <p className="text-sm text-muted">Pas de goulot calculable.</p>;
-  const alt = analyzeFlow(simulateExtraMachine(doc, bnId));
-  const node = doc.nodes.find((n) => n.id === bnId);
+  const bn = a.bottleneck;
+  if (!bn || doc.mode === "admin") return null;
+  const nodeId = bn.ids[0];
+  const alt = analyzeFlow(simulateExtraMachine(doc, nodeId));
   return (
-    <div className="rounded-md border border-border bg-surface p-3">
-      <div className="text-sm font-medium">Et si +1 machine sur {node?.label} ?</div>
-      <div className="mt-3 grid grid-cols-2 gap-2 text-xs">
+    <div className="rounded-md border border-border bg-surface p-3 text-sm">
+      <div className="text-xs uppercase tracking-wider text-muted">What-if</div>
+      <p className="mt-1 text-xs text-muted">Si +1 machine sur le goulot ({bn.label}) :</p>
+      <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
         <div>
-          <div className="text-muted">Cycle actuel</div>
-          <div className="font-display text-base tabular-nums text-warn">{a.maxCycle}s</div>
-        </div>
-        <div>
-          <div className="text-muted">Cycle simulé</div>
-          <div className="font-display text-base tabular-nums text-ok">{alt.maxCycle}s</div>
-        </div>
-        <div>
-          <div className="text-muted">Rendement</div>
+          <div className="text-muted">Cycle max</div>
           <div className="tabular-nums">
-            {a.rendement}% → {alt.rendement}%
+            {a.maxCycle}s → {alt.maxCycle}s
           </div>
         </div>
         <div>
@@ -116,6 +134,103 @@ export function PropsForm({
   onChange: (patch: Partial<FlowNode>) => void;
   onOpenMos: () => void;
 }) {
+  const admin =
+    node.type === "step" ||
+    node.type === "decision" ||
+    node.type === "queue" ||
+    node.type === "startend";
+
+  if (admin) {
+    return (
+      <div className="space-y-3">
+        <Field label="Nom">
+          <input
+            className={inputClass}
+            value={node.label}
+            onChange={(e) => onChange({ label: e.target.value })}
+          />
+        </Field>
+        {node.type !== "startend" ? (
+          <Field
+            label={
+              node.type === "queue"
+                ? "Temps d'attente moyen (s)"
+                : node.type === "decision"
+                  ? "Délai de décision (s)"
+                  : "Durée de traitement (s)"
+            }
+          >
+            <input
+              className={inputClass}
+              type="number"
+              min={0}
+              value={node.cycle}
+              onChange={(e) => onChange({ cycle: Number(e.target.value) })}
+            />
+          </Field>
+        ) : (
+          <p className="text-xs text-muted">Borne du processus — pas de durée.</p>
+        )}
+        {node.type === "queue" ? (
+          <Field label="Encours de dossiers (en file)">
+            <input
+              className={inputClass}
+              type="number"
+              min={0}
+              value={node.qty}
+              onChange={(e) => onChange({ qty: Number(e.target.value) })}
+            />
+          </Field>
+        ) : null}
+        {node.type === "step" || node.type === "decision" ? (
+          <>
+            <Field label="Rôle / service">
+              <input
+                className={inputClass}
+                value={node.role ?? ""}
+                onChange={(e) => onChange({ role: e.target.value })}
+                placeholder="ex. Achats, Qualité…"
+              />
+            </Field>
+            <Field label="Personnes">
+              <input
+                className={inputClass}
+                type="number"
+                min={1}
+                value={node.ops}
+                onChange={(e) => onChange({ ops: Number(e.target.value) })}
+              />
+            </Field>
+          </>
+        ) : null}
+        {node.type === "step" ? (
+          <Field label="Rework %">
+            <input
+              className={inputClass}
+              type="number"
+              min={0}
+              max={100}
+              value={node.rebut}
+              onChange={(e) => onChange({ rebut: Number(e.target.value) })}
+            />
+          </Field>
+        ) : null}
+        {node.type === "step" || node.type === "decision" ? (
+          <Field label="Valeur">
+            <select
+              className={inputClass}
+              value={node.vsm}
+              onChange={(e) => onChange({ vsm: e.target.value as FlowNode["vsm"] })}
+            >
+              <option value="va">Valeur ajoutée</option>
+              <option value="nva">Non valeur ajoutée</option>
+            </select>
+          </Field>
+        ) : null}
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-3">
       <Field label="Nom">
@@ -133,7 +248,7 @@ export function PropsForm({
         </Field>
       ) : (
         <>
-          <Field label="Quantité">
+          <Field label="Quantité (encours)">
             <input
               className={inputClass}
               type="number"
