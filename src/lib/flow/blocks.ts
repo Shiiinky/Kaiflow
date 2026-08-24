@@ -16,10 +16,11 @@ export const ADMIN_BLOCKS: {
   label: string;
   hint: string;
 }[] = [
-  { type: "startend", label: "Début / Fin", hint: "Bornes du processus" },
-  { type: "step", label: "Étape", hint: "Traitement, rôle, durée" },
-  { type: "decision", label: "Décision", hint: "Oui / non, validation" },
-  { type: "queue", label: "File d'attente", hint: "Dossiers en attente" },
+  { type: "startend", label: "Début / Fin", hint: "Point d'entrée ou de sortie" },
+  { type: "step", label: "Action", hint: "Responsable, entrées, sorties" },
+  { type: "decision", label: "Décision", hint: "Losange Oui / Non" },
+  { type: "document", label: "Document", hint: "Pièce, dossier, livrable" },
+  { type: "queue", label: "File d'attente", hint: "Encours de dossiers" },
 ];
 
 export function blocksFor(mode: FlowMode | undefined) {
@@ -31,3 +32,5 @@ export const BLOCKS = PHYSICAL_BLOCKS;
 
 export const NODE_W = 188;
 export const NODE_H = 122;
+/** Losange un peu plus compact */
+export const DECISION_SIZE = 140;

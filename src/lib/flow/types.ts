@@ -1,6 +1,6 @@
 export type PhysicalNodeType = "work" | "stock" | "transport" | "control";
 /** Processus admin / logigramme */
-export type AdminNodeType = "step" | "decision" | "queue" | "startend";
+export type AdminNodeType = "step" | "decision" | "queue" | "startend" | "document";
 export type NodeType = PhysicalNodeType | AdminNodeType;
 
 export type FlowMode = "physical" | "admin";
@@ -50,14 +50,22 @@ export interface FlowNode {
   dist: number;
   vsm: VsmKind;
   mos: Mos;
-  /** Rôle / service (flux admin) */
+  /** Responsable de l'action (flux admin) */
   role?: string;
+  /** Ce qui entre dans l'étape (dossier, info, demande…) */
+  inputs?: string;
+  /** Ce qui ressort de l'étape (décision, document, statut…) */
+  outputs?: string;
+  /** Couleur de branche / catégorie (hex ou token) */
+  color?: string;
 }
 
 export interface Connection {
   id: string;
   from: string;
   to: string;
+  /** Libellé de branche : Oui, Non, Si budget OK… */
+  label?: string;
 }
 
 export interface LineSettings {
@@ -131,7 +139,13 @@ export function isAdminMode(doc: Pick<FlowDoc, "mode"> | null | undefined): bool
 }
 
 export function isAdminNodeType(t: NodeType): boolean {
-  return t === "step" || t === "decision" || t === "queue" || t === "startend";
+  return (
+    t === "step" ||
+    t === "decision" ||
+    t === "queue" ||
+    t === "startend" ||
+    t === "document"
+  );
 }
 
 export function isPhysicalNodeType(t: NodeType): boolean {
