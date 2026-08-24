@@ -25,6 +25,7 @@ interface FlowState {
   moveNode: (flowId: string, nodeId: string, x: number, y: number) => void;
   removeNode: (flowId: string, nodeId: string) => void;
   toggleLink: (flowId: string, from: string, to: string) => void;
+  setConnectionLabel: (flowId: string, connId: string, label: string) => void;
   setJohnsonJobs: (flowId: string, jobs: JohnsonJob[]) => void;
   commitHistory: (flowId: string) => void;
   undo: (flowId: string) => void;
@@ -188,11 +189,44 @@ export const useFlowStore = create<FlowState>()((set, get) => ({
       flows: get().flows.map((f) => {
         if (f.id !== flowId) return f;
         const existing = f.connections.find((c) => c.from === from && c.to === to);
-        const connections: Connection[] = existing
-          ? f.connections.filter((c) => c.id !== existing.id)
-          : [...f.connections, { id: uid("c"), from, to }];
+        if (existing) {
+          return {
+            ...f,
+            connections: f.connections.filter((c) => c.id !== existing.id),
+            updatedAt: Date.now(),
+          };
+        }
+        const fromNode = f.nodes.find((n) => n.id === from);
+        let label: string | undefined;
+        if (fromNode?.type === "decision") {
+          const outs = f.connections.filter((c) => c.from === from);
+          if (outs.length === 0) label = "Oui";
+          else if (outs.length === 1 && !outs.some((c) => (c.label || "").toLowerCase() === "non"))
+            label = "Non";
+        }
+        const connections: Connection[] = [
+          ...f.connections,
+          { id: uid("c"), from, to, label },
+        ];
         return { ...f, connections, updatedAt: Date.now() };
       }),
+    });
+    persistSoon(() => get().getFlow(flowId), flowId);
+  },
+  setConnectionLabel: (flowId, connId, label) => {
+    get().commitHistory(flowId);
+    set({
+      flows: get().flows.map((f) =>
+        f.id === flowId
+          ? {
+              ...f,
+              updatedAt: Date.now(),
+              connections: f.connections.map((c) =>
+                c.id === connId ? { ...c, label } : c,
+              ),
+            }
+          : f,
+      ),
     });
     persistSoon(() => get().getFlow(flowId), flowId);
   },
