@@ -7,22 +7,31 @@ import type { FlowDoc } from "./types";
 function asDoc(raw: unknown): FlowDoc | null {
   if (!raw || typeof raw !== "object") return null;
   const doc = raw as FlowDoc;
-  if (!doc.id || !Array.isArray(doc.nodes) || !doc.settings) return null;
+  if (!doc.id) return null;
+  if (!Array.isArray(doc.nodes)) doc.nodes = [];
+  if (!Array.isArray(doc.connections)) doc.connections = [];
+  if (!doc.settings) {
+    doc.settings = { demand: 1, openingTime: 480, plannedBreaks: 0 };
+  }
   return doc;
 }
 
 async function primaryOrgPlan(userId: string): Promise<{ orgId: string | null; plan: PlanId }> {
   const sql = await getSql();
-  const rows = await sql<{ org_id: string; plan: string }>`
-    select om.org_id, o.plan
-    from organization_members om
-    join organizations o on o.id = om.org_id
-    where om.user_id = ${userId}
-    order by om.created_at asc
-    limit 1
-  `;
-  if (!rows[0]) return { orgId: null, plan: "free" };
-  return { orgId: rows[0].org_id, plan: planOf(rows[0].plan).id };
+  try {
+    const rows = await sql<{ org_id: string; plan: string }>`
+      select om.org_id, o.plan
+      from organization_members om
+      join organizations o on o.id = om.org_id
+      where om.user_id = ${userId}
+      order by om.created_at asc
+      limit 1
+    `;
+    if (!rows[0]) return { orgId: null, plan: "free" };
+    return { orgId: rows[0].org_id, plan: planOf(rows[0].plan).id };
+  } catch {
+    return { orgId: null, plan: "free" };
+  }
 }
 
 async function countFlows(userId: string): Promise<number> {
@@ -67,20 +76,30 @@ export const listFlows = createServerFn({ method: "GET" })
   .middleware([authMiddleware])
   .handler(async ({ context }) => {
     const sql = await getSql();
-    // Own flows + flows of any organization the user belongs to (team sharing for Pro+)
-    const rows = await sql<{ doc: unknown; user_id: string; updated_at: string }>`
-      select f.doc, f.user_id, f.updated_at
-      from flows f
-      where f.user_id = ${context.userId}
-         or f.org_id in (
-           select org_id from organization_members where user_id = ${context.userId}
-         )
-      order by f.updated_at desc
-    `;
+    let rows: { doc: unknown; user_id: string; updated_at: string }[] = [];
+    try {
+      rows = await sql<{ doc: unknown; user_id: string; updated_at: string }>`
+        select f.doc, f.user_id, f.updated_at
+        from flows f
+        where f.user_id = ${context.userId}
+           or f.org_id in (
+             select org_id from organization_members where user_id = ${context.userId}
+           )
+        order by f.updated_at desc
+      `;
+    } catch {
+      rows = await sql<{ doc: unknown; user_id: string; updated_at: string }>`
+        select f.doc, f.user_id, f.updated_at
+        from flows f
+        where f.user_id = ${context.userId}
+        order by f.updated_at desc
+      `;
+    }
     const seen = new Set<string>();
     const docs: FlowDoc[] = [];
     for (const r of rows) {
-      const doc = asDoc(typeof r.doc === "string" ? JSON.parse(r.doc as string) : r.doc);
+      const raw = typeof r.doc === "string" ? JSON.parse(r.doc as string) : r.doc;
+      const doc = asDoc(raw);
       if (!doc || seen.has(doc.id)) continue;
       seen.add(doc.id);
       (doc as FlowDoc & { _isMine?: boolean })._isMine = r.user_id === context.userId;
@@ -120,16 +139,19 @@ export const saveFlow = createServerFn({ method: "POST" })
       return { ok: true as const };
     }
 
-    // Update: owner or any member of the flow's organization may edit
     const row = existing[0];
     let allowed = row.user_id === context.userId;
     if (!allowed && row.org_id) {
-      const mem = await sql<{ id: string }>`
-        select id from organization_members
-        where org_id = ${row.org_id} and user_id = ${context.userId}
-        limit 1
-      `;
-      allowed = Boolean(mem[0]);
+      try {
+        const mem = await sql<{ id: string }>`
+          select id from organization_members
+          where org_id = ${row.org_id} and user_id = ${context.userId}
+          limit 1
+        `;
+        allowed = Boolean(mem[0]);
+      } catch {
+        allowed = false;
+      }
     }
     if (!allowed) throw new Error("Vous n'avez pas le droit de modifier ce flux");
 
