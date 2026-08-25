@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { getEffectiveCycle, getNodeVaPercent } from "@/lib/flow/engine";
 import { cn } from "@/lib/cn";
-import type { FlowNode, NodeType } from "@/lib/flow/types";
+import type { FlowNode, NodeType, PortSide } from "@/lib/flow/types";
 import { DECISION_SIZE, NODE_H, NODE_W } from "@/lib/flow/blocks";
 
 const ICONS: Record<NodeType, typeof Wrench> = {
@@ -33,14 +33,18 @@ export function NodeCard({
   bottleneck,
   linkSource,
   scale,
+  linkMode,
   onPointerDown,
+  onPortPointerDown,
 }: {
   node: FlowNode;
   selected: boolean;
   bottleneck: boolean;
   linkSource: boolean;
   scale: number;
+  linkMode?: boolean;
   onPointerDown: (e: React.PointerEvent) => void;
+  onPortPointerDown?: (side: PortSide) => void;
 }) {
   const Icon = ICONS[node.type] ?? Wrench;
   const cycle = getEffectiveCycle(node);
@@ -94,6 +98,7 @@ export function NodeCard({
           ) : null}
           {bottleneck ? <AlertTriangle className="mt-1 size-3 text-warn" /> : null}
         </div>
+        <PortDots visible={!!linkMode} onPort={onPortPointerDown} />
       </div>
     );
   }
@@ -175,12 +180,7 @@ export function NodeCard({
           <>
             <div className="flex justify-between gap-2">
               <span className="text-muted">Temps utile</span>
-              <span
-                className={cn(
-                  "tabular-nums font-medium",
-                  bottleneck ? "text-warn" : "text-fg",
-                )}
-              >
+              <span className={cn("tabular-nums font-medium", bottleneck ? "text-warn" : "text-fg")}>
                 {Number.isFinite(cycle) && cycle > 0 ? `${cycle}s` : "—"}
               </span>
             </div>
@@ -215,6 +215,40 @@ export function NodeCard({
           <div className="bg-warn" style={{ width: `${100 - va}%` }} />
         </div>
       ) : null}
+      <PortDots visible={!!linkMode} onPort={onPortPointerDown} />
     </div>
+  );
+}
+
+function PortDots({
+  visible,
+  onPort,
+}: {
+  visible: boolean;
+  onPort?: (side: PortSide) => void;
+}) {
+  if (!visible) return null;
+  const dots: { side: PortSide; style: React.CSSProperties }[] = [
+    { side: "top", style: { left: "50%", top: -6, transform: "translateX(-50%)" } },
+    { side: "right", style: { right: -6, top: "50%", transform: "translateY(-50%)" } },
+    { side: "bottom", style: { left: "50%", bottom: -6, transform: "translateX(-50%)" } },
+    { side: "left", style: { left: -6, top: "50%", transform: "translateY(-50%)" } },
+  ];
+  return (
+    <>
+      {dots.map((d) => (
+        <button
+          key={d.side}
+          type="button"
+          title={d.side}
+          onPointerDown={(e) => {
+            e.stopPropagation();
+            onPort?.(d.side);
+          }}
+          className="absolute z-20 size-3 rounded-full border border-bg bg-accent shadow"
+          style={d.style}
+        />
+      ))}
+    </>
   );
 }
