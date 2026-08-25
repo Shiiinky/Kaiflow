@@ -7,13 +7,16 @@ export function HydrateGate({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     let cancelled = false;
-    useFlowStore.setState({ hydrated: false, flows: [] });
     listFlows()
       .then((docs) => {
         if (!cancelled) useFlowStore.getState().loadAll(docs);
       })
-      .catch(() => {
-        if (!cancelled) useFlowStore.getState().loadAll([]);
+      .catch((err) => {
+        console.error("[kaiflow] listFlows failed", err);
+        if (!cancelled) {
+          const current = useFlowStore.getState().flows;
+          useFlowStore.setState({ hydrated: true, flows: current });
+        }
       });
     return () => {
       cancelled = true;
