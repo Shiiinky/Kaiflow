@@ -43,7 +43,6 @@ export function FlowCanvas({
   onSelect: (id: string | null) => void;
   onNodePointerDown: (e: React.PointerEvent, id: string) => void;
   onDropBlock: (type: string, label: string, x: number, y: number) => void;
-  /** Bump to re-center the camera on all nodes after fit/scale. */
   recenterToken?: number;
 }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -63,30 +62,47 @@ export function FlowCanvas({
   scaleRef.current = scale;
   panRef.current = pan;
 
-  // Re-center nodes in the visible area (mobile fit / "Ajuster")
-  useEffect(() => {
+  const nodesRef = useRef(nodes);
+  nodesRef.current = nodes;
+
+  const fitView = () => {
     const el = ref.current;
-    if (!el || nodes.length === 0) return;
+    const list = nodesRef.current;
+    if (!el || list.length === 0) return;
+    if (el.clientWidth < 8 || el.clientHeight < 8) return;
     let minX = Infinity;
     let minY = Infinity;
     let maxX = -Infinity;
     let maxY = -Infinity;
-    for (const n of nodes) {
+    for (const n of list) {
       minX = Math.min(minX, n.x);
       minY = Math.min(minY, n.y);
       maxX = Math.max(maxX, n.x + NODE_W);
       maxY = Math.max(maxY, n.y + NODE_H);
     }
-    const bw = (maxX - minX) * scale;
-    const bh = (maxY - minY) * scale;
-    const pad = 12;
+    const s = scaleRef.current;
+    const bw = (maxX - minX) * s;
+    const bh = (maxY - minY) * s;
+    const pad = 24;
     const vw = Math.max(0, el.clientWidth - pad * 2);
     const vh = Math.max(0, el.clientHeight - pad * 2);
     setPan({
-      x: pad + (vw - bw) / 2 - minX * scale,
-      y: pad + (vh - bh) / 2 - minY * scale,
+      x: pad + (vw - bw) / 2 - minX * s,
+      y: pad + (vh - bh) / 2 - minY * s,
     });
-  }, [recenterToken, scale, nodes]);
+  };
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const id = requestAnimationFrame(fitView);
+    const ro = new ResizeObserver(() => fitView());
+    ro.observe(el);
+    return () => {
+      cancelAnimationFrame(id);
+      ro.disconnect();
+    };
+  }, [recenterToken]);
 
   const sourceNode = nodes.find((n) => n.id === linkSource);
 
@@ -169,7 +185,7 @@ export function FlowCanvas({
   return (
     <div
       ref={ref}
-      className="canvas-grid relative min-h-0 flex-1 overflow-hidden touch-none overscroll-none"
+      className="canvas-grid absolute inset-0 h-full w-full overflow-hidden touch-none overscroll-none"
       style={{
         backgroundSize: `${32 * scale}px ${32 * scale}px`,
         backgroundPosition: `${pan.x}px ${pan.y}px`,
