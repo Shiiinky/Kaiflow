@@ -59,11 +59,15 @@ export interface Waypoint {
   y: number;
 }
 
+export type PortSide = "left" | "right" | "top" | "bottom";
+
 export interface Connection {
   id: string;
   from: string;
   to: string;
   label?: string;
+  fromSide?: PortSide;
+  toSide?: PortSide;
   waypoints?: Waypoint[];
 }
 
