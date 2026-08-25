@@ -38,34 +38,33 @@ export interface FlowNode {
   label: string;
   x: number;
   y: number;
-  /** Temps de cycle (s) — ou temps de traitement pour une étape admin */
   cycle: number;
   ops: number;
   machines: number;
   dispo: number;
-  /** % rebut (physique) ou % rework (admin) */
   rebut: number;
   qty: number;
   stockMax: number;
   dist: number;
   vsm: VsmKind;
   mos: Mos;
-  /** Responsable de l'action (flux admin) */
   role?: string;
-  /** Ce qui entre dans l'étape (dossier, info, demande…) */
   inputs?: string;
-  /** Ce qui ressort de l'étape (décision, document, statut…) */
   outputs?: string;
-  /** Couleur de branche / catégorie (hex ou token) */
   color?: string;
+}
+
+export interface Waypoint {
+  x: number;
+  y: number;
 }
 
 export interface Connection {
   id: string;
   from: string;
   to: string;
-  /** Libellé de branche : Oui, Non, Si budget OK… */
   label?: string;
+  waypoints?: Waypoint[];
 }
 
 export interface LineSettings {
@@ -87,7 +86,6 @@ export interface FlowDoc {
   usine: string;
   atelier: string;
   updatedAt: number;
-  /** physical = VSM atelier · admin = processus / logigramme */
   mode?: FlowMode;
   settings: LineSettings;
   nodes: FlowNode[];
@@ -127,7 +125,6 @@ export interface FlowAnalysis {
   groups: StationGroup[];
   recommendations: Recommendation[];
   stationCount: number;
-  /** KPI spécifiques mode admin */
   decisionCount?: number;
   stepCount?: number;
   queueItems?: number;
