@@ -26,6 +26,7 @@ interface FlowState {
   removeNode: (flowId: string, nodeId: string) => void;
   toggleLink: (flowId: string, from: string, to: string) => void;
   setConnectionLabel: (flowId: string, connId: string, label: string) => void;
+  setConnectionWaypoints: (flowId: string, connId: string, waypoints: { x: number; y: number }[]) => void;
   setJohnsonJobs: (flowId: string, jobs: JohnsonJob[]) => void;
   commitHistory: (flowId: string) => void;
   undo: (flowId: string) => void;
@@ -206,7 +207,7 @@ export const useFlowStore = create<FlowState>()((set, get) => ({
         }
         const connections: Connection[] = [
           ...f.connections,
-          { id: uid("c"), from, to, label },
+          { id: uid("c"), from, to, label, waypoints: [] },
         ];
         return { ...f, connections, updatedAt: Date.now() };
       }),
@@ -223,6 +224,23 @@ export const useFlowStore = create<FlowState>()((set, get) => ({
               updatedAt: Date.now(),
               connections: f.connections.map((c) =>
                 c.id === connId ? { ...c, label } : c,
+              ),
+            }
+          : f,
+      ),
+    });
+    persistSoon(() => get().getFlow(flowId), flowId);
+  },
+  setConnectionWaypoints: (flowId, connId, waypoints) => {
+    get().commitHistory(flowId);
+    set({
+      flows: get().flows.map((f) =>
+        f.id === flowId
+          ? {
+              ...f,
+              updatedAt: Date.now(),
+              connections: f.connections.map((c) =>
+                c.id === connId ? { ...c, waypoints } : c,
               ),
             }
           : f,
